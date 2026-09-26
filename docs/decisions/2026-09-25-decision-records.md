@@ -42,6 +42,8 @@ Overly complicated workflows
 
 ## Decision
 
+Simple markdown files like this one.
+
 ### High-level C4(context/container/component/code) diagram
 
 ### Choices and Tradeoffs/Risks
@@ -51,5 +53,3 @@ Overly complicated workflows
 ### Interfaces
 
 ## Key Results and retrospective feedback
-
-Simple markdown files like this one.

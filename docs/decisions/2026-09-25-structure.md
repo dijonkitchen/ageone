@@ -36,6 +36,10 @@ Complicated monorepo structures across multiple languages unless really needed.
 
 ## Decision
 
+`/specs/PRIORITIES.md`: Prioritization of the specifications in the monorepo.
+`/specs/`: Specification files for the projects in the monorepo. Broken down by subdirectories per project if needed.
+`/docs/decisions/`: Architectural decision records for the projects in the monorepo.
+
 ### High-level C4(context/container/component/code) diagram
 
 ### Choices and Tradeoffs/Risks
@@ -47,7 +51,3 @@ Project needs and best practices.
 ### Interfaces
 
 ## Key Results and retrospective feedback
-
-`/specs/PRIORITIES.md`: Prioritization of the specifications in the monorepo.
-`/specs/`: Specification files for the projects in the monorepo. Broken down by subdirectories per project if needed.
-`/docs/decisions/`: Architectural decision records for the projects in the monorepo.
