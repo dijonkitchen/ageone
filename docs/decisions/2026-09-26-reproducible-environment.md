@@ -4,6 +4,10 @@
 
 2026-09-26: Proposed by Claude, at JC's request
 
+2026-09-26: Accepted by JC
+
+2026-09-26: Amended by Claude, at JC's request: `make` alone installs Nix and devenv if missing and sets everything up idempotently.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -46,7 +50,7 @@ Writing our own Nix modules or overlays before a package is actually missing.
 
 Use [devenv](https://devenv.sh) (Nix underneath) for the environment, with nixpkgs on `nixos-unstable`.
 
-- `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash. `make setup` builds it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
+- `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash. `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
 - `nixos-unstable` instead of devenv's default `cachix/devenv-nixpkgs/rolling`: security fixes arrive sooner, and our evals test each bump instead of devenv's testing.
 - npm packages stay pinned by `package-lock.json`, not Nix: nixpkgs lags or lacks fast-moving npm tools.
 - Updates: `make update` (`devenv update`) on a weekly schedule, opened as a PR, merged only if `make check` and the evals pass. One lockfile diff per bump.
@@ -81,12 +85,12 @@ weekly `make update` PR ──> `make check` + evals ──> merge
 
 ### Dependencies
 
-Nix and devenv installed on each machine ([install steps](https://devenv.sh/getting-started/)). Network access to GitHub archives and cache.nixos.org.
+Nix and devenv, installed by `make` if missing (Nix through NixOS's official installer at `artifacts.nixos.org/nix-installer`, which asks before using sudo). Network access to GitHub archives and cache.nixos.org.
 
 ### Interfaces
 
 - `devenv.nix`, `devenv.yaml`, `devenv.lock`.
-- `Makefile` targets: `setup`, `shell`, `check`, `update`, `links`, `tools`.
+- `make`, the one command people and agents need. Other `Makefile` targets are for debugging and maintenance.
 
 ## Key Results and retrospective feedback
 

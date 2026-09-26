@@ -13,7 +13,8 @@ Links are plain relative Markdown links: open each one you need to read.
 
 ## Setup
 
-Install [Nix and devenv](https://devenv.sh/getting-started/), then run `make setup`. Run `make` to list every target.
+Run `make`. It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
+`make help` lists the other targets, which are for debugging.
 
 ## Agent workflow
 
