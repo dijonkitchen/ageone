@@ -4,6 +4,12 @@
 
 2026-09-26: Proposed by Claude, at JC's request
 
+2026-09-26: Amended by Claude, at JC's request: checked against pi's current docs. Fixed the repo link and where pi reads model config, added web search and open-weight data privacy, and noted OpenAI models on Bedrock.
+
+2026-09-26: Amended by Claude, at JC's request: OpenRouter is the default model access, replacing direct vendor APIs.
+
+2026-09-26: Amended by Claude, at JC's request: dropped AWS Bedrock; open-weight models from Chinese labs reach us only through an allowlist of US and EU hosts on OpenRouter.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -42,30 +48,33 @@ Four layers, each replaceable on its own.
 
 ### 1. Harness: pi
 
-Use [pi](https://github.com/earendil-works/pi-mono) (`@earendil-works/pi-coding-agent`) as the default harness.
+Use [pi](https://github.com/earendil-works/pi) ([pi.dev](https://pi.dev)) (`@earendil-works/pi-coding-agent`) as the default harness.
 
-- Its model layer, `pi-ai`, is a unified API over 30+ providers including Anthropic, OpenAI, Google, Azure, AWS Bedrock, Vertex, Mistral, Groq, xAI, OpenRouter, Ollama, and vLLM, and it can hand a conversation from one provider to another mid-session.
-- Custom providers and models go in `models.json`; `/model` switches at runtime and refreshes provider catalogs, so a new model is usable without a release of the harness.
+- Its model layer, `pi-ai`, is a unified API over many providers including Anthropic, OpenAI, Google, Azure, AWS Bedrock, Vertex, Mistral, Groq, Cerebras, Fireworks, Together, Hugging Face, NVIDIA, xAI, OpenRouter, and Vercel AI Gateway, plus any OpenAI-, Anthropic-, or Google-compatible endpoint (Ollama, vLLM, llama.cpp), and it can hand a conversation from one provider to another mid-session.
+- Custom endpoints and models go in the user-level `~/.pi/agent/models.json`; `/model` switches at runtime and `pi update --models` refreshes the catalog, so a new model is usable without a release of the harness.
+- Project config lives in `.pi/settings.json` (default provider and model, thinking level, enabled models, packages) and loads once the project is trusted.
 - It is minimal (four tools, sub-1k-token system prompt), MIT, and scriptable: print and JSON modes, an RPC mode, and a TypeScript SDK, which is what the eval runner drives.
 - Sessions are JSONL files with branching, which makes real sessions the raw material for eval cases.
 
 Alternative kept warm: [OpenCode](https://opencode.ai), the most popular provider-agnostic harness, richer UI and IDE integration, more surface area. Because prompts and instructions live in `AGENTS.md`, `specs/`, and `docs/decisions/`, switching harness is a config change. Claude Code, Codex CLI, and Gemini CLI stay in use as vendor-specific comparison points, not as the default.
 
-### 2. Model access: direct first, gateway when needed, Bedrock for AWS
+### 2. Model access: OpenRouter by default, direct when needed
 
-- Default to each vendor's native API through `pi-ai`. Fewest hops, and native features (prompt caching, adaptive thinking, effort, 1M context, batch) arrive first there.
-- Add a gateway only for a reason: one bill and spend attribution, fallbacks, or data that cannot leave your infrastructure. Self-hosted: LiteLLM (MIT, OpenAI-compatible, 100+ providers). Managed: OpenRouter (largest catalog, 5.5% fee on credits, BYOK to remove it) or Vercel AI Gateway (best for TypeScript teams, built-in failover).
-- AWS Bedrock is one provider among several, not the neutral layer. Use it when AWS IAM, billing, private networking, or compliance matter, and for open-weight models (Llama, DeepSeek, Mistral, Qwen, Nova) next to Claude. Its Converse API is model-agnostic across Bedrock models and its batch inference accepts Converse format at a discount. Known costs: OpenAI and Google models are not on it, Claude features and pricing lag the first-party API, and model IDs are prefixed (`anthropic.…`). Anthropic also offers Claude Platform on AWS, Anthropic-operated with same-day API parity, SigV4 auth, and AWS Marketplace billing, which is the better choice when the reason for AWS is billing and IAM rather than the Bedrock catalog.
+- Default to [OpenRouter](https://openrouter.ai) through pi's built-in `openrouter` provider (`OPENROUTER_API_KEY`). One key and one bill for every frontier closed family (Claude, GPT, Gemini, Grok) and the largest open-weight catalog, with fallbacks across hosts. That covers every role, including a `judge` from a different vendor than the model under test.
+- Privacy is set once, account-wide: zero data retention on, and the Chinese labs' first-party endpoints on the ignored providers list (section 6).
+- Costs: a 5.5% fee on credit purchases, and one extra hop. Remove the fee on heavy models by bringing your own provider key (BYOK: first 1M requests a month free, then 5%).
+- Go direct to a vendor's API when a native feature matters that the gateway does not pass through yet (new betas, batch APIs), or when measured spend makes the fee worth removing. Vercel AI Gateway (no markup, similar catalog, built into pi) is the fallback gateway; LiteLLM if data must stay on our infrastructure.
+- Not AWS Bedrock: OpenRouter already covers its catalog (Claude, GPT, open-weight) plus Gemini, without an AWS account. Revisit only if AWS billing, IAM, or compliance becomes a requirement.
 
 ### 3. Model roles config
 
-One checked-in file (`.pi/models.json` for pi, mirrored in a harness-neutral `harness/models.yaml` if a second harness is adopted) maps roles to exact model IDs:
+One checked-in, harness-neutral file (`harness/models.json`) maps roles to exact `provider/model` IDs. pi has no roles and reads `models.json` only from the user-level agent directory, so: the `default` role is mirrored into project `.pi/settings.json` (`defaultProvider`, `defaultModel`), and scripts and the eval runner pass the other roles with `pi --model <provider/model>`. A second harness gets the same file.
 
 | Role | Purpose | Starting value (re-evaluate with evals) |
 |------|---------|------------------------------------------|
 | `default` | everyday agentic work | current-generation mid tier, such as `anthropic/claude-sonnet-5` |
 | `cheap` | subagents, bulk, drafts | small tier or best open-weight model that passes the eval |
-| `frontier` | hard tasks, escalation on failure | current top tier, such as `anthropic/claude-opus-5` |
+| `frontier` | hard tasks, escalation on failure | current top tier, such as `anthropic/claude-opus-5-5` |
 | `judge` | LLM grader in evals | a different vendor from the model under test where possible |
 
 Rules: pin exact IDs and versions in evals; prompt caching on for every role; effort tuned per role, measuring the newest model at lower effort before reaching for an older model at high effort; task budgets and max turns set on every unattended run.
@@ -81,42 +90,64 @@ Yes, evals on every switch. Without them "cheaper" and "better" are guesses.
 - Before trusting numbers: run the reference solutions (should pass) and a null baseline (should fail) through the grader.
 - Trigger: every model change, prompt or `AGENTS.md` change, harness upgrade, and a monthly sweep of newly released models. Results are committed under `evals/results/` so the table in this record can be updated with evidence.
 
-### 5. Cheap, unattended, long tasks
+### 5. Web search
+
+pi deliberately ships four tools (`read`, `bash`, `edit`, `write`), no web search, and no MCP; extensions and skills fill the gap. Native search in other harnesses is built in and maintained by the vendor: Claude's web search and fetch tools, OpenAI's web search, Gemini's Google Search grounding, and Perplexity Sonar (search plus a cited answer, a model rather than a search tool).
+
+- Use the community extension [pi-web-access](https://github.com/nicobailon/pi-web-access) (`web_search`, `fetch_content`), declared as a package in `.pi/settings.json` so every checkout gets it. It works without a key through Exa and falls back across many backends (Brave, Tavily, Parallel, Perplexity, SearXNG, and others).
+- Pin one paid backend with a key (Exa or Parallel, which lead the 2026 agent-search benchmarks) instead of the keyless default, so results and data handling are predictable.
+- Risk: it is a single-maintainer community package, not vendor-backed. Pin its version, and cover it with a web-research eval case. Fallback: a small skill that calls one search API with `curl`, or the vendor harness's native search for research-heavy tasks.
+
+### 6. Open-weight models without training on our data
+
+Open weights do not send data anywhere; the host does. Risk comes from the host's terms, not the model's origin.
+
+- Do not use the labs' own first-party APIs (DeepSeek, Moonshot/Kimi, Zhipu/Z.AI, MiniMax, Alibaba Qwen) for this repo's work, even though pi lists several as built-in providers. Don't store their keys.
+- OpenRouter serves each open-weight model from many hosts. For Chinese-lab models that list includes the labs themselves and other China-based clouds (for example Alibaba, Baidu, SiliconFlow, StreamLake on DeepSeek V4, GLM 5.3, and Kimi K3 in September 2026), next to US hosts (Fireworks, Together, DeepInfra, Parasail, Baseten, CoreWeave, Modal) serving the same weights at the same or near price.
+- Use an allowlist, not a blocklist: new hosts appear often and ownership is not always clear. Per model, pi sends OpenRouter routing fields through `openRouterRouting`: `only` set to the trusted US and EU hosts, `zdr: true`, and `data_collection: "deny"`. Quality is controlled through the allowlist (hosts that serve the model at the precision it was released in) and the eval, not a blanket `quantizations` filter: some models ship natively in 4-bit (Kimi K3 is listed as `mxfp4` even from Moonshot), and hosts such as Fireworks and Together report their precision as unknown, so a filter like `["fp8", "bf16"]` would drop good hosts. Use `quantizations` only to exclude a host running a model below its release precision. As a backstop for every request whatever the harness, turn on zero data retention in OpenRouter's privacy settings and ignore the China-based hosts there.
+- A model served only by its lab (for example Qwen Max) is closed weights in practice and is not used.
+- ZDR does not cover OpenRouter's own web search plugin.
+- Locally (Ollama, llama.cpp) is private by construction and free per token, but slow and smaller on ordinary hardware; fine for the `cheap` role once it passes the eval.
+
+### 7. Cheap, unattended, long tasks
 
 When quality matters, time does not, and cost does, in this order:
 
 1. Prompt caching with a stable prefix (tools, system prompt, `AGENTS.md` first; volatile content last). In an agent loop most input tokens are re-reads, so this is the largest saving and it is free.
 2. Newest mid-tier model at high effort before an older top-tier model. Measure cost per completed task, not per token: a cheaper model that needs more turns or retries is not cheaper.
 3. Verification as the grader: tests, type checks, or a deterministic acceptance script decide success, and the harness retries on failure. Escalate to `frontier` only on a case that `default` failed twice. Caches are model-scoped, so a cascade forfeits cache reuse across its models.
-4. Off-peak and batch pricing for parallel work: Anthropic Message Batches and Bedrock batch inference (Converse format) run at half price; OpenAI Flex is a slower synchronous tier at a discount that fits an agent loop directly. Batch fits "run N tasks overnight", not a single long interactive loop, unless the harness can wait on each step.
-5. Open-weight models (DeepSeek, Qwen, Kimi, Llama) through Bedrock, Groq, or OpenRouter as the `cheap` role, once they pass the eval on our tasks.
+4. Off-peak and batch pricing for parallel work: Anthropic Message Batches and OpenAI Batch run at half price, and OpenRouter lists `:batch` variants for some open-weight models; OpenAI Flex is a slower synchronous tier at a discount that fits an agent loop directly. Batch fits "run N tasks overnight", not a single long interactive loop, unless the harness can wait on each step.
+5. Open-weight models (DeepSeek, Qwen, Kimi, GLM, Llama) through OpenRouter with the host allowlist and ZDR (section 6) as the `cheap` role, once they pass the eval on our tasks.
 6. Task budgets and a max-turn cap on every unattended run so a stuck loop cannot spend unbounded money.
 
 ### High-level C4(context/container/component/code) diagram
 
 ```
-person / CI ──> harness (pi) ──> pi-ai ──> vendor APIs (Anthropic, OpenAI, Google, ...)
-                   │                  └──> AWS Bedrock (Claude + open-weight)
-                   │                  └──> gateway (LiteLLM / OpenRouter), only if needed
-                   ├── reads AGENTS.md, specs/, docs/decisions/, .pi/models.json
+person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Claude, GPT, Gemini; ZDR)
+                   │                  │          └──> allowlisted US/EU hosts for open-weight models
+                   │                  └──> vendor APIs direct, when a native feature needs it
+                   ├── reads AGENTS.md, specs/, docs/decisions/, .pi/settings.json, harness/models.json
+                   ├── web search extension ──> search API (Exa / Parallel)
                    └── writes sessions (JSONL) ──> evals/cases ──> evals/run ──> evals/results
 ```
 
 ### Choices and Tradeoffs/Risks
 
 - pi over OpenCode: less surface, easier to inspect and script, cheaper per task; weaker IDE and UI story. Mitigation: prompts are harness-neutral, so switching costs a config file.
-- Direct APIs over a gateway by default: native features and lowest cost; no single bill. Mitigation: add LiteLLM when spend reporting or fallbacks matter.
-- Bedrock as one provider, not the hub: avoids the missing-vendor and feature-lag problem; costs some AWS-native convenience. Mitigation: Claude Platform on AWS for Claude, Bedrock for open-weight.
+- OpenRouter over direct APIs by default: one key, one bill, every model, account-wide privacy settings; costs a 5.5% fee, a hop, and native features can lag. Mitigation: BYOK for heavy models, go direct for features the gateway lacks, Vercel AI Gateway as a no-markup fallback.
+- No Bedrock: one fewer account and bill; loses AWS-native IAM and billing. Mitigation: add it back as a provider if AWS becomes a requirement; pi supports it.
+- Host allowlist over blocklist for open-weight models: safe as new hosts appear; can miss the cheapest host. Mitigation: review the allowlist in the monthly model sweep.
 - Evals cost money and time on every switch. Mitigation: small case set, batch or slow tiers for the sweep, cheap judge model.
 - Risk: eval gold answers drift stale or leak into prompts. Mitigation: the health checklist in this record and a reference-plus-null run before each sweep.
 
 ### Dependencies
 
-Node.js 22.19+ for pi. Provider credentials per vendor, AWS credentials for Bedrock. A sandbox (container) for eval runs.
+Node.js 22.19+ for pi. An OpenRouter key, plus vendor keys only where we go direct. A search API key for the web search extension. A sandbox (container) for eval runs.
 
 ### Interfaces
 
-- `.pi/models.json`: role to model mapping.
+- `harness/models.json`: role to model mapping.
+- `.pi/settings.json`: pi's default model (the `default` role) and package list (web search).
 - `evals/cases/*.md|json`, `evals/run`, `evals/results/*.jsonl`.
 - pi JSON or RPC mode as the boundary between harness and eval runner.
 

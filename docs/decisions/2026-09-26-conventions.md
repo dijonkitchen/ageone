@@ -8,6 +8,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: describe how the entry-point symlinks chain and behave.
 
+2026-09-26: Amended by Claude, at JC's request: sort the priority table by priority, then difficulty.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -66,6 +68,7 @@ Tooling or linting to enforce conventions before they're needed.
 ### Priorities
 
 - `specs/PRIORITIES.md` has one row per spec.
+- Rows are sorted by priority (highest first), then by difficulty (`Low` before `Medium` before `High`), so the top open row is the next one to take.
 - `updated_at` at the top is the date of the last change to the table.
 - Whenever a spec is added or updated, re-evaluate every row's priority, then update `updated_at`.
 - Priority: integer, `1` is the highest.
