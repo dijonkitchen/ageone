@@ -9,7 +9,7 @@ One simple, discoverable entry point to set up the repo and its environment, for
 - The other targets exist for debugging and maintenance, and `make help` lists them.
 - `make links` recreates `AGENTS.md -> README.md` and `CLAUDE.md -> AGENTS.md` when a tool has turned them into copies ([Conventions](../docs/decisions/2026-09-26-conventions.md)). It refuses to delete a copy that has edits.
 - `make shell` enters the environment; `make update` bumps `devenv.lock`.
-- The environment provides Node.js 22.19+ for pi, plus `git`, `curl`, and `jq`.
+- The environment provides the current Node.js LTS (at least 22.19, which pi needs), plus `git`, `curl`, and `jq`.
 
 ## Non-functional requirements
 
