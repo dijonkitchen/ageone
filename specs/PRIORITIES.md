@@ -10,4 +10,5 @@ Whenever a spec is added or updated, re-evaluate every row's priority, then upda
 
 | Number | Dependency | Priority | Description | Difficulty | Status |
 |--------|------------|----------|-------------|------------|--------|
-| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 1 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
+| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 2 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
+| [SPEC-0002](SPEC-0002-vendor-neutral-ai-harness.md) | SPEC-0001 | 1 | Vendor-neutral AI harness: pi + model roles config + evals on our own tasks | Medium | Open |
