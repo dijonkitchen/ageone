@@ -4,6 +4,10 @@
 
 2026-09-26: Proposed by Claude, at JC's request
 
+2026-09-26: Accepted by JC
+
+2026-09-26: Amended by Claude, at JC's request: describe how the entry-point symlinks chain and behave.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -41,8 +45,15 @@ Tooling or linting to enforce conventions before they're needed.
 
 ### Agent entry points
 
-- `README.md` holds the instructions for people and agents.
-- `AGENTS.md` (the cross-tool convention) and `CLAUDE.md` (Claude Code) are symlinks to `README.md`, so there's one source.
+- `README.md` holds the instructions for people and agents. It is the only one of the three that is a regular file.
+- `AGENTS.md` (the cross-tool convention) is a symlink to `README.md`.
+- `CLAUDE.md` (Claude Code) is a symlink to `AGENTS.md`, so it resolves to `README.md` through one hop.
+  The chain is `CLAUDE.md` -> `AGENTS.md` -> `README.md`: the tool-specific name points at the cross-tool name, which points at the source.
+- Edit `README.md` only. Editing either symlink in place writes through to `README.md`, but a tool that replaces the file instead of writing through turns the symlink into a copy and breaks the single source.
+  If that happens, delete the copy and recreate the symlink with a relative target (`ln -s README.md AGENTS.md`, `ln -s AGENTS.md CLAUDE.md`).
+- Git stores the symlinks themselves (mode `120000`), not the content, so the repo has one copy of the instructions.
+  On a checkout that can't create symlinks, such as Windows without symlink support, each appears as a one-line file holding its target path; open the target by hand.
+- Add a new entry-point name the same way: symlink it to `AGENTS.md`, never to `README.md` directly and never as a copy.
 
 ### Specs
 
