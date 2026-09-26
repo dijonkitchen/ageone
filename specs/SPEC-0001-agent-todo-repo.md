@@ -15,3 +15,7 @@ Agents always have something to work on. E.g., highest priority spec, reprioriti
 ## Non-functional requirements
 
 Easily portable, refactorable, and maintainable by both people and agents.
+
+## Definition of done
+
+Have a list of priorities that can be added to and updated.
