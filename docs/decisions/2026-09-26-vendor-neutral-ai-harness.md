@@ -6,6 +6,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: checked against pi's current docs. Fixed the repo link and where pi reads model config, added web search and open-weight data privacy, and noted OpenAI models on Bedrock.
 
+2026-09-26: Amended by Claude, at JC's request: OpenRouter is the default model access, replacing direct vendor APIs.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -54,10 +56,12 @@ Use [pi](https://github.com/earendil-works/pi) ([pi.dev](https://pi.dev)) (`@ear
 
 Alternative kept warm: [OpenCode](https://opencode.ai), the most popular provider-agnostic harness, richer UI and IDE integration, more surface area. Because prompts and instructions live in `AGENTS.md`, `specs/`, and `docs/decisions/`, switching harness is a config change. Claude Code, Codex CLI, and Gemini CLI stay in use as vendor-specific comparison points, not as the default.
 
-### 2. Model access: direct first, gateway when needed, Bedrock for AWS
+### 2. Model access: OpenRouter by default, direct or Bedrock when needed
 
-- Default to each vendor's native API through `pi-ai`. Fewest hops, and native features (prompt caching, adaptive thinking, effort, 1M context, batch) arrive first there.
-- Add a gateway only for a reason: one bill and spend attribution, fallbacks, or data that cannot leave your infrastructure. Self-hosted: LiteLLM (MIT, OpenAI-compatible, 100+ providers). Managed: OpenRouter (largest catalog, 5.5% fee on credits, BYOK to remove it) or Vercel AI Gateway (best for TypeScript teams, built-in failover).
+- Default to [OpenRouter](https://openrouter.ai) through pi's built-in `openrouter` provider (`OPENROUTER_API_KEY`). One key and one bill for every frontier closed family (Claude, GPT, Gemini, Grok) and the largest open-weight catalog, with fallbacks across hosts. That covers every role, including a `judge` from a different vendor than the model under test.
+- Privacy is set once, account-wide: zero data retention on, and the Chinese labs' first-party endpoints on the ignored providers list (section 6).
+- Costs: a 5.5% fee on credit purchases, and one extra hop. Remove the fee on heavy models by bringing your own provider key (BYOK: first 1M requests a month free, then 5%).
+- Go direct to a vendor's API when a native feature matters that the gateway does not pass through yet (new betas, batch APIs), or when measured spend makes the fee worth removing. Vercel AI Gateway (no markup, similar catalog, built into pi) is the fallback gateway; LiteLLM if data must stay on our infrastructure.
 - AWS Bedrock is one provider among several, not the neutral layer. Use it when AWS IAM, billing, private networking, or compliance matter, and for open-weight models (Llama, DeepSeek, Mistral, Qwen) and Amazon Nova next to Claude. Its Converse API is model-agnostic across Bedrock models and its batch inference accepts Converse format at a discount. It also carries OpenAI's frontier GPT models (since mid-2026), so it can be one bill for Claude, GPT, and open-weight models. Known costs: Google's Gemini models are not on it, Claude features and pricing lag the first-party API, and model IDs are prefixed (`anthropic.…`). Anthropic also offers Claude Platform on AWS, Anthropic-operated with same-day API parity, SigV4 auth, and AWS Marketplace billing, which is the better choice when the reason for AWS is billing and IAM rather than the Bedrock catalog.
 
 ### 3. Model roles config
@@ -115,9 +119,9 @@ When quality matters, time does not, and cost does, in this order:
 ### High-level C4(context/container/component/code) diagram
 
 ```
-person / CI ──> harness (pi) ──> pi-ai ──> vendor APIs (Anthropic, OpenAI, Google, ...)
-                   │                  └──> AWS Bedrock (Claude + open-weight)
-                   │                  └──> gateway (LiteLLM / OpenRouter), only if needed
+person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Claude, GPT, Gemini, open-weight; ZDR)
+                   │                  └──> vendor APIs direct, when a native feature needs it
+                   │                  └──> AWS Bedrock (Claude, GPT, open-weight under AWS)
                    ├── reads AGENTS.md, specs/, docs/decisions/, .pi/settings.json, harness/models.json
                    ├── web search extension ──> search API (Exa / Parallel)
                    └── writes sessions (JSONL) ──> evals/cases ──> evals/run ──> evals/results
@@ -126,14 +130,14 @@ person / CI ──> harness (pi) ──> pi-ai ──> vendor APIs (Anthropic, O
 ### Choices and Tradeoffs/Risks
 
 - pi over OpenCode: less surface, easier to inspect and script, cheaper per task; weaker IDE and UI story. Mitigation: prompts are harness-neutral, so switching costs a config file.
-- Direct APIs over a gateway by default: native features and lowest cost; no single bill. Mitigation: add LiteLLM when spend reporting or fallbacks matter.
+- OpenRouter over direct APIs by default: one key, one bill, every model, account-wide privacy settings; costs a 5.5% fee, a hop, and native features can lag. Mitigation: BYOK for heavy models, go direct for features the gateway lacks, Vercel AI Gateway as a no-markup fallback.
 - Bedrock as one provider, not the hub: avoids the missing-vendor and feature-lag problem; costs some AWS-native convenience. Mitigation: Claude Platform on AWS for Claude, Bedrock for open-weight.
 - Evals cost money and time on every switch. Mitigation: small case set, batch or slow tiers for the sweep, cheap judge model.
 - Risk: eval gold answers drift stale or leak into prompts. Mitigation: the health checklist in this record and a reference-plus-null run before each sweep.
 
 ### Dependencies
 
-Node.js 22.19+ for pi. Provider credentials per vendor, AWS credentials for Bedrock. A search API key for the web search extension. A sandbox (container) for eval runs.
+Node.js 22.19+ for pi. An OpenRouter key, plus vendor keys only where we go direct, and AWS credentials for Bedrock. A search API key for the web search extension. A sandbox (container) for eval runs.
 
 ### Interfaces
 
