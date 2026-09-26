@@ -4,7 +4,7 @@
 
 2026-09-26: Proposed by Claude, at JC's request
 
-2026-09-26: Amended by Claude, at JC's request: checked against pi's current docs. Fixed the repo link and where pi reads model config, added web search and open-weight data privacy.
+2026-09-26: Amended by Claude, at JC's request: checked against pi's current docs. Fixed the repo link and where pi reads model config, added web search and open-weight data privacy, and noted OpenAI models on Bedrock.
 
 ## Objective Context
 
@@ -58,7 +58,7 @@ Alternative kept warm: [OpenCode](https://opencode.ai), the most popular provide
 
 - Default to each vendor's native API through `pi-ai`. Fewest hops, and native features (prompt caching, adaptive thinking, effort, 1M context, batch) arrive first there.
 - Add a gateway only for a reason: one bill and spend attribution, fallbacks, or data that cannot leave your infrastructure. Self-hosted: LiteLLM (MIT, OpenAI-compatible, 100+ providers). Managed: OpenRouter (largest catalog, 5.5% fee on credits, BYOK to remove it) or Vercel AI Gateway (best for TypeScript teams, built-in failover).
-- AWS Bedrock is one provider among several, not the neutral layer. Use it when AWS IAM, billing, private networking, or compliance matter, and for open-weight models (Llama, DeepSeek, Mistral, Qwen) and Amazon Nova next to Claude. Its Converse API is model-agnostic across Bedrock models and its batch inference accepts Converse format at a discount. Known costs: OpenAI and Google models are not on it, Claude features and pricing lag the first-party API, and model IDs are prefixed (`anthropic.…`). Anthropic also offers Claude Platform on AWS, Anthropic-operated with same-day API parity, SigV4 auth, and AWS Marketplace billing, which is the better choice when the reason for AWS is billing and IAM rather than the Bedrock catalog.
+- AWS Bedrock is one provider among several, not the neutral layer. Use it when AWS IAM, billing, private networking, or compliance matter, and for open-weight models (Llama, DeepSeek, Mistral, Qwen) and Amazon Nova next to Claude. Its Converse API is model-agnostic across Bedrock models and its batch inference accepts Converse format at a discount. It also carries OpenAI's frontier GPT models (since mid-2026), so it can be one bill for Claude, GPT, and open-weight models. Known costs: Google's Gemini models are not on it, Claude features and pricing lag the first-party API, and model IDs are prefixed (`anthropic.…`). Anthropic also offers Claude Platform on AWS, Anthropic-operated with same-day API parity, SigV4 auth, and AWS Marketplace billing, which is the better choice when the reason for AWS is billing and IAM rather than the Bedrock catalog.
 
 ### 3. Model roles config
 
