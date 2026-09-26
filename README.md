@@ -2,14 +2,21 @@
 
 Monorepo for a super agentic project or monorepo of them.
 
-## Structure
+`AGENTS.md` and `CLAUDE.md` are symlinks to this file, so every agent, harness, and person reads the same instructions.
+Links are plain relative Markdown links: open each one you need to read.
 
-@docs/decisions/2026-09-25-structure.md
+## Read first
+
+- [Structure](docs/decisions/2026-09-25-structure.md): where files live.
+- [Conventions](docs/decisions/2026-09-26-conventions.md): naming, statuses, dates, and templates.
+- [Priorities](specs/PRIORITIES.md): what to work on.
 
 ## Agent workflow
 
-1. Read `specs/PRIORITIES.md`.
-2. Take the highest priority spec that isn't done and work on it.
+1. Read [`specs/PRIORITIES.md`](specs/PRIORITIES.md).
+2. Take the highest priority spec (lowest number) whose status is `Open` and whose dependency is `Done` or `None`.
+   Claim it by setting its status to `In progress (<owner>)`.
 3. If nothing is open, or priorities look stale, reprioritize the table or write a new spec in `specs/`.
-4. Update the spec's status in `specs/PRIORITIES.md` as you go.
-5. Record notable decisions in `docs/decisions/`.
+4. Whenever a spec is added or updated, re-evaluate the whole priority table, then update `updated_at` in `specs/PRIORITIES.md`.
+5. Keep the spec's status in `specs/PRIORITIES.md` current as you go; set it to `Done` when its definition of done is met.
+6. Record any decisions as decision records (ADRs), especially architectural decisions, in `docs/decisions/`.
