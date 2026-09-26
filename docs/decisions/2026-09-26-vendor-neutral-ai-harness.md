@@ -10,6 +10,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: dropped AWS Bedrock; open-weight models from Chinese labs reach us only through an allowlist of US and EU hosts on OpenRouter.
 
+2026-09-26: Amended by Claude, at JC's request: Node.js and the eval sandbox come from the pinned devenv environment ([Reproducible Environment](2026-09-26-reproducible-environment.md)).
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -142,7 +144,7 @@ person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Clau
 
 ### Dependencies
 
-Node.js 22.19+ for pi. An OpenRouter key, plus vendor keys only where we go direct. A search API key for the web search extension. A sandbox (container) for eval runs.
+Node.js 22.19+ for pi, from the pinned devenv environment ([Reproducible Environment](2026-09-26-reproducible-environment.md)). An OpenRouter key, plus vendor keys only where we go direct. A search API key for the web search extension. A sandbox (container) for eval runs, built with `devenv container build`.
 
 ### Interfaces
 

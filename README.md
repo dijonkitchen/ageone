@@ -11,6 +11,10 @@ Links are plain relative Markdown links: open each one you need to read.
 - [Conventions](docs/decisions/2026-09-26-conventions.md): naming, statuses, dates, and templates.
 - [Priorities](specs/PRIORITIES.md): what to work on.
 
+## Setup
+
+Install [Nix and devenv](https://devenv.sh/getting-started/), then run `make setup`. Run `make` to list every target.
+
 ## Agent workflow
 
 1. Read [`specs/PRIORITIES.md`](specs/PRIORITIES.md).
