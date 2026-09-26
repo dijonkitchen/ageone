@@ -2,7 +2,7 @@
 
 Monorepo for a super agentic project or monorepo of them.
 
-`AGENTS.md` and `CLAUDE.md` are symlinks to this file, so every agent, harness, and person reads the same instructions.
+`AGENTS.md` is a symlink to this file and `CLAUDE.md` is a symlink to `AGENTS.md`, so every agent, harness, and person reads the same instructions. Edit this file only.
 Links are plain relative Markdown links: open each one you need to read.
 
 ## Read first
