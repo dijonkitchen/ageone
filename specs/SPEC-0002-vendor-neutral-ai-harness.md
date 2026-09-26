@@ -6,7 +6,7 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 
 - Switching the model is a one-line config change, never a code change. Roles (`default`, `cheap`, `frontier`, `judge`) map to `provider/model` IDs in one checked-in file.
   pi reads models from project `.pi/settings.json` (`defaultProvider`, `defaultModel`) and `--model`; its `models.json` is user-level only (`~/.pi/agent/`), so the roles file is ours and scripts pass each role to pi with `--model`.
-- At least these providers work: Anthropic direct, OpenAI direct, Google direct, AWS Bedrock (for Claude and open-weight models under AWS IAM and billing), and one OpenAI-compatible endpoint (a gateway such as LiteLLM or OpenRouter, or a local server such as Ollama).
+- OpenRouter is the default access for all roles (Claude, GPT, Gemini, and open-weight models on one key), with zero data retention enforced account-wide. At least one vendor API direct and AWS Bedrock (Claude, GPT, and open-weight models under AWS IAM and billing) also work, so leaving the gateway is a config change.
 - Web search and page fetch work in the harness. pi ships only `read`, `bash`, `edit`, and `write`, with no web search and no MCP, so a search extension is declared in project `.pi/settings.json` and covered by an eval case.
 - Open-weight models (including Chinese-lab models such as DeepSeek, Qwen, Kimi, GLM) run only on hosts that neither train on nor retain prompts, such as AWS Bedrock, US or EU inference providers, or OpenRouter with zero data retention enforced. The labs' own first-party APIs are not used for this repo's work.
 - Prompts, skills, and instructions live in the repo as plain files (`AGENTS.md`, `specs/`, `docs/decisions/`), not inside any vendor's product, so any harness can read them.
@@ -24,7 +24,7 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 ## Definition of done
 
 1. A model-roles config file exists in the repo and the chosen harness uses it; changing `default` to a different provider's model and running one task works with no other edit.
-2. Tasks run end to end on at least three providers, one of which is AWS Bedrock, and one task runs on an open-weight model through a no-training, no-retention host.
+2. Tasks run end to end on OpenRouter, one vendor API direct, and AWS Bedrock, and one task runs on an open-weight model through a no-training, no-retention host.
 3. A task that needs the web (search, then fetch a page and cite it) completes in pi.
 4. `evals/` holds at least ten cases drawn from this repo's own tasks, a runner, and a results file per model run with the metrics above.
 5. The eval has been run against at least two models and the decision record for this spec records which model is the default and why.
