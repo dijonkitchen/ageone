@@ -11,6 +11,11 @@ Links are plain relative Markdown links: open each one you need to read.
 - [Conventions](docs/decisions/2026-09-26-conventions.md): naming, statuses, dates, and templates.
 - [Priorities](specs/PRIORITIES.md): what to work on.
 
+## Setup
+
+Run `make`. It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
+`make help` lists the other targets, which are for debugging.
+
 ## Agent workflow
 
 1. Read [`specs/PRIORITIES.md`](specs/PRIORITIES.md).

@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
+# See docs/decisions/2026-09-26-reproducible-environment.md.
+inputs:
+  nixpkgs:
+    # nixos-unstable over devenv's default (cachix/devenv-nixpkgs/rolling): fastest security patches,
+    # with the weekly update PR gated by evals instead of by devenv's own testing.
+    url: github:NixOS/nixpkgs/nixos-unstable
