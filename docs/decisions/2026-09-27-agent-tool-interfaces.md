@@ -6,6 +6,8 @@
 
 2026-09-27: Amended by Claude, at JC's request: output formats use standard CSV and NDJSON; TOON is optional, not the default.
 
+2026-09-27: Accepted by JC
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
