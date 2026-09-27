@@ -1,0 +1,25 @@
+# Pull requests are squash merged, so the title becomes the commit subject on main.
+# See "Commits and pull requests" in docs/decisions/2026-09-26-conventions.md.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title uses Conventional Commits
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: [^ ].*$'
+          if [[ "$TITLE" =~ $pattern ]]; then
+            echo "ok: $TITLE"
+          else
+            echo "::error::PR title must look like 'type(optional-scope): summary', with type one of build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test. Got: $TITLE"
+            exit 1
+          fi
