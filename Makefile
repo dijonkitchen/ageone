@@ -6,6 +6,7 @@
 .PHONY: all help setup tools links shell check update
 
 # Find Nix and devenv right after installing them, before the shell is restarted.
+# NIX_FLAGS covers a Nix installed earlier without flakes; new installs get --enable-flakes.
 export PATH := /nix/var/nix/profiles/default/bin:$(HOME)/.nix-profile/bin:$(PATH)
 NIX_INSTALLER ?= https://artifacts.nixos.org/nix-installer
 NIX_FLAGS := --extra-experimental-features 'nix-command flakes'
@@ -20,7 +21,7 @@ setup: tools links ## Install what is missing, repair entry-point symlinks, and 
 	@echo "Ready. Run 'make shell' to enter it."
 
 tools: ## Install Nix (asks first, needs sudo) and devenv if missing.
-	@command -v nix >/dev/null || curl -sSfL $(NIX_INSTALLER) | sh -s -- install $(if $(CI),--no-confirm)
+	@command -v nix >/dev/null || curl -sSfL $(NIX_INSTALLER) | sh -s -- install --enable-flakes $(if $(CI),--no-confirm)
 	@command -v devenv >/dev/null || { nix $(NIX_FLAGS) profile add nixpkgs#devenv || nix $(NIX_FLAGS) profile install nixpkgs#devenv; }
 
 links: ## Recreate AGENTS.md -> README.md and CLAUDE.md -> AGENTS.md; refuse if a copy has edits.

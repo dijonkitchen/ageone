@@ -5,7 +5,7 @@
 One simple, discoverable entry point to set up the repo and its environment, for people and agents alike: a `Makefile` whose targets wrap devenv, as decided in [Reproducible Environment](../docs/decisions/2026-09-26-reproducible-environment.md).
 
 - `make`, with no target, does everything needed, idempotently: installs Nix and devenv if missing, repairs the entry-point symlinks, builds the pinned environment, and runs its tests. A second run changes nothing.
-- Nix is installed with NixOS's official installer, which shows its plan and asks before using sudo. In CI (`CI` set) it runs without asking.
+- Nix is installed with NixOS's official installer, with flakes and `nix-command` enabled, which shows its plan and asks before using sudo. In CI (`CI` set) it runs without asking.
 - The other targets exist for debugging and maintenance, and `make help` lists them.
 - `make links` recreates `AGENTS.md -> README.md` and `CLAUDE.md -> AGENTS.md` when a tool has turned them into copies ([Conventions](../docs/decisions/2026-09-26-conventions.md)). It refuses to delete a copy that has edits.
 - `make shell` enters the environment; `make update` bumps `devenv.lock`.
