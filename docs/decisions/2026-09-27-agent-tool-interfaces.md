@@ -4,6 +4,8 @@
 
 2026-09-27: Proposed by Claude, at JC's request
 
+2026-09-27: Amended by Claude, at JC's request: output formats use standard CSV and NDJSON; TOON is optional, not the default.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -40,7 +42,7 @@ Writing our own MCP servers or protocol layers.
 - **CLI**: the agent runs a command through a shell tool (pi's `bash`). Output is usually written for people.
 - **MCP** (Model Context Protocol): the harness registers typed tool schemas, and the model calls them as structured tool calls.
 - **AXI** (Agent eXperience Interface, [axi.md](https://axi.md/)): not a protocol but 10 design principles for CLIs whose main user is an agent:
-  1. compact output (TOON instead of JSON)
+  1. compact output (AXI suggests TOON; see Output formats for what this repo uses)
   2. 3–4 fields per list item by default
   3. truncation with size hints and a `--full` flag
   4. counts and statuses computed up front
@@ -56,7 +58,31 @@ Writing our own MCP servers or protocol layers.
 1. **Our own tools are CLIs written AXI-style.** This covers `make` targets, `evals/run`, and checks and scripts under `scripts/` or a project folder. Apply the principles that fit the tool. At a minimum: no interactive prompts, meaningful exit codes, definitive empty states, compact output by default with a `--full` flag, and a suggested next step when there is an obvious one.
 2. **Existing, well-known CLIs are used as they are** (`git`, `gh`, `curl`, `jq`, `nix`). Models know them from training. Pipe or filter their output (`| head`, `--json` with `| jq`) rather than wrapping them.
 3. **MCP only for outside services** that have no good CLI, or that need OAuth or permissions the harness manages. In pi this goes through [pi-mcp-adapter](https://github.com/nicobailon/pi-mcp-adapter). Declare it as a pinned package in `.pi/settings.json`, and put servers in the project `.mcp.json` so other harnesses read the same config. Cover each MCP server we rely on with an eval case.
-4. **Hooks call a script.** Hook logic lives in a script in the repo. Each harness's hook calls that script: in pi, a thin project extension that subscribes to the event with `pi.on(...)`; in Claude Code, a command hook in `.claude/settings.json`. The logic is then written once, and only the small adapter is specific to a harness.
+4. **Output formats are standard, not new.** See Output formats below.
+5. **Hooks call a script.** Hook logic lives in a script in the repo. Each harness's hook calls that script: in pi, a thin project extension that subscribes to the event with `pi.on(...)`; in Claude Code, a command hook in `.claude/settings.json`. The logic is then written once, and only the small adapter is specific to a harness.
+
+### Output formats
+
+| Output | Format | Why |
+|---|---|---|
+| Lists and tables (default) | CSV with a header row, then a total line such as `# 50 of 213, --full for all` | cheapest format with real escaping; models know it well; any tool reads it |
+| Nested or single-record output | short `key: value` lines, or TOON if a tool really needs nested data | CSV can't nest |
+| `--json` | NDJSON, one object per line | for scripts, `jq`, streaming, and eval results; safest when a model must write the data |
+| Errors | one line on stderr (`error: <code>: <message>`), plus a non-zero exit code | structured and greppable |
+
+Write CSV with a real CSV writer, never by joining strings. Values with commas, quotes, or newlines must be quoted.
+
+Measured on a sample list of 50 issues with 5 fields (o200k tokenizer, 2026-09-27), as a share of pretty JSON's tokens:
+
+| Format | Share |
+|---|---|
+| TSV | 35–36% |
+| CSV | 37–39% |
+| TOON | 42–43% |
+| NDJSON | 61–62% |
+| Minified JSON | 59% |
+
+For flat lists, TOON is CSV plus an item count and an indent on each row. It adds nesting, which CSV lacks, but here it cost about 12% more than CSV. Its authors report about 40% savings against pretty JSON with similar accuracy for data a model reads ([toon-format/toon](https://github.com/toon-format/toon)). A 2026 paper found plain JSON more accurate when a model has to write the data ([arXiv 2603.03306](https://arxiv.org/abs/2603.03306)). TSV was cheapest, but it breaks on tabs and newlines inside values and has no escaping, so it isn't the default.
 
 ### Why the protocol matters less than it did
 
@@ -98,6 +124,7 @@ agent (pi, or another harness)
 - **AXI-style CLIs over MCP for our own tools:** they work in any harness with a shell and need no extension. The cost is designing the output for agents. The evidence is mostly the AXI author's own benchmarks (one repo, one model that also served as judge), so treat the size of the gains as unproven until our evals confirm it.
 - **MCP through a community adapter:** one maintainer and no vendor backing, the same risk the harness record accepts for `pi-web-access`. Pin the version. If it goes away, fall back to a CLI or a small skill that calls the service's API with `curl`.
 - **Security:** MCP servers and hooks run with the agent's permissions, and their output reaches the model. Treat tool output as untrusted data. Only commit hooks and MCP servers the repo trusts, since pi's `project_trust` runs before project extensions load.
+- **CSV over TOON by default:** CSV is standard, cheaper for flat lists, and readable by every tool. It gives up types, nesting, and a declared item count; the total line covers truncation. Revisit if our evals show TOON improving accuracy on our output.
 - **Lazy loading is not free:** each discovery step costs a turn, and in the benchmark MCP with ToolSearch took more turns than MCP loading every schema up front. Keep often-used tools loaded up front, and leave lazy loading for large tool sets.
 
 ### Dependencies
@@ -107,7 +134,7 @@ agent (pi, or another harness)
 
 ### Interfaces
 
-- Repo CLIs: AXI-style output on stdout, errors on stderr, meaningful exit codes, and no prompts.
+- Repo CLIs: CSV or `key: value` on stdout by default, NDJSON with `--json`, errors on stderr, meaningful exit codes, and no prompts.
 - MCP: the project `.mcp.json`, plus `.pi/mcp-adapter.json` for pi-only overrides.
 - Hooks: a script in the repo, called by each harness's thin adapter.
 
