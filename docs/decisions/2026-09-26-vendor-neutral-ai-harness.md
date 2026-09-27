@@ -12,6 +12,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: Node.js and the eval sandbox come from the pinned devenv environment ([Reproducible Environment](2026-09-26-reproducible-environment.md)).
 
+2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -88,7 +90,7 @@ Yes, evals on every switch. Without them "cheaper" and "better" are guesses.
 - Cases come from real work in this repo: each completed spec or task becomes a regression case (starting state, instruction, checkable outcome); each failure becomes a new case. Aim for 10 to start, 50 within a quarter. Prefer tasks a user would plausibly give, not ones with the answer in the prompt.
 - Grading is deterministic first (tests pass, file exists, diff applies, command exits 0), LLM-judge with a written rubric second, and never reference-similarity against the incumbent model's own output.
 - Metrics per model per run: pass rate, cost per completed task (from API `usage`, at that model's price, cache included), tokens, turns, wall-clock, refusal rate, with 3+ repetitions and intervals. Infra errors, timeouts, and truncation go to a separate sidecar, never counted as model failures. Assert the served model on every call.
-- Runner: `evals/run` drives pi in JSON or RPC mode with a fresh sandbox per case. Start with a script; adopt Inspect AI or promptfoo once cases outgrow it. Both compare providers side by side and record cost and latency.
+- Runner: `evals/run` drives pi in JSON or RPC mode with a fresh sandbox per case. The harness is a setting: pi first, and other harnesses (Claude Code, OpenCode) through their own print or JSON modes, each behind a small adapter that returns the same metrics. A `direct` mode calls the model through OpenRouter with no harness and no tools, for single-call cases such as reading or writing a data format. Start with a script; adopt Inspect AI or promptfoo once cases outgrow it. Both compare providers side by side and record cost and latency.
 - Before trusting numbers: run the reference solutions (should pass) and a null baseline (should fail) through the grader.
 - Trigger: every model change, prompt or `AGENTS.md` change, harness upgrade, and a monthly sweep of newly released models. Results are committed under `evals/results/` so the table in this record can be updated with evidence.
 
@@ -151,7 +153,7 @@ Node.js 22.19+ for pi, from the pinned devenv environment ([Reproducible Environ
 - `harness/models.json`: role to model mapping.
 - `.pi/settings.json`: pi's default model (the `default` role) and package list (web search).
 - `evals/cases/*.md|json`, `evals/run`, `evals/results/*.jsonl`.
-- pi JSON or RPC mode as the boundary between harness and eval runner.
+- pi JSON or RPC mode as the boundary between harness and eval runner; one adapter per other harness, plus `direct` for single model calls.
 
 ## Key Results and retrospective feedback
 

@@ -10,7 +10,7 @@ Webpages that publish our evals and benchmarks comparing different ways of doing
   - Harnesses running the same tasks: pi, Claude Code, and OpenCode ([Vendor-Neutral AI Harness](../docs/decisions/2026-09-26-vendor-neutral-ai-harness.md)).
   - Later: prompt and instruction styles, effort or thinking levels, and providers serving the same open-weight model.
 - An experiment is a folder of plain files in the repo: the question, the variants, the cases, the models, and the grader. Adding one needs no code change to the site.
-- Experiments run through the eval runner from [SPEC-0002](SPEC-0002-vendor-neutral-ai-harness.md), with models chosen by `provider/model` ID, and write their results as committed NDJSON, one line per case, variant, model, and repetition.
+- Experiments run through the eval runner from [SPEC-0002](SPEC-0002-vendor-neutral-ai-harness.md), with models chosen by `provider/model` ID and the harness chosen per variant: an agent harness (pi, Claude Code, OpenCode) for task experiments, or `direct` for single model calls such as the format experiment. They write their results as committed NDJSON, one line per case, variant, model, and repetition.
 - Each run records: pass or fail and score, tokens in and out, cost, turns, wall-clock time, the served model ID, harness and version, date, and the commit it ran on. Infra failures, truncation, and refusals are recorded apart from model failures.
 - The site has:
   - an index listing every experiment with its question, a one-line answer, the date of its latest run, and the models covered;
