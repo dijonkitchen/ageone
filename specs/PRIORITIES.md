@@ -13,4 +13,5 @@ Whenever a spec is added or updated, re-evaluate every row's priority, then upda
 |--------|------------|----------|-------------|------------|--------|
 | [SPEC-0003](SPEC-0003-make-setup.md) | None | 1 | Make setup: one idempotent `make` installs Nix and devenv, builds the pinned environment (Node.js LTS for pi), and checks it | Low | Done |
 | [SPEC-0002](SPEC-0002-vendor-neutral-ai-harness.md) | SPEC-0001 | 2 | Vendor-neutral AI harness: pi + model roles config + web search + private open-weight models + evals on our own tasks | Medium | Open |
-| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 3 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
+| [SPEC-0004](SPEC-0004-eval-benchmark-pages.md) | SPEC-0002 | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Open |
+| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 4 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
