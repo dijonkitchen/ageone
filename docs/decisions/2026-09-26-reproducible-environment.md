@@ -10,6 +10,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: Node.js follows the current LTS instead of a pinned 22.
 
+2026-09-27: Amended by Claude, at JC's request: devenv is installed from the pinned nixpkgs, after a local run with a newer devenv rewrote the lock.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -54,6 +56,7 @@ Use [devenv](https://devenv.sh) (Nix underneath) for the environment, with nixpk
 
 - `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash. `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
 - Node.js is nixpkgs' `nodejs`, which tracks the current LTS line (24 in September 2026), not a pinned major: each lock bump follows LTS and the evals catch breakage.
+- devenv itself comes from the nixpkgs commit pinned in `devenv.lock`: devenv versions write different lock formats, so an unpinned devenv makes machines rewrite each other's lock.
 - `nixos-unstable` instead of devenv's default `cachix/devenv-nixpkgs/rolling`: security fixes arrive sooner, and our evals test each bump instead of devenv's testing.
 - npm packages stay pinned by `package-lock.json`, not Nix: nixpkgs lags or lacks fast-moving npm tools.
 - Updates: `make update` (`devenv update`) on a weekly schedule, opened as a PR, merged only if `make check` and the evals pass. One lockfile diff per bump.

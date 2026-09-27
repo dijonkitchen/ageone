@@ -22,7 +22,13 @@ setup: tools links ## Install what is missing, repair entry-point symlinks, and 
 
 tools: ## Install Nix (asks first, needs sudo) and devenv if missing.
 	@command -v nix >/dev/null || curl -sSfL $(NIX_INSTALLER) | sh -s -- install --enable-flakes $(if $(CI),--no-confirm)
-	@command -v devenv >/dev/null || { nix $(NIX_FLAGS) profile add nixpkgs#devenv || nix $(NIX_FLAGS) profile install nixpkgs#devenv; }
+	@# devenv comes from the nixpkgs commit pinned in devenv.lock (override with NIXPKGS=<flake ref>): other devenv versions rewrite the lock.
+	@pkgs='$(NIXPKGS)'; [ -n "$$pkgs" ] || \
+		pkgs=github:NixOS/nixpkgs/$$(nix $(NIX_FLAGS) eval --raw --impure --expr 'let l = builtins.fromJSON (builtins.readFile $(CURDIR)/devenv.lock); in l.nodes.$${l.nodes.$${l.root}.inputs.nixpkgs}.locked.rev') || exit 1; \
+	command -v devenv >/dev/null || nix $(NIX_FLAGS) profile add $$pkgs#devenv || nix $(NIX_FLAGS) profile install $$pkgs#devenv || exit 1; \
+	want=$$(nix $(NIX_FLAGS) eval --raw $$pkgs#devenv.version) || { echo "warning: could not read the pinned devenv version from $$pkgs"; exit 0; }; \
+	have=$$(devenv version | cut -d' ' -f2); \
+	[ "$$have" = "$$want" ] || echo "warning: devenv $$have is not the pinned $$want and may rewrite devenv.lock. Run 'nix profile remove devenv', then make."
 
 links: ## Recreate AGENTS.md -> README.md and CLAUDE.md -> AGENTS.md; refuse if a copy has edits.
 	@for pair in AGENTS.md:README.md CLAUDE.md:AGENTS.md; do \
