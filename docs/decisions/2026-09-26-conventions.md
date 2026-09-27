@@ -12,6 +12,8 @@
 
 2026-09-27: Amended by Claude, at JC's request: pull request descriptions stay light; commit messages hold the detail.
 
+2026-09-27: Amended by Claude, at JC's request: pull request titles use the Conventional Commits format, because pull requests are squash merged.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -91,6 +93,8 @@ Tooling or linting to enforce conventions before they're needed.
 ### Commits and pull requests
 
 Conventional Commits prefixes, as already used: `docs:`, `build:`, `feat:`, `fix:`, `chore:`.
+
+Pull requests are squash merged, so the pull request title becomes the commit subject on `main`. Pull request titles follow the same Conventional Commits format as commits, such as `docs: add SPEC-0004 for ...`, and are updated if the change's scope shifts before merge.
 
 Commit messages hold the detail for the long term: what changed and why. Pull request descriptions stay light: a few lines on the goal and how to verify it, pointing to the commits, specs, and decision records instead of repeating them.
 
