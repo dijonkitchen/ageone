@@ -10,6 +10,8 @@
 
 2026-09-26: Amended by Claude, at JC's request: sort the priority table by priority, then difficulty.
 
+2026-09-27: Amended by Claude, at JC's request: pull request descriptions stay light; commit messages hold the detail.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -86,9 +88,11 @@ Tooling or linting to enforce conventions before they're needed.
 - Status timeline entries: `YYYY-MM-DD: <Proposed|Accepted|Amended|Rejected|Superseded by <record>> by <name>`.
 - Don't rewrite an accepted decision's substance. Add an `Amended` entry for small clarifications, or write a new record that supersedes it.
 
-### Commits
+### Commits and pull requests
 
 Conventional Commits prefixes, as already used: `docs:`, `build:`, `feat:`, `fix:`, `chore:`.
+
+Commit messages hold the detail for the long term: what changed and why. Pull request descriptions stay light: a few lines on the goal and how to verify it, pointing to the commits, specs, and decision records instead of repeating them.
 
 ### High-level C4(context/container/component/code) diagram
 
