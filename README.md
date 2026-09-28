@@ -18,6 +18,11 @@ Run `make`.
 It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
 `make help` lists the other targets, which are for debugging.
 
+## Models and evals
+
+Agentic work runs through [pi](harness/README.md) with models chosen by role in [`harness/models.json`](harness/models.json).
+[Evals](evals/README.md) on this repo's own tasks judge every model, prompt, or harness change.
+
 ## Agent workflow
 
 1. Read [`specs/PRIORITIES.md`](specs/PRIORITIES.md).

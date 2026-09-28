@@ -1,0 +1,9 @@
+{
+  "id": "pr-title",
+  "mode": "direct",
+  "title": "Write a Conventional Commits pull request title for a change",
+  "source": "AGENTS.md agent workflow, step 7; .github/workflows/pr-title.yml",
+  "prompt": "Write the pull request title for the change below. Titles use Conventional Commits: `type(optional-scope): summary`, with type one of build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test. Reply with the title only.\n\nChange: adds specs/SPEC-0005-make-lint.md, a spec for a `make lint` target, and a row for it in specs/PRIORITIES.md. No code changes.",
+  "timeoutSec": 120,
+  "maxTurns": 1
+}

@@ -1,0 +1,8 @@
+{
+  "id": "semantic-line-breaks",
+  "title": "Reflow a Markdown file to one sentence per line without changing its wording",
+  "source": "Conventions decision record, General section; the reflow in PR #12",
+  "prompt": "docs/decisions/2026-09-20-cache-policy.md doesn't follow the repo's Markdown line-break convention. Fix it without changing its wording.",
+  "timeoutSec": 300,
+  "maxTurns": 20
+}

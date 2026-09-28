@@ -1,0 +1,9 @@
+{
+  "id": "write-csv-from-json",
+  "mode": "direct",
+  "title": "Write CSV from JSON, quoting a value that holds a comma",
+  "source": "SPEC-0004 output-format experiment (writing)",
+  "prompt": "Convert this JSON to CSV with a header row and the columns id, name, status, in that order. Follow RFC 4180 quoting. Reply with the CSV only.\n\n[{\"id\":\"SPEC-0001\",\"status\":\"Done\",\"name\":\"Agent todo repo\"},{\"id\":\"SPEC-0002\",\"status\":\"Open\",\"name\":\"Harness, models, and evals\"},{\"id\":\"SPEC-0003\",\"status\":\"Done\",\"name\":\"Make setup\"},{\"id\":\"SPEC-0004\",\"status\":\"Open\",\"name\":\"Eval pages\"},{\"id\":\"SPEC-0005\",\"status\":\"Blocked (needs key)\",\"name\":\"Say \\\"hi\\\"\"}]",
+  "timeoutSec": 120,
+  "maxTurns": 1
+}

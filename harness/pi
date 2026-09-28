@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+// Run the pi version pinned in harness/models.json, installing it on first use.
+// Apply the roles file's OpenRouter privacy and host allowlist to your own pi once with:
+//   harness/sync --agent-dir ~/.pi/agent
+import { spawnSync } from "node:child_process";
+import { ensureTool, loadConfig } from "./config.mjs";
+
+const bin = ensureTool(loadConfig().harnesses.pi);
+const { status } = spawnSync(bin, process.argv.slice(2), { stdio: "inherit" });
+process.exit(status ?? 1);
