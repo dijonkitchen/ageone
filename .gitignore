@@ -5,3 +5,6 @@ devenv.local.yaml
 
 # direnv
 .direnv
+
+# Obsidian vault settings (see docs/decisions/2026-09-28-obsidian-and-llm-wiki.md)
+.obsidian/
