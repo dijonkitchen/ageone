@@ -1,0 +1,47 @@
+id: T-01
+title: Pin devenv
+team: evals
+status: open
+hours: 2
+
+id: T-02
+title: Fix, then retest the runner
+team: infra
+status: open
+hours: 3
+
+id: T-03
+title: Rename "judge" role
+team: docs
+status: blocked
+hours: 6
+
+id: T-04
+title: Add TOON: a reader case
+team: infra
+status: open
+hours: 0.5
+
+id: T-05
+title: Reflow ADRs
+team: evals
+status: open
+hours: 8
+
+id: T-06
+title: Sort priorities
+team: infra
+status: open
+hours: 2
+
+id: T-07
+title: Cache pi installs
+team: evals
+status: done
+hours: 0.5
+
+id: T-08
+title: Check links
+team: docs
+status: open
+hours: 8

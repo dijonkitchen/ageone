@@ -24,3 +24,7 @@ jobs:
         run: evals/run --self-check
       - name: Runner records metrics through pi and direct mode against a mock model
         run: evals/test/run
+      - name: Format experiment cases match their generator
+        run: experiments/formats/generate && git diff --exit-code -- experiments/formats
+      - name: Experiment graders pass reference solutions and fail null baselines
+        run: for d in experiments/formats/variants/*/; do evals/run --self-check --cases "$d" || exit 1; done

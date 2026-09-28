@@ -21,7 +21,7 @@ It installs Nix (asking first) and devenv if missing, builds the pinned environm
 ## Models and evals
 
 Agentic work runs through [pi](harness/README.md) with models chosen by role in [`harness/models.json`](harness/models.json).
-[Evals](evals/README.md) on this repo's own tasks judge every model, prompt, or harness change.
+[Evals](evals/README.md) on this repo's own tasks judge every model, prompt, or harness change, and [experiments](experiments/README.md) compare ways of doing the same work, published by `site/build`.
 
 ## Agent workflow
 

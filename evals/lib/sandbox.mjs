@@ -53,8 +53,17 @@ export function makeSandbox(runDir, caseDef, rep) {
   return { dir, work, output: join(dir, "output.txt") };
 }
 
+// Setup, reference, and grader scripts get the case folder, the grader helpers (source "$EVALS_LIB/check.sh"),
+// the repo root, and today's date.
 export function scriptEnv(caseDef, extra = {}) {
-  return { ...process.env, CASE_DIR: caseDef.dir, EVAL_TODAY: new Date().toISOString().slice(0, 10), ...extra };
+  return {
+    ...process.env,
+    CASE_DIR: caseDef.dir,
+    EVALS_LIB: join(ROOT, "evals", "lib"),
+    REPO_ROOT: ROOT,
+    EVAL_TODAY: new Date().toISOString().slice(0, 10),
+    ...extra,
+  };
 }
 
 // Run a command with a wall-clock limit, streaming stdout lines to onLine; `kill()` stops it early.
@@ -95,6 +104,8 @@ export function runProcess(cmd, args, { cwd, env, timeoutMs, onLine, input }) {
       if (onLine && buffered.trim()) onLine(buffered.trim(), kill);
       resolve({ code, stdout, stderr, killedFor });
     });
+    // A child may exit before reading its input; that is not an error.
+    child.stdin.on("error", () => {});
     child.stdin.end(input ?? "");
   });
 }

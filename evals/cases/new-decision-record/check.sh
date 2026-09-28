@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed 'docs/decisions/.*' 'README.md'
 new=$(git add -A -N . && git diff HEAD --name-only --diff-filter=A -- docs/decisions)
 [ "$(echo "$new" | grep -c .)" = 1 ] || fail "expected one new decision record, got: $new"

@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 f=docs/decisions/2026-09-20-cache-policy.md
 only_changed "$f"
 words() { tr -s ' \n' '  ' < "$1"; }

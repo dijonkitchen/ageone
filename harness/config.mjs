@@ -68,14 +68,18 @@ export function piProjectSettings(config, current = {}) {
   return { ...current, defaultProvider: model.provider, defaultModel: model.id };
 }
 
-// Harness CLIs are installed once per version under ~/.cache/ageone/tools, from the versions in harness/models.json.
-export function ensureTool({ package: pkg, version, bin }) {
+// npm packages are installed once per version under ~/.cache/ageone/tools; returns the install folder.
+export function ensurePackage({ package: pkg, version }) {
   const prefix = join(process.env.XDG_CACHE_HOME ?? join(homedir(), ".cache"), "ageone", "tools", `${pkg.replace("/", "+")}@${version}`);
-  const path = join(prefix, "node_modules", ".bin", bin);
-  if (!existsSync(path)) {
+  if (!existsSync(join(prefix, "node_modules", ...pkg.split("/"), "package.json"))) {
     mkdirSync(prefix, { recursive: true });
     console.error(`installing ${pkg}@${version}`);
     execFileSync("npm", ["install", "--prefix", prefix, "--no-save", "--no-audit", "--no-fund", `${pkg}@${version}`], { stdio: ["ignore", 2, 2] });
   }
-  return path;
+  return prefix;
+}
+
+// Harness CLIs come from the versions pinned in harness/models.json; returns the CLI's path.
+export function ensureTool(tool) {
+  return join(ensurePackage(tool), "node_modules", ".bin", tool.bin);
 }

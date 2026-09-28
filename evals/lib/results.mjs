@@ -4,9 +4,9 @@
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export function resultsFile(dir, date, harness, model) {
-  const slug = model.replace(/[^a-zA-Z0-9.-]+/g, "_");
-  return join(dir, `${date}-${harness}-${slug}.jsonl`);
+export function resultsFile(dir, date, harness, model, variant) {
+  const slug = (s) => s.replace(/[^a-zA-Z0-9.-]+/g, "_");
+  return join(dir, `${date}-${variant ? slug(variant) + "-" : ""}${harness}-${slug(model)}.jsonl`);
 }
 
 export function append(file, record) {

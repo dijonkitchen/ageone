@@ -1,0 +1,9 @@
+{
+  "id": "write-tasks",
+  "mode": "direct",
+  "title": "Write Pretty JSON from a Markdown table",
+  "source": "SPEC-0004 output-format experiment",
+  "prompt": "Convert this table to a JSON array of objects with the keys id, title, team, status, hours, indented with 2 spaces. Keep the rows in order. Reply with the data only.\n\n| id | title | team | status | hours |\n|---|---|---|---|---|\n| T-01 | Pin devenv | evals | open | 2 |\n| T-02 | Fix, then retest the runner | infra | open | 3 |\n| T-03 | Rename \"judge\" role | docs | blocked | 6 |\n| T-04 | Add TOON: a reader case | infra | open | 0.5 |\n| T-05 | Reflow ADRs | evals | open | 8 |\n| T-06 | Sort priorities | infra | open | 2 |\n| T-07 | Cache pi installs | evals | done | 0.5 |\n| T-08 | Check links | docs | open | 8 |",
+  "timeoutSec": 180,
+  "maxTurns": 1
+}

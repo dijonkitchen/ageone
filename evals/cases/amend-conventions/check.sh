@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 f=docs/decisions/2026-09-26-conventions.md
 only_changed "$f"
 grep -qE "^$today: Amended by eval-agent" "$f" || fail "no '$today: Amended by eval-agent' status entry"

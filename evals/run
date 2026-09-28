@@ -4,7 +4,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { ROOT, loadConfig, resolveModel } from "../harness/config.mjs";
 import { ADAPTERS } from "./lib/adapters.mjs";
@@ -54,7 +54,7 @@ if (opt.help) {
 }
 
 const config = loadConfig();
-let cases = loadCases(opt.cases);
+let cases = loadCases(resolve(opt.cases));
 if (opt.case) {
   const want = opt.case.split(",");
   const missing = want.filter((id) => !cases.some((c) => c.id === id));
@@ -95,7 +95,7 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
   const all = { ok: [], infra: [] };
   for (const modelArg of models) {
     const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", role: null } : resolveModel(config, modelArg);
-    const file = resultsDir && resultsFile(resultsDir, date, harness, model.full);
+    const file = resultsDir && resultsFile(resultsDir, date, harness, model.full, opt.variant);
     for (const caseDef of runnable) {
       for (let rep = 1; rep <= reps; rep++) {
         const box = { ...makeSandbox(runDir, caseDef, rep), rep };
@@ -145,5 +145,5 @@ if (opt["self-check"]) {
   process.exit(bad ? 1 : 0);
 }
 
-const all = await runAll({ harness: opt.harness, models: opt.model ?? ["default"], reps: Number(opt.reps), resultsDir: opt.results });
+const all = await runAll({ harness: opt.harness, models: opt.model ?? ["default"], reps: Number(opt.reps), resultsDir: resolve(opt.results) });
 console.log(table(summarize(all.ok, all.infra)));

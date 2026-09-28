@@ -1,0 +1,9 @@
+{
+  "id": "read-count",
+  "mode": "direct",
+  "title": "Read TOON: count matching rows",
+  "source": "SPEC-0004 output-format experiment",
+  "prompt": "Here is a list of tasks in TOON format.\n\ntasks[30]{id,title,team,status,hours}:\n  T-01,Pin devenv,evals,open,2\n  T-02,\"Fix, then retest the runner\",infra,open,3\n  T-03,\"Rename \\\"judge\\\" role\",docs,blocked,6\n  T-04,\"Add TOON: a reader case\",infra,open,0.5\n  T-05,Reflow ADRs,evals,open,8\n  T-06,Sort priorities,infra,open,2\n  T-07,Cache pi installs,evals,done,0.5\n  T-08,Check links,docs,open,8\n  T-09,Write SPEC-0005,evals,blocked,1.5\n  T-10,\"true\",docs,done,2\n  T-11,\"Split cases, grade\",infra,done,1.5\n  T-12,Draft site index,evals,blocked,4\n  T-13,Chart pass rates,infra,open,8\n  T-14,Add NDJSON export,evals,done,7.5\n  T-15,Trim prompts,infra,done,7.5\n  T-16,Measure cache hits,docs,open,7.5\n  T-17,Pin pi-web-access,site,done,4\n  T-18,Allowlist hosts,site,open,8\n  T-19,Record served model,infra,blocked,3\n  T-20,Null baseline,docs,done,1.5\n  T-21,Reference runs,infra,open,8\n  T-22,Estimate cost,evals,blocked,8\n  T-23,Publish pages,infra,open,6\n  T-24,\"Quote \\\"hi\\\", then save\",docs,done,0.5\n  T-25,Label outside results,evals,done,8\n  T-26,Dark theme,infra,done,6\n  T-27,Phone layout,site,open,6\n  T-28,Rerun command,docs,blocked,7.5\n  T-29,Link raw results,infra,done,6\n  T-30,\"0042\",infra,done,7.5\n\nHow many tasks have the status blocked? Reply with the answer only.",
+  "timeoutSec": 180,
+  "maxTurns": 1
+}

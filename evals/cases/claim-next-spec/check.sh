@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed specs/PRIORITIES.md
 status=$(priority_rows | awk -F'\t' '$1 == "SPEC-0004" { print $6 }')
 [ "$status" = "In progress (eval-agent)" ] || fail "SPEC-0004 status is '$status'"

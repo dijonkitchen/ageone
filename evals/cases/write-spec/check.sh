@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed 'specs/.*'
 last=$(git ls-tree --name-only HEAD specs/ | sed -nE 's/^specs\/SPEC-([0-9]{4}).*/\1/p' | sort -n | tail -n1)
 n=$(printf 'SPEC-%04d' $((10#$last + 1)))

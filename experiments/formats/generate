@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+// Write the formats experiment's cases: the same tasks and questions, rendered in each format.
+// Rerun after changing data.json or lib/formats.mjs, then run `experiments/run formats --self-check`.
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { FORMATS } from "./lib/formats.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const { tasks, questions, writeCount } = JSON.parse(readFileSync(join(here, "data.json"), "utf8"));
+const toWrite = tasks.slice(0, writeCount);
+const table = [
+  "| id | title | team | status | hours |",
+  "|---|---|---|---|---|",
+  ...toWrite.map((t) => `| ${t.id} | ${t.title} | ${t.team} | ${t.status} | ${t.hours} |`),
+].join("\n");
+const grade = `node "$REPO_ROOT/experiments/formats/lib/grade.mjs"`;
+
+rmSync(join(here, "variants"), { recursive: true, force: true });
+for (const [format, f] of Object.entries(FORMATS)) {
+  const rendered = await f.render(tasks);
+  const cases = [
+    ...questions.map((q) => ({
+      id: `read-${q.id}`,
+      title: `Read ${f.label}: ${q.title}`,
+      prompt: `Here is a list of tasks in ${f.label} format.\n\n${rendered}\n\n${q.question} Reply with the answer only.`,
+      check: `${grade} read ${JSON.stringify(q.answer)} "$EVAL_OUTPUT"`,
+      reference: `printf '%s\\n' ${JSON.stringify(q.answer)}`,
+    })),
+    {
+      id: "write-tasks",
+      title: `Write ${f.label} from a Markdown table`,
+      prompt: `Convert this table to ${f.write}. Keep the rows in order. Reply with the data only.\n\n${table}`,
+      check: `${grade} write ${format} "$CASE_DIR/expected.json" "$EVAL_OUTPUT"`,
+      reference: `cat "$CASE_DIR/reference.txt"`,
+      files: { "expected.json": JSON.stringify(toWrite, null, 2) + "\n", "reference.txt": (await f.render(toWrite)) + "\n" },
+    },
+  ];
+  for (const c of cases) {
+    const dir = join(here, "variants", format, c.id);
+    mkdirSync(dir, { recursive: true });
+    const def = { id: c.id, mode: "direct", title: c.title, source: "SPEC-0004 output-format experiment", prompt: c.prompt, timeoutSec: 180, maxTurns: 1 };
+    writeFileSync(join(dir, "case.json"), JSON.stringify(def, null, 2) + "\n");
+    writeFileSync(join(dir, "check.sh"), `${c.check}\n`);
+    writeFileSync(join(dir, "reference.sh"), `${c.reference}\n`);
+    for (const [name, content] of Object.entries(c.files ?? {})) writeFileSync(join(dir, name), content);
+  }
+}
+console.log(`wrote ${Object.keys(FORMATS).length} variants x ${questions.length + 1} cases`);

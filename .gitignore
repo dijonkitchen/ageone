@@ -8,3 +8,6 @@ devenv.local.yaml
 
 # Obsidian vault settings (see docs/decisions/2026-09-28-obsidian-and-llm-wiki.md)
 .obsidian/
+
+# Built eval and benchmark pages (site/build)
+_site/

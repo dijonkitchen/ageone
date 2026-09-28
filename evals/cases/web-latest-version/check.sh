@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed answer.md
 [ -f answer.md ] || fail "no answer.md"
 want=$(curl -sSf https://registry.npmjs.org/pi-web-access/latest | jq -r .version) || fail "grader could not reach the npm registry"

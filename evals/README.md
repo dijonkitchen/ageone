@@ -29,7 +29,7 @@ One folder per case in `cases/`, named by its kebab-case ID:
 - `case.json`: `id`, `title`, `source` (the task or rule it comes from), `prompt`, and optional `mode` (`agent`, the default, or `direct`), `needs` (such as `["web"]`), `timeoutSec`, and `maxTurns`.
 - `setup.sh` (optional): turns the sandbox into the case's starting state.
 - `check.sh`: the grader; exit 0 is a pass.
-  It runs in the sandbox and can use the helpers in [`lib/check.sh`](lib/check.sh).
+  It runs in the sandbox and can use the helpers in [`lib/check.sh`](lib/check.sh) with `source "$EVALS_LIB/check.sh"`; `$CASE_DIR` is the case folder and `$REPO_ROOT` the repo.
   Direct cases read the model's answer from `$EVAL_OUTPUT`.
 - `reference.sh`: a known-good solution, which `--self-check` runs through the grader alongside a null baseline that does nothing.
 

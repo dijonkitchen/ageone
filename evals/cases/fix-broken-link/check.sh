@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed README.md
 grep -oE '\]\([^)#]+' README.md | sed 's/^](//' | grep -vE '^[a-z]+:' | while read -r target; do
   [ -e "$target" ] || fail "README.md still links to missing $target"

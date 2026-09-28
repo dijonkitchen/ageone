@@ -1,4 +1,4 @@
-source "$CASE_DIR/../../lib/check.sh"
+source "$EVALS_LIB/check.sh"
 only_changed README.md AGENTS.md
 [ "$(readlink AGENTS.md)" = README.md ] || fail "AGENTS.md is not a symlink to README.md"
 [ "$(readlink CLAUDE.md)" = AGENTS.md ] || fail "CLAUDE.md is not a symlink to AGENTS.md"
