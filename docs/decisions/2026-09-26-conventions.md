@@ -16,6 +16,8 @@
 
 2026-09-27: Amended by Claude, at JC's request: a CI check enforces pull request titles; list the allowed types.
 
+2026-09-28: Amended by Claude, at JC's request: Markdown prose uses semantic line breaks.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -49,6 +51,8 @@ Tooling or linting to enforce conventions before they're needed. Pull request ti
 - Files are Markdown, one `#` title per file.
 - File names are kebab-case.
 - Dates are ISO 8601 (`YYYY-MM-DD`), UTC.
+- Prose uses [semantic line breaks](https://sembr.org): one sentence per line, so diffs and reviews show the sentence that changed.
+  Markdown joins consecutive lines into one paragraph, so the rendered output is unchanged; a blank line starts a new paragraph.
 - Links between files are relative Markdown links, such as `[Priorities](specs/PRIORITIES.md)`, which every agent, harness, and Git host can follow.
 
 ### Agent entry points
