@@ -14,6 +14,8 @@
 
 2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
 
+2026-09-28: Amended by Claude, at JC's request: LLM observability platforms (LangSmith, Langfuse) considered and deferred.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -142,6 +144,7 @@ person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Clau
 - No Bedrock: one fewer account and bill; loses AWS-native IAM and billing. Mitigation: add it back as a provider if AWS becomes a requirement; pi supports it.
 - Host allowlist over blocklist for open-weight models: safe as new hosts appear; can miss the cheapest host. Mitigation: review the allowlist in the monthly model sweep.
 - Evals cost money and time on every switch. Mitigation: small case set, batch or slow tiers for the sweep, cheap judge model.
+- No LLM observability platform (LangSmith, Langfuse) for now: pi's JSONL sessions are the traces, `evals/cases/` the datasets, `evals/results/` in git the history, and [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md)'s static pages the dashboards. A platform would add a service to run, send prompts to a third party unless self-hosted (undoing zero data retention), and hold data outside the repo, so pages could no longer be rebuilt from committed files. LangSmith is also closed and tied to one vendor, with self-hosting limited to enterprise plans. Revisit when something here serves real users in production (live tracing, cost alerts, user feedback), when several people review and label results together, or when results in git grow too large to search (thousands of runs). If so, prefer self-hosted Langfuse (open source); keep the runner's per-call records exportable as OpenTelemetry traces, which Langfuse accepts, so adding it later needs no runner rewrite.
 - Risk: eval gold answers drift stale or leak into prompts. Mitigation: the health checklist in this record and a reference-plus-null run before each sweep.
 
 ### Dependencies
