@@ -10,7 +10,8 @@ Priority list of organized specs.
 
 Various people or agents can add to specs and priorities are adjusted on a regular basis.
 
-Agents always have something to work on. E.g., highest priority spec, reprioritizing specs, or generating new specs.
+Agents always have something to work on.
+E.g., highest priority spec, reprioritizing specs, or generating new specs.
 
 ## Non-functional requirements
 

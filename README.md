@@ -2,7 +2,8 @@
 
 Monorepo for a super agentic project or monorepo of them.
 
-`AGENTS.md` is a symlink to this file and `CLAUDE.md` is a symlink to `AGENTS.md`, so every agent, harness, and person reads the same instructions. Edit this file only.
+`AGENTS.md` is a symlink to this file and `CLAUDE.md` is a symlink to `AGENTS.md`, so every agent, harness, and person reads the same instructions.
+Edit this file only.
 Links are plain relative Markdown links: open each one you need to read.
 
 ## Read first
@@ -13,7 +14,8 @@ Links are plain relative Markdown links: open each one you need to read.
 
 ## Setup
 
-Run `make`. It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
+Run `make`.
+It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
 `make help` lists the other targets, which are for debugging.
 
 ## Agent workflow
