@@ -11,6 +11,7 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 - Open-weight models (including Chinese-lab models such as DeepSeek, Qwen, Kimi, GLM) run only on hosts that neither train on nor retain prompts: US or EU inference providers, reached through OpenRouter with zero data retention and an allowlist of hosts. China-based hosts, including the labs' own APIs, are not used for this repo's work.
 - Prompts, skills, and instructions live in the repo as plain files (`AGENTS.md`, `specs/`, `docs/decisions/`), not inside any vendor's product, so any harness can read them.
 - An eval suite built from this repo's own tasks runs on demand and on every model, prompt, or harness change. It reports pass rate, cost per completed task, tokens, turns, and wall-clock time per model, with more than one repetition per case.
+- The eval runner takes the harness as a setting, so the same cases and metrics compare harnesses: pi first, then others (Claude Code, OpenCode) through their print or JSON modes, each behind a small adapter. A `direct` mode calls the model with no harness or tools, for single-call cases such as reading or writing a data format.
 - Eval cases are sourced from real sessions: completed tasks become regression cases, failures become new cases. Results are committed so trends are visible over time.
 
 ## Non-functional requirements
@@ -27,4 +28,5 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 2. Tasks run end to end on OpenRouter and on one vendor API direct, and one task runs on a Chinese-lab open-weight model served only by an allowlisted US or EU host.
 3. A task that needs the web (search, then fetch a page and cite it) completes in pi.
 4. `evals/` holds at least ten cases drawn from this repo's own tasks, a runner, and a results file per model run with the metrics above.
-5. The eval has been run against at least two models and the decision record for this spec records which model is the default and why.
+5. The runner runs one case through pi, through one other harness, and in `direct` mode, and writes the same metrics for each.
+6. The eval has been run against at least two models and the decision record for this spec records which model is the default and why.
