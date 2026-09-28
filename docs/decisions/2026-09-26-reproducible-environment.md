@@ -44,7 +44,8 @@ The eval sandbox image built from the same pins as the dev shell.
 
 #### Functional
 
-Packaging fast-moving npm tools (pi, its extensions) in Nix. `package-lock.json` pins them.
+Packaging fast-moving npm tools (pi, its extensions) in Nix.
+`package-lock.json` pins them.
 
 Writing our own Nix modules or overlays before a package is actually missing.
 
@@ -54,17 +55,20 @@ Writing our own Nix modules or overlays before a package is actually missing.
 
 Use [devenv](https://devenv.sh) (Nix underneath) for the environment, with nixpkgs on `nixos-unstable`.
 
-- `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash. `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
+- `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash.
+  `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
 - Node.js is nixpkgs' `nodejs`, which tracks the current LTS line (24 in September 2026), not a pinned major: each lock bump follows LTS and the evals catch breakage.
 - devenv itself comes from the nixpkgs commit pinned in `devenv.lock`: devenv versions write different lock formats, so an unpinned devenv makes machines rewrite each other's lock.
 - `nixos-unstable` instead of devenv's default `cachix/devenv-nixpkgs/rolling`: security fixes arrive sooner, and our evals test each bump instead of devenv's testing.
 - npm packages stay pinned by `package-lock.json`, not Nix: nixpkgs lags or lacks fast-moving npm tools.
-- Updates: `make update` (`devenv update`) on a weekly schedule, opened as a PR, merged only if `make check` and the evals pass. One lockfile diff per bump.
+- Updates: `make update` (`devenv update`) on a weekly schedule, opened as a PR, merged only if `make check` and the evals pass.
+  One lockfile diff per bump.
 - Eval sandbox: build it with `devenv container build` once `evals/` exists, so the image is determined by `devenv.lock`.
 
 ### Reproducible bugs
 
-Nix pins the build, not the run. A bug is reproducible from these together:
+Nix pins the build, not the run.
+A bug is reproducible from these together:
 
 - `devenv.lock` and `package-lock.json`.
 - The model that actually served each call, its exact ID, and the OpenRouter host (hosts can differ in quantization).
@@ -81,22 +85,34 @@ weekly `make update` PR ──> `make check` + evals ──> merge
 
 ### Choices and Tradeoffs/Risks
 
-- devenv over a plain flake: short config, tasks, tests, git hooks, and containers built in, with full Nix still available inside `devenv.nix`. Costs one more tool with its own releases; pin it.
-- devenv over Devbox: one nixpkgs pin for everything (one glibc, one openssl) and a sandbox image built by Nix. Devbox pins each package separately through Jetify's Nixhub service, which can mix nixpkgs commits, and exports a Dockerfile-built image. Devbox needs no Nix knowledge and has Renovate support today.
+- devenv over a plain flake: short config, tasks, tests, git hooks, and containers built in, with full Nix still available inside `devenv.nix`.
+  Costs one more tool with its own releases; pin it.
+- devenv over Devbox: one nixpkgs pin for everything (one glibc, one openssl) and a sandbox image built by Nix.
+  Devbox pins each package separately through Jetify's Nixhub service, which can mix nixpkgs commits, and exports a Dockerfile-built image.
+  Devbox needs no Nix knowledge and has Renovate support today.
 - Nix over Docker with apt: `apt-get update` builds something different every week; Nix builds the same thing from the same lock.
 - Guix: stronger bit-for-bit reproducibility and grafts for fast core-library fixes, but a smaller package set and Linux only.
-- Wolfi and Chainguard images: fastest CVE turnaround, but they only build containers. Revisit for the eval sandbox if it has to hold zero known CVEs, for example when it runs untrusted code from the web.
-- Risk: Renovate can't update `devenv.lock` yet. Its `nix` manager only matches `flake.nix` and always updates a sibling `flake.lock`. Support is in [renovatebot/renovate#40060](https://github.com/renovatebot/renovate/pull/40060), a draft blocked on devenv support in Renovate's tool images, [containerbase/base#7373](https://github.com/containerbase/base/pull/7373). As of 2026-09-26 that PR is open and in review; a token-handling helper it depends on, [containerbase/base#7425](https://github.com/containerbase/base/pull/7425), merged 2026-09-21. Until both land, a scheduled CI job runs `make update` and opens the PR. Renovate still updates `package-lock.json`.
-- Risk: some bumps of core libraries take a week or more to reach `nixos-unstable`. Accepted: the lock still moves as a whole and is tested.
+- Wolfi and Chainguard images: fastest CVE turnaround, but they only build containers.
+  Revisit for the eval sandbox if it has to hold zero known CVEs, for example when it runs untrusted code from the web.
+- Risk: Renovate can't update `devenv.lock` yet.
+  Its `nix` manager only matches `flake.nix` and always updates a sibling `flake.lock`.
+  Support is in [renovatebot/renovate#40060](https://github.com/renovatebot/renovate/pull/40060), a draft blocked on devenv support in Renovate's tool images, [containerbase/base#7373](https://github.com/containerbase/base/pull/7373).
+  As of 2026-09-26 that PR is open and in review; a token-handling helper it depends on, [containerbase/base#7425](https://github.com/containerbase/base/pull/7425), merged 2026-09-21.
+  Until both land, a scheduled CI job runs `make update` and opens the PR.
+  Renovate still updates `package-lock.json`.
+- Risk: some bumps of core libraries take a week or more to reach `nixos-unstable`.
+  Accepted: the lock still moves as a whole and is tested.
 
 ### Dependencies
 
-Nix and devenv, installed by `make` if missing (Nix through NixOS's official installer at `artifacts.nixos.org/nix-installer`, which asks before using sudo). Network access to GitHub archives and cache.nixos.org.
+Nix and devenv, installed by `make` if missing (Nix through NixOS's official installer at `artifacts.nixos.org/nix-installer`, which asks before using sudo).
+Network access to GitHub archives and cache.nixos.org.
 
 ### Interfaces
 
 - `devenv.nix`, `devenv.yaml`, `devenv.lock`.
-- `make`, the one command people and agents need. Other `Makefile` targets are for debugging and maintenance.
+- `make`, the one command people and agents need.
+  Other `Makefile` targets are for debugging and maintenance.
 
 ## Key Results and retrospective feedback
 

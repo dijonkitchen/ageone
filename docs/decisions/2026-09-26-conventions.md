@@ -40,7 +40,8 @@ Works with any agent or harness, not only one tool.
 
 #### Functional
 
-Tooling or linting to enforce conventions before they're needed. Pull request titles needed it first, since squash merges carry them onto `main`.
+Tooling or linting to enforce conventions before they're needed.
+Pull request titles needed it first, since squash merges carry them onto `main`.
 
 #### Non-functional
 
@@ -57,11 +58,13 @@ Tooling or linting to enforce conventions before they're needed. Pull request ti
 
 ### Agent entry points
 
-- `README.md` holds the instructions for people and agents. It is the only one of the three that is a regular file.
+- `README.md` holds the instructions for people and agents.
+  It is the only one of the three that is a regular file.
 - `AGENTS.md` (the cross-tool convention) is a symlink to `README.md`.
 - `CLAUDE.md` (Claude Code) is a symlink to `AGENTS.md`, so it resolves to `README.md` through one hop.
   The chain is `CLAUDE.md` -> `AGENTS.md` -> `README.md`: the tool-specific name points at the cross-tool name, which points at the source.
-- Edit `README.md` only. Editing either symlink in place writes through to `README.md`, but a tool that replaces the file instead of writing through turns the symlink into a copy and breaks the single source.
+- Edit `README.md` only.
+  Editing either symlink in place writes through to `README.md`, but a tool that replaces the file instead of writing through turns the symlink into a copy and breaks the single source.
   If that happens, delete the copy and recreate the symlink with a relative target (`ln -s README.md AGENTS.md`, `ln -s AGENTS.md CLAUDE.md`).
 - Git stores the symlinks themselves (mode `120000`), not the content, so the repo has one copy of the instructions.
   On a checkout that can't create symlinks, such as Windows without symlink support, each appears as a one-line file holding its target path; open the target by hand.
@@ -92,19 +95,23 @@ Tooling or linting to enforce conventions before they're needed. Pull request ti
 - Path: `docs/decisions/YYYY-MM-DD-short-slug.md`, dated when proposed.
 - Covers any decision (ADRs), especially architectural decisions.
 - Title: `# Decision Record YYYY-MM-DD: Title`.
-- Follow the sections of [decision records](2026-09-25-decision-records.md). Sections can be left empty.
+- Follow the sections of [decision records](2026-09-25-decision-records.md).
+  Sections can be left empty.
 - Status timeline entries: `YYYY-MM-DD: <Proposed|Accepted|Amended|Rejected|Superseded by <record>> by <name>`.
-- Don't rewrite an accepted decision's substance. Add an `Amended` entry for small clarifications, or write a new record that supersedes it.
+- Don't rewrite an accepted decision's substance.
+  Add an `Amended` entry for small clarifications, or write a new record that supersedes it.
 
 ### Commits and pull requests
 
 Conventional Commits: `type(optional-scope): summary`, with `!` before the colon for a breaking change.
 Types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 
-Pull requests are squash merged, so the pull request title becomes the commit subject on `main`. Pull request titles follow the same format as commits, such as `docs: add SPEC-0004 for ...`, and are updated if the change's scope shifts before merge.
+Pull requests are squash merged, so the pull request title becomes the commit subject on `main`.
+Pull request titles follow the same format as commits, such as `docs: add SPEC-0004 for ...`, and are updated if the change's scope shifts before merge.
 The [PR title workflow](../../.github/workflows/pr-title.yml) fails a pull request whose title doesn't match; it is the source of truth for the pattern.
 
-Commit messages hold the detail for the long term: what changed and why. Pull request descriptions stay light: a few lines on the goal and how to verify it, pointing to the commits, specs, and decision records instead of repeating them.
+Commit messages hold the detail for the long term: what changed and why.
+Pull request descriptions stay light: a few lines on the goal and how to verify it, pointing to the commits, specs, and decision records instead of repeating them.
 
 ### High-level C4(context/container/component/code) diagram
 

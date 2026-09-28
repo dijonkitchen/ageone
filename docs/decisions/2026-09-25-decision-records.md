@@ -24,7 +24,8 @@ Easily adaptive to improving AI models, harnesses, and related tools.
 
 Immune to the bitter lesson.
 
-Easily portable files and formats across different projects, languages, and tools. E.g., Markdown
+Easily portable files and formats across different projects, languages, and tools.
+E.g., Markdown
 
 ### Nice to haves
 

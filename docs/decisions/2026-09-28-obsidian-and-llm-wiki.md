@@ -43,7 +43,8 @@ Building a knowledge layer before a spec needs one.
 
 ## Decision
 
-Keep the current layout and conventions. Obsidian is an optional viewer, not a dependency.
+Keep the current layout and conventions.
+Obsidian is an optional viewer, not a dependency.
 
 The repo already follows the LLM wiki pattern for specs and decisions:
 
@@ -57,8 +58,10 @@ The repo already follows the LLM wiki pattern for specs and decisions:
 
 ### Rules
 
-1. Links stay plain relative Markdown links. No `[[wikilinks]]`, embeds (`![[...]]`), or other Obsidian-only syntax.
-2. No Obsidian plugins (such as Dataview or Templater) in the workflow. Files must be complete without them.
+1. Links stay plain relative Markdown links.
+   No `[[wikilinks]]`, embeds (`![[...]]`), or other Obsidian-only syntax.
+2. No Obsidian plugins (such as Dataview or Templater) in the workflow.
+   Files must be complete without them.
 3. To use Obsidian, open the repo root as a vault and set:
    - Settings → Files & links → Use [[Wikilinks]]: off
    - Settings → Files & links → New link format: Relative path to file
@@ -69,11 +72,14 @@ The repo already follows the LLM wiki pattern for specs and decisions:
 
 ### Choices and Tradeoffs/Risks
 
-Plain Markdown links over wikilinks: wikilinks show as literal text on GitHub and in most agents and harnesses. The cost is slightly more typing when linking by hand in Obsidian; the settings above make Obsidian write relative links for you.
+Plain Markdown links over wikilinks: wikilinks show as literal text on GitHub and in most agents and harnesses.
+The cost is slightly more typing when linking by hand in Obsidian; the settings above make Obsidian write relative links for you.
 
-Gitignored `.obsidian/` over a committed vault config: avoids churn from workspace and plugin state. The risk is someone linking with wikilinks by default; rule 1 and review catch it.
+Gitignored `.obsidian/` over a committed vault config: avoids churn from workspace and plugin state.
+The risk is someone linking with wikilinks by default; rule 1 and review catch it.
 
-Deferring the knowledge layer: nothing needs it yet. The risk is research landing in ad hoc places; rule 5 names where it goes when it's needed.
+Deferring the knowledge layer: nothing needs it yet.
+The risk is research landing in ad hoc places; rule 5 names where it goes when it's needed.
 
 ### Dependencies
 
