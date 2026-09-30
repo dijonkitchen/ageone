@@ -4,12 +4,13 @@ Set up the monorepo so projects can restart here, as decided in [Projects in age
 
 ## Functional requirements
 
-- `projects/`, `specs/<slug>/`, `docs/decisions/<slug>/`, and `skills/` exist, each with a short `README.md` saying what goes there.
+- `projects/` and `skills/` exist, each with a short `README.md` saying what goes there.
 - `devenv.nix` provides the two project toolchains: Bun for TypeScript and plain JavaScript, and Python with uv.
   `make` sets them up and its check proves both work.
-- A project template: copying `projects/_template/` gives a `README.md`, a `Makefile` with `check` (lint, format, typecheck where the language has one, tests), and a first decision record stub.
+- A project template: copying `projects/_template/` gives an `AGENTS.md` with `CLAUDE.md` symlinked to it, `specs/`, `docs/decisions/` with a first decision record stub, and a `Makefile` with `check` (lint, format, typecheck where the language has one, tests).
 - CI runs `make check` in each project folder that changed in a pull request, and in all of them on `main`.
-- `make new PROJECT=<slug>` copies the template and creates the matching spec and decision record folders.
+- `make new PROJECT=<slug>` copies the template into `projects/<slug>/`.
+- `make links` also repairs each project's `CLAUDE.md -> AGENTS.md` symlink.
 
 ## Non-functional requirements
 

@@ -4,6 +4,8 @@
 
 2026-09-30: Proposed by Claude, at JC's request
 
+2026-09-30: Amended by Claude, at JC's request, before acceptance: each project's specs, decision records, and a nested `AGENTS.md` live in its project folder.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -38,14 +40,19 @@ A build system spanning languages (Bazel, Nx, Pants): each project keeps its own
 
 ### Layout
 
-Each project gets the same slug in three places:
+Each project is self-contained in `projects/<slug>/`:
 
-- `projects/<slug>/`: the code, tests, and the project's own `README.md`.
-- `specs/<slug>/`: its specs, numbered in the repo-wide `SPEC-NNNN` sequence and ranked in the one `specs/PRIORITIES.md`.
-- `docs/decisions/<slug>/`: its decision records, in the usual format.
+- `AGENTS.md`, with `CLAUDE.md` symlinked to it: short project instructions (stack, commands, where to read), linking to the root `AGENTS.md` instead of repeating it.
+  Harnesses load the instructions nearest the files being edited, so an agent working in a project gets the root rules and the project's own.
+- `specs/`: its specs, numbered in the repo-wide `SPEC-NNNN` sequence and ranked in the one `specs/PRIORITIES.md`, whose rows link into the project.
+- `docs/decisions/`: its decision records, in the usual format.
+- The code, tests, and anything else the project needs.
+
+What applies to the whole repo stays at the root: `AGENTS.md`, `docs/decisions/` (conventions, structure, model roles, toolchains, this record), `specs/PRIORITIES.md`, and specs that aren't one project's (such as the harness, eval pages, and scaffold).
+Root decisions apply to every project.
+A project records its own decision when a choice is its alone, or when it departs from a root decision within the project, naming the record it departs from.
 
 Shared agent skills live in `skills/<name>/`.
-Decisions that apply to the whole repo stay directly in `docs/decisions/`.
 
 ### Starting anew
 
@@ -90,6 +97,11 @@ Restarting costs time, but each old project is small, and a rebuild from specs w
 Several toolchains in one repo against [Structure](2026-09-25-structure.md)'s warning about multi-language monorepos: kept simple by giving each project its own folder and toolchain and no shared build system.
 
 Old decision records aren't copied because their reasons may no longer hold; a new record can cite an old one.
+
+Colocated over parallel trees (`projects/<slug>/`, `specs/<slug>/`, `docs/decisions/<slug>/`): one folder holds everything about a project, its nested `AGENTS.md` points agents at its specs and decisions without their knowing a repo-wide convention, and a project can be extracted in one move.
+The cost is that specs are no longer all under `specs/`; the priority table is the index.
+
+All decisions at the root instead: fine for a few projects, but most records would be stack choices only one project cares about.
 
 ### Dependencies
 

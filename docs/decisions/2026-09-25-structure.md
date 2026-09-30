@@ -8,7 +8,7 @@
 
 2026-09-26: Amended by JC: `/docs/decisions/` holds any decision records, not only architectural ones.
 
-2026-09-30: Amended by Claude, at JC's request: projects live in `/projects/<slug>/`, with specs in `/specs/<slug>/` and decision records in `/docs/decisions/<slug>/`; see [Projects in ageone](2026-09-30-projects-in-ageone.md).
+2026-09-30: Amended by Claude, at JC's request: each project lives in `/projects/<slug>/`, with its own `AGENTS.md`, `specs/`, and `docs/decisions/`; see [Projects in ageone](2026-09-30-projects-in-ageone.md).
 
 ## Objective Context
 
@@ -43,7 +43,7 @@ Complicated monorepo structures across multiple languages unless really needed.
 `/specs/PRIORITIES.md`: Prioritization of the specifications in the monorepo.
 `/specs/`: Specification files for the projects in the monorepo.
 Broken down by subdirectories per project if needed.
-`/projects/<slug>/`: the code of each project in the monorepo ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
+`/projects/<slug>/`: each project in the monorepo, with its code, specs, decision records, and `AGENTS.md` ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
 `/skills/`: shared agent skills.
 `/docs/decisions/`: Any decision records (ADRs), especially architectural decision records, for the projects in the monorepo.
 

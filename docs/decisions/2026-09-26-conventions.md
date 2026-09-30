@@ -18,6 +18,8 @@
 
 2026-09-28: Amended by Claude, at JC's request: Markdown prose uses semantic line breaks.
 
+2026-09-30: Amended by Claude, at JC's request: project specs and decision records live in their project folder, and each project has a nested `AGENTS.md`.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -69,10 +71,11 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 - Git stores the symlinks themselves (mode `120000`), not the content, so the repo has one copy of the instructions.
   On a checkout that can't create symlinks, such as Windows without symlink support, each appears as a one-line file holding its target path; open the target by hand.
 - Add a new entry-point name the same way: symlink it to `AGENTS.md`, never to `README.md` directly and never as a copy.
+- Each project in `projects/<slug>/` has its own `AGENTS.md` (a regular file) with `CLAUDE.md` symlinked to it, holding only what is specific to the project and linking to the root `AGENTS.md`.
 
 ### Specs
 
-- Path: `specs/SPEC-NNNN-short-slug.md`, or `specs/<project>/SPEC-NNNN-short-slug.md` once a project needs its own folder.
+- Path: `specs/SPEC-NNNN-short-slug.md` for repo-wide specs, or `projects/<slug>/specs/SPEC-NNNN-short-slug.md` for a project's ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
 - `NNNN` is a zero-padded number, unique across the whole repo, given in order and never reused.
 - Title: `# SPEC-NNNN: Title`.
 - Sections: `## Functional requirements`, `## Non-functional requirements`, `## Definition of done`.
@@ -92,7 +95,7 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 
 ### Decision records
 
-- Path: `docs/decisions/YYYY-MM-DD-short-slug.md`, dated when proposed.
+- Path: `docs/decisions/YYYY-MM-DD-short-slug.md` for repo-wide decisions, or `projects/<slug>/docs/decisions/YYYY-MM-DD-short-slug.md` for a project's, dated when proposed.
 - Covers any decision (ADRs), especially architectural decisions.
 - Title: `# Decision Record YYYY-MM-DD: Title`.
 - Follow the sections of [decision records](2026-09-25-decision-records.md).
