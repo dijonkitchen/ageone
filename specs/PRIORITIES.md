@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-09-27
+updated_at: 2026-09-30
 
 Table of specs, listing their number, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -14,4 +14,9 @@ Whenever a spec is added or updated, re-evaluate every row's priority, then upda
 | [SPEC-0003](SPEC-0003-make-setup.md) | None | 1 | Make setup: one idempotent `make` installs Nix and devenv, builds the pinned environment (Node.js LTS for pi), and checks it | Low | Done |
 | [SPEC-0002](SPEC-0002-vendor-neutral-ai-harness.md) | SPEC-0001 | 2 | Vendor-neutral AI harness: pi + model roles config + web search + private open-weight models + evals on our own tasks, with a runner that swaps harnesses or calls models directly | Medium | Open |
 | [SPEC-0004](SPEC-0004-eval-benchmark-pages.md) | SPEC-0002 | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Open |
-| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 4 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
+| [SPEC-0005](SPEC-0005-connect6-agents.md) | SPEC-0002 | 4 | Connect6 agents: MCTS and LLM agents plus a headless tournament writing NDJSON, in the connect repo | Medium | Open |
+| [SPEC-0006](SPEC-0006-og-trail-agent-player.md) | SPEC-0002 | 4 | OG Trail agent player: random, rule-based, and LLM players over the view/submit protocol, with batch runs writing NDJSON | Medium | Open |
+| [SPEC-0007](SPEC-0007-simplefit-ship.md) | None | 5 | SimpleFit ship: CI, GitHub Pages, clean service worker updates, and a backup reminder | Low | Open |
+| [SPEC-0008](SPEC-0008-fite-ship.md) | None | 5 | Fite ship: CI, GitHub Pages, CPU difficulty levels, touch and gamepad controls | Low | Open |
+| [SPEC-0009](SPEC-0009-ai-profile-platform-mvp.md) | SPEC-0002 | 6 | AI profile platform MVP: GitHub sign-in, evidence ingest, cited profile patches the worker accepts, in the exp repo | High | Open |
+| [SPEC-0001](SPEC-0001-agent-todo-repo.md) | None | 7 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
