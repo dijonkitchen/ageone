@@ -1,4 +1,4 @@
-# SPEC-0005: Algorithm Roguelike
+# SPEC-0006: Algorithm Roguelike
 
 ## Functional requirements
 
