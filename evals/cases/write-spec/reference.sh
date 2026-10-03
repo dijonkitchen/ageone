@@ -1,4 +1,4 @@
-n=$(ls specs | sed -nE 's/^SPEC-([0-9]{4}).*/\1/p' | sort -n | tail -n1)
+n=$(find specs -name 'SPEC-*.md' | sed -nE 's#.*/SPEC-([0-9]{4}).*#\1#p' | sort -n | tail -n1)
 n=$(printf '%04d' $((10#$n + 1)))
 cat > "specs/SPEC-$n-make-lint.md" <<SPEC
 # SPEC-$n: Make Lint

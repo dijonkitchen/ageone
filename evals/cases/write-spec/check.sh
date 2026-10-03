@@ -1,10 +1,11 @@
 source "$EVALS_LIB/check.sh"
 only_changed 'specs/.*'
-last=$(git ls-tree --name-only HEAD specs/ | sed -nE 's/^specs\/SPEC-([0-9]{4}).*/\1/p' | sort -n | tail -n1)
+last=$(git ls-tree -r --name-only HEAD specs/ | sed -nE 's#.*/SPEC-([0-9]{4})[^/]*$#\1#p' | sort -n | tail -n1)
 n=$(printf 'SPEC-%04d' $((10#$last + 1)))
-f=$(ls specs | grep -E "^$n-" || true)
-[ -n "$f" ] || fail "no specs/$n-*.md"
-echo "$f" | grep -qE "^$n-[a-z0-9]+(-[a-z0-9]+)*\.md$" || fail "bad file name: $f"
+# specs/SPEC-NNNN-slug.md, or specs/<project>/SPEC-NNNN-slug.md for a project folder.
+f=$(find specs -name "$n-*.md" | sed 's#^specs/##')
+[ "$(echo "$f" | grep -c .)" = 1 ] || fail "expected one specs/$n-*.md, got: $f"
+echo "$f" | grep -qE "^([a-z0-9-]+/)?$n-[a-z0-9]+(-[a-z0-9]+)*\.md$" || fail "bad file name: $f"
 head -n1 "specs/$f" | grep -qE "^# $n: .+" || fail "bad title: $(head -n1 "specs/$f")"
 for h in '## Functional requirements' '## Non-functional requirements' '## Definition of done'; do grep -qx "$h" "specs/$f" || fail "missing section: $h"; done
 sed -n '/^## Definition of done/,$p' "specs/$f" | tail -n +2 | grep -q '[a-z]' || fail "empty definition of done"
