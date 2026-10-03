@@ -36,7 +36,7 @@ A two-player, turn-based tile-laying game in the style of Carcassonne, played on
   Game mechanics are not copyrighted, but the brand is the publisher's.
 - Correct: the rules engine and the tile generator are covered by tests, including each scoring rule, features merging across tiles, shared majorities, end-of-game scoring, and that every generated tile is valid and every generated set meets the balance limits.
 - Deterministic: the same seed and moves always give the same game.
-- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](SPEC-2026-09-26-make-setup.md), with no global installs.
+- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](../../../specs/SPEC-2026-09-26-make-setup.md), with no global installs.
 
 ## Definition of done
 

@@ -8,7 +8,7 @@
 
 2026-09-26: Amended by JC: `/docs/decisions/` holds any decision records, not only architectural ones.
 
-2026-10-03: Amended by Claude, implementing the stock screener: `/projects/` holds each project's code, one folder per project.
+2026-09-30: Amended by Claude, at JC's request: each project lives in `/projects/<slug>/`, with its own `specs/`, `docs/decisions/`, and, once it has code, `AGENTS.md`; see [Projects in ageone](2026-09-30-projects-in-ageone.md).
 
 ## Objective Context
 
@@ -43,8 +43,9 @@ Complicated monorepo structures across multiple languages unless really needed.
 `/specs/PRIORITIES.md`: Prioritization of the specifications in the monorepo.
 `/specs/`: Specification files for the projects in the monorepo.
 Broken down by subdirectories per project if needed.
+`/projects/<slug>/`: each project in the monorepo, with its code, specs, decision records, and (once it has code) `AGENTS.md` ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
+`/skills/`: shared agent skills.
 `/docs/decisions/`: Any decision records (ADRs), especially architectural decision records, for the projects in the monorepo.
-`/projects/<project>/`: A project's code, with its own build files, named like its specs folder.
 
 ### High-level C4(context/container/component/code) diagram
 

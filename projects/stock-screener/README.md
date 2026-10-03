@@ -1,8 +1,8 @@
 # Stock screener
 
 Screens US-listed companies on 10+ years of split-adjusted per-share history and ratios built from SEC EDGAR XBRL filings.
-Spec: [SPEC-2026-10-03-stock-screener](../../specs/stock-screener/SPEC-2026-10-03-stock-screener.md).
-Stack: [stock screener stack decision](../../docs/decisions/2026-10-03-stock-screener-stack.md).
+Spec: [SPEC-2026-10-03-stock-screener](specs/SPEC-2026-10-03-stock-screener.md).
+Stack: [stock screener stack decision](docs/decisions/2026-10-03-stock-screener-stack.md).
 
 Numbers come from company filings as tagged in SEC EDGAR XBRL data, may contain tagging errors, and are not investment advice.
 

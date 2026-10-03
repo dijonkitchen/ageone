@@ -51,8 +51,8 @@ A stock screener for US-listed companies that pulls the latest public filing dat
   A spot check compares 10 years of BVPS and EPS for a handful of well-known companies against their 10-K filings.
 - Deterministic: the same downloaded data and screen file give the same results.
 - Not financial advice: the UI and exports say the numbers come from company filings as tagged, may contain tagging errors, and are not investment advice.
-- Stack as in the [stock screener stack decision](../../docs/decisions/2026-10-03-stock-screener-stack.md): Python only, with DuckDB, pandas, and a Streamlit front end.
-- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](../SPEC-2026-09-26-make-setup.md), with no global installs.
+- Stack as in the [stock screener stack decision](../docs/decisions/2026-10-03-stock-screener-stack.md): Python only, with DuckDB, pandas, and a Streamlit front end.
+- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](../../../specs/SPEC-2026-09-26-make-setup.md), with no global installs.
 
 ### Out of scope
 

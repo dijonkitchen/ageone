@@ -16,11 +16,11 @@
 
 #### Functional
 
-A stack for the [stock screener](../../specs/stock-screener/SPEC-2026-10-03-stock-screener.md) and its [portfolio and Kelly allocation](../../specs/stock-screener/SPEC-2026-10-03-portfolio-kelly.md) that loads SEC EDGAR XBRL data for every filer, turns it into 10+ years of per-share series and ratios, screens all companies interactively, pulls live prices, and solves small portfolio optimizations.
+A stack for the [stock screener](../../specs/SPEC-2026-10-03-stock-screener.md) and its [portfolio and Kelly allocation](../../specs/SPEC-2026-10-03-portfolio-kelly.md) that loads SEC EDGAR XBRL data for every filer, turns it into 10+ years of per-share series and ratios, screens all companies interactively, pulls live prices, and solves small portfolio optimizations.
 
 #### Non-functional
 
-Fast enough to screen every company in about a second on a laptop, local first, and installable in the pinned environment from [SPEC-2026-09-26-make-setup](../../specs/SPEC-2026-09-26-make-setup.md).
+Fast enough to screen every company in about a second on a laptop, local first, and installable in the pinned environment from [SPEC-2026-09-26-make-setup](../../../../specs/SPEC-2026-09-26-make-setup.md).
 
 ### Nice to haves
 
@@ -60,14 +60,14 @@ A distributed or hosted data stack (warehouses, queues, cloud databases) for dat
 
 ### Implementation details
 
-- **Code**: [`projects/stock-screener/`](../../projects/stock-screener/), a uv project with its own `uv.lock`; Python 3.12 comes from devenv.
+- **Code**: [`projects/stock-screener/`](../../), a uv project with its own `uv.lock`; Python 3.12 comes from devenv.
 - **OpenBB**: `openbb-sec==2.0.0` and `openbb-core==2.0.1`, pinned in `pyproject.toml`.
   We call its `resolve_company_facts` on Company Facts responses we fetch ourselves, so the SEC client (User-Agent, rate limit, backoff) and the change check stay ours.
   A test compares its output on a recorded real filer with a recording, so an upgrade that changes numbers fails until reviewed.
 - **Storage format**: one DuckDB file (`screener.duckdb`, git-ignored) with tables `companies`, `line_items` (OpenBB's standardized annual line items plus gap fills, each with its source), `filings` (the filing behind each fiscal year), `split_facts`, `splits`, `metric_values` (one row per company, year, and metric), `stats` (per window, metric, and stat), and `gaps`.
   Raw Company Facts responses are not kept; `rebuild` recomputes metrics from `line_items`.
-- **Gap-filling tag mapping**: [`gap_fill.toml`](../../projects/stock-screener/src/screener/data/gap_fill.toml) maps each missing line item to an ordered list of XBRL concepts (year-end shares outstanding, interest expense, dividends declared per share, and split ratios).
-- **Metric definitions**: [`metrics.toml`](../../projects/stock-screener/src/screener/data/metrics.toml), formulas over line items and named inputs.
+- **Gap-filling tag mapping**: [`gap_fill.toml`](../../src/screener/data/gap_fill.toml) maps each missing line item to an ordered list of XBRL concepts (year-end shares outstanding, interest expense, dividends declared per share, and split ratios).
+- **Metric definitions**: [`metrics.toml`](../../src/screener/data/metrics.toml), formulas over line items and named inputs.
 
 ### High-level C4(context/container/component/code) diagram
 
