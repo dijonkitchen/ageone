@@ -1,4 +1,4 @@
-# SPEC-0001: Agent Todo Repo
+# SPEC-2026-09-25-agent-todo-repo: Agent Todo Repo
 
 ## Functional requirements
 

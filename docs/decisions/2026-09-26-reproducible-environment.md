@@ -18,7 +18,7 @@
 
 #### Functional
 
-One command gives every person, agent, CI job, and eval sandbox the same tools at the same versions, starting with the current Node.js LTS for pi, which needs 22.19+ ([SPEC-0002](../../specs/SPEC-0002-vendor-neutral-ai-harness.md)).
+One command gives every person, agent, CI job, and eval sandbox the same tools at the same versions, starting with the current Node.js LTS for pi, which needs 22.19+ ([SPEC-2026-09-26-vendor-neutral-ai-harness](../../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md)).
 
 Security patches arrive quickly, but only through a reviewable change that the evals gate.
 
@@ -56,7 +56,7 @@ Writing our own Nix modules or overlays before a package is actually missing.
 Use [devenv](https://devenv.sh) (Nix underneath) for the environment, with nixpkgs on `nixos-unstable`.
 
 - `devenv.nix` declares the tools, `devenv.yaml` the inputs, and `devenv.lock` pins every input by commit and hash.
-  `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-0003](../../specs/SPEC-0003-make-setup.md).
+  `make` installs Nix and devenv if missing, builds it, and checks it; see [SPEC-2026-09-26-make-setup](../../specs/SPEC-2026-09-26-make-setup.md).
 - Node.js is nixpkgs' `nodejs`, which tracks the current LTS line (24 in September 2026), not a pinned major: each lock bump follows LTS and the evals catch breakage.
 - devenv itself comes from the nixpkgs commit pinned in `devenv.lock`: devenv versions write different lock formats, so an unpinned devenv makes machines rewrite each other's lock.
 - `nixos-unstable` instead of devenv's default `cachix/devenv-nixpkgs/rolling`: security fixes arrive sooner, and our evals test each bump instead of devenv's testing.

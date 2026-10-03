@@ -1,4 +1,4 @@
-# SPEC-0007: Stock Screener
+# SPEC-2026-10-03-stock-screener: Stock Screener
 
 ## Functional requirements
 
@@ -38,7 +38,7 @@ A stock screener for US-listed companies that pulls the latest public filing dat
   - A command-line tool that refreshes data, runs a saved screen, and prints a table or writes CSV or JSON.
   - An interactive local web page: build a screen by adding and removing filters, dragging threshold sliders, choosing columns, and setting composite weights, with the results table re-sorting and re-ranking as you change them, and save or load the screen file from the page.
   - A company page that charts each per-share series and ratio over the years and lists the filings it came from.
-  - Rows can be selected, so [SPEC-0008](SPEC-0008-portfolio-kelly.md) can build a portfolio from a screen.
+  - Rows can be selected, so [SPEC-2026-10-03-portfolio-kelly](SPEC-2026-10-03-portfolio-kelly.md) can build a portfolio from a screen.
 - **Data gaps**: each company and metric shows how many years are present and which concepts were missing, so a gap reads as missing data instead of a zero or a bad rank.
 
 ## Non-functional requirements
@@ -52,13 +52,13 @@ A stock screener for US-listed companies that pulls the latest public filing dat
 - Deterministic: the same downloaded data and screen file give the same results.
 - Not financial advice: the UI and exports say the numbers come from company filings as tagged, may contain tagging errors, and are not investment advice.
 - Stack as in the [stock screener stack decision](../../docs/decisions/2026-10-03-stock-screener-stack.md): Python only, with DuckDB, pandas, and a Streamlit front end.
-- Runs in the pinned environment from [SPEC-0003](../SPEC-0003-make-setup.md), with no global installs.
+- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](../SPEC-2026-09-26-make-setup.md), with no global installs.
 
 ### Out of scope
 
 - Years before XBRL (pre-2009), which would mean parsing HTML or text filings.
 - Stock prices and price-based ratios (P/E, P/B, dividend yield, earnings yield), since the SEC doesn't publish prices.
-  [SPEC-0008](SPEC-0008-portfolio-kelly.md) adds them; the metric definitions file leaves room for price inputs.
+  [SPEC-2026-10-03-portfolio-kelly](SPEC-2026-10-03-portfolio-kelly.md) adds them; the metric definitions file leaves room for price inputs.
 - Quarterly or trailing-twelve-month series (OpenBB has them; screening on them can come later), FX conversion, alerts, and backtesting.
 - Our own XBRL-to-statement normalization, which OpenBB already does.
 

@@ -10,7 +10,7 @@
   ];
 
   # Node.js LTS: nixpkgs points `nodejs` at the current LTS line, so `make update` moves to the next LTS.
-  # pi needs 22.19 or newer (SPEC-0002); enterTest checks it.
+  # pi needs 22.19 or newer (SPEC-2026-09-26-vendor-neutral-ai-harness); enterTest checks it.
   languages.javascript = {
     enable = true;
     package = pkgs.nodejs;
