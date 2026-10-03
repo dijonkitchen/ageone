@@ -27,7 +27,7 @@ uv run screener app                              # the interactive page on http:
 uv run screener columns                          # every screenable column and its definition
 ```
 
-- `refresh --pit` keeps values as first reported (for backtests); the default lets restated values win, as OpenBB picks them: from the latest annual filing within 450 days of the year end, so in practice the next year's 10-K.
+- `refresh --pit` keeps values as first reported (for backtests); by default the latest 10-K wins, however many years after it restated a value (OpenBB alone stops at 450 days, so `standardize.py` hands it the latest annual value for every period first).
   Switching reloads every company.
 - `rebuild` recomputes metrics from stored statements after editing `metrics.toml`, without the network.
 - `spot-check` compares loaded values with numbers from 10-K filings in `spot_check.toml`.

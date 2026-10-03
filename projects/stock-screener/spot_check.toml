@@ -3,12 +3,9 @@
 # its ratio). Run `screener refresh --tickers AAPL,MSFT` then
 # `screener spot-check`, and again after every OpenBB upgrade.
 #
-# Each value is the one in the latest 10-K reporting that year and filed within
-# 450 days of its end, which is how OpenBB's standardized statements pick
-# restatements: in practice the next year's 10-K, which can restate it. A
-# restatement filed later than that is not used, so MSFT 2016 stays at the
-# 2.10 the fiscal 2017 10-K reported, not the 2.56 the fiscal 2018 10-K
-# restated it to for ASC 606.
+# Each value is the one in the latest 10-K reporting that year, so a later
+# restatement wins however many years on it came: MSFT 2016 is the 2.56 the
+# fiscal 2018 10-K restated it to for ASC 606, not the 2.10 first reported.
 #
 # EPS is diluted EPS as filed. BVPS is total stockholders' equity divided by
 # common shares outstanding at fiscal year end, both from the balance sheet.
@@ -18,7 +15,7 @@ tolerance = 0.01  # relative
 
 [[companies]]
 ticker = "AAPL"
-note = "7-for-1 split in fiscal 2014 and 4-for-1 in fiscal 2020; fiscal 2019 is restated in the fiscal 2020 10-K, earlier years are divided by the ratios."
+note = "7-for-1 split in fiscal 2014 and 4-for-1 in fiscal 2020; fiscal 2018 and later EPS are restated in the fiscal 2020 10-K or after, earlier years are divided by the ratios."
 
 [companies.values.eps]
 2013 = 1.42    # 39.75 in the fiscal 2013 10-K, 5.68 restated in fiscal 2014; / 4
@@ -26,8 +23,8 @@ note = "7-for-1 split in fiscal 2014 and 4-for-1 in fiscal 2020; fiscal 2019 is 
 2015 = 2.305   # 9.22 / 4
 2016 = 2.0775  # 8.31 / 4
 2017 = 2.3025  # 9.21 / 4
-2018 = 2.9775  # 11.91 / 4
-2019 = 2.97    # restated in the fiscal 2020 10-K
+2018 = 2.98    # restated in the fiscal 2020 10-K (11.91 first reported)
+2019 = 2.97
 2020 = 3.28
 2021 = 5.61
 2022 = 6.11
@@ -52,13 +49,13 @@ note = "7-for-1 split in fiscal 2014 and 4-for-1 in fiscal 2020; fiscal 2019 is 
 
 [[companies]]
 ticker = "MSFT"
-note = "No splits since 2003; fiscal 2017 is restated for ASC 606 in the fiscal 2018 10-K."
+note = "No splits since 2003; fiscal 2016 and 2017 are restated for ASC 606 in the fiscal 2018 10-K."
 
 [companies.values.eps]
 2013 = 2.58
 2014 = 2.63
 2015 = 1.48
-2016 = 2.10
+2016 = 2.56    # 2.10 as first reported
 2017 = 3.25    # 2.71 as first reported
 2018 = 2.13
 2019 = 5.06
@@ -74,7 +71,7 @@ note = "No splits since 2003; fiscal 2017 is restated for ASC 606 in the fiscal 
 2013 = 9.4793   # 78.944bn / 8,328m
 2014 = 10.8974  # 89.784bn / 8,239m
 2015 = 9.9767   # 80.083bn / 8,027m
-2016 = 9.2209   # 71.997bn / 7,808m
+2016 = 10.6416  # 83.090bn restated / 7,808m (71.997bn as first reported)
 2017 = 11.3792  # 87.711bn restated / 7,708m (72.394bn as first reported)
 2018 = 10.7748  # 82.718bn / 7,677m
 2019 = 13.3887  # 102.330bn / 7,643m

@@ -82,10 +82,10 @@ fiscal_year,period_ending,statement,tag,value,unit,currency,source
 2023,2023-12-31,income_statement,operating_revenue,17859000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
 2023,2023-12-31,income_statement,other_adjustments_to_consolidated_net_income,261000000.0,monetary,USD,us-gaap:OtherComprehensiveIncomeLossNetOfTax
 2023,2023-12-31,income_statement,other_income,699000000.0,monetary,USD,imputed-plug: total_other_income - (total_interest_income(+) + total_interest_expense(-))
-2023,2023-12-31,income_statement,other_operating_expenses,2581000000.0,monetary,USD,imputed-plug: costs_and_expenses - (sga_expense(+) + impairment_expense(+) + restructuring_charge(+))
+2023,2023-12-31,income_statement,other_operating_expenses,2584000000.0,monetary,USD,imputed-plug: costs_and_expenses - (sga_expense(+) + impairment_expense(+) + restructuring_charge(+))
 2023,2023-12-31,income_statement,other_revenue,-6847000000.0,monetary,USD,imputed-plug: total_revenue - (operating_revenue(+))
 2023,2023-12-31,income_statement,restructuring_charge,61000000.0,monetary,USD,us-gaap:RestructuringCharges
-2023,2023-12-31,income_statement,sga_expense,2095000000.0,monetary,USD,us-gaap:GeneralAndAdministrativeExpense
+2023,2023-12-31,income_statement,sga_expense,2092000000.0,monetary,USD,us-gaap:GeneralAndAdministrativeExpense
 2023,2023-12-31,income_statement,total_interest_expense,292000000.0,monetary,USD,us-gaap:InterestExpenseNonoperating
 2023,2023-12-31,income_statement,total_interest_income,473000000.0,monetary,USD,us-gaap:InvestmentIncomeInterestAndDividend
 2023,2023-12-31,income_statement,total_operating_expenses,11584000000.0,monetary,USD,us-gaap:OperatingExpenses

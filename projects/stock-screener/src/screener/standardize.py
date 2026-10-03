@@ -4,6 +4,11 @@ OpenBB's SEC provider does the hard part (tag chains, company types, identities,
 restatements); this module calls it on a Company Facts response and adds what
 it doesn't keep: line items from gap_fill.toml, split ratio facts, and which
 filing each fiscal year came from.
+
+OpenBB only takes a restatement filed within 450 days of the period end, so a
+year restated two 10-Ks later would keep its older value. Outside point-in-time
+mode we first give every fact for a period the value from the latest annual
+filing that reports it, so the latest 10-K wins however late it restated.
 """
 
 from __future__ import annotations
@@ -54,6 +59,30 @@ def _pick(rows: list[dict[str, Any]], pit_mode: bool) -> dict[str, Any]:
     """Latest filed fact wins (restated values), or the first filed one in point-in-time mode."""
     key = lambda r: (r.get("filed", ""), r.get("accn", ""))
     return min(rows, key=key) if pit_mode else max(rows, key=key)
+
+
+def _latest_restatements(facts_json: dict[str, Any]) -> dict[str, Any]:
+    """A copy of Company Facts where each period's facts carry the latest annual filing's value."""
+    out = dict(facts_json)
+    out["facts"] = {}
+    for namespace, concepts in facts_json.get("facts", {}).items():
+        out["facts"][namespace] = new_concepts = {}
+        for name, concept in concepts.items():
+            units = {}
+            for unit, rows in concept.get("units", {}).items():
+                latest: dict[tuple[str | None, str | None], dict[str, Any]] = {}
+                for fact in rows:
+                    if fact.get("form") in ANNUAL_FORMS and fact.get("val") is not None:
+                        period = (fact.get("start"), fact.get("end"))
+                        if period not in latest or _pick([latest[period], fact], False) is fact:
+                            latest[period] = fact
+                units[unit] = [
+                    {**fact, "val": latest[period]["val"]} if (period := (fact.get("start"), fact.get("end"))) in latest
+                    else fact
+                    for fact in rows
+                ]
+            new_concepts[name] = {**concept, "units": units}
+    return out
 
 
 def _gap_fill(
@@ -127,6 +156,8 @@ def _filings(facts: dict[str, Any], year_ends: dict[int, str], pit_mode: bool) -
 
 
 def standardize(facts_json: dict[str, Any], pit_mode: bool = False) -> Standardized:
+    if not pit_mode:
+        facts_json = _latest_restatements(facts_json)
     result = resolve_company_facts(facts_json, period="annual", pit_mode=pit_mode)
     frames = []
     for statement in STATEMENTS:

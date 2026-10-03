@@ -39,3 +39,18 @@ def test_gap_fill_falls_back_to_cover_page_shares():
 def test_split_ratio_facts_are_kept():
     std = standardize(synthetic.build()[0])
     assert std.split_facts["ratio"].tolist() == [4.0]
+
+
+def test_latest_10k_wins_even_when_it_restates_years_later():
+    facts, truth = synthetic.build()
+    rows = facts["facts"]["us-gaap"]["Revenues"]["units"]["USD"]
+    first = next(r for r in rows if r["end"] == "2015-12-31" and r["fy"] == 2015)
+    # A 10-K filed three years on restates 2015, past OpenBB's own 450-day window.
+    rows.append({**first, "val": first["val"] * 1.05, "fy": 2018, "accn": synthetic.accession(2018), "filed": "2019-02-15"})
+
+    def revenue(std):
+        items = std.line_items.query("fiscal_year == 2015 and tag in ('revenue', 'total_revenue', 'operating_revenue')")
+        return items["value"].iloc[0]
+
+    assert revenue(standardize(facts)) == pytest.approx(truth[2015]["revenue"] * 1.05)
+    assert revenue(standardize(facts, pit_mode=True)) == pytest.approx(truth[2015]["revenue"])

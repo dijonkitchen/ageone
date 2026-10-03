@@ -8,6 +8,8 @@
 
 2026-10-03: Amended by Claude, implementing the spec: record the storage format, the pinned OpenBB version, the gap-filling tag mapping, and where the code lives, from the first implementation.
 
+2026-10-03: Amended by Claude, at JC's request: the latest 10-K's value wins for a restated year, even past OpenBB's 450-day window.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -85,7 +87,7 @@ DuckDB over plain Parquet files: one file to back up instead of a folder, SQL fo
 The cost is SQL next to pandas, kept apart: SQL for set-wide queries (screens, ranks, joins), pandas for per-company series.
 
 OpenBB's SEC provider over our own XBRL normalizer: turning Company Facts into comparable statements (tag changes across taxonomy years, banks and insurers, restatements, accounting identities) is the hardest part of the screener, and OpenBB already does it with a documented method and a large validation set.
-The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; its restatement rule, which takes the latest annual filing within 450 days of a year end, so a restatement two filings later is not used; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
+The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; its restatement rule, which ignores restatements filed more than 450 days after a year end, so outside point-in-time mode we give every period the latest annual filing's value before calling it, and the latest 10-K wins as JC asked; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
 
 OpenBB for prices over writing provider adapters: it gives many providers at once, behind keys the user already has.
 The cost is a large dependency tree; if it causes install or version trouble, a direct adapter for one provider replaces it behind the same interface.
