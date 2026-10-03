@@ -174,7 +174,7 @@ agent (pi, or another harness)
 ### Dependencies
 
 - [Vendor-Neutral AI Harness](2026-09-26-vendor-neutral-ai-harness.md): pi as the harness and the eval runner that measures these choices.
-- [SPEC-0002](../../specs/SPEC-0002-vendor-neutral-ai-harness.md): the evals that this record's key results rely on.
+- [SPEC-2026-09-26-vendor-neutral-ai-harness](../../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md): the evals that this record's key results rely on.
 
 ### Interfaces
 

@@ -1,4 +1,4 @@
-# SPEC-0006: Algorithm Roguelike
+# SPEC-2026-09-30-algorithm-roguelike: Algorithm Roguelike
 
 ## Functional requirements
 

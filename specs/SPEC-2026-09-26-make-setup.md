@@ -1,4 +1,4 @@
-# SPEC-0003: Make Setup
+# SPEC-2026-09-26-make-setup: Make Setup
 
 ## Functional requirements
 

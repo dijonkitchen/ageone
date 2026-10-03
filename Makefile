@@ -1,6 +1,6 @@
 # Run `make`: it installs what is missing, builds the pinned environment, and checks it. Safe to rerun.
 # The other targets are for debugging and maintenance.
-# The environment itself is devenv.nix, pinned by devenv.lock. See specs/SPEC-0003-make-setup.md.
+# The environment itself is devenv.nix, pinned by devenv.lock. See specs/SPEC-2026-09-26-make-setup.md.
 
 .DEFAULT_GOAL := all
 .PHONY: all help setup tools links shell check update
