@@ -30,7 +30,7 @@ Movement comes later, in its own spec; this one only keeps the drawings ready fo
 - Accurate: names, relations, and descriptions are checked against an open reference, and tests check that every drawn id has data, every data id is drawn or marked not yet drawn, and every relation points to a real id.
 - Accessible: every structure has a text name for screen readers, layers and picks work by keyboard, and colors keep enough contrast in light and dark themes.
 - Fast: the first view loads and responds smoothly on a mid-range phone, loading layers only when shown.
-- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](SPEC-2026-09-26-make-setup.md), with no global installs.
+- Runs in the pinned environment from [SPEC-2026-09-26-make-setup](../../../specs/SPEC-2026-09-26-make-setup.md), with no global installs.
 
 ## Definition of done
 

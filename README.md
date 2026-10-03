@@ -9,6 +9,7 @@ Links are plain relative Markdown links: open each one you need to read.
 ## Read first
 
 - [Structure](docs/decisions/2026-09-25-structure.md): where files live.
+- [Projects in ageone](docs/decisions/2026-09-30-projects-in-ageone.md): how projects live and restart here.
 - [Conventions](docs/decisions/2026-09-26-conventions.md): naming, statuses, dates, and templates.
 - [Priorities](specs/PRIORITIES.md): what to work on.
 

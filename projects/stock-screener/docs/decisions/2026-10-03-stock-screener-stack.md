@@ -12,11 +12,11 @@
 
 #### Functional
 
-A stack for the [stock screener](../../specs/stock-screener/SPEC-2026-10-03-stock-screener.md) and its [portfolio and Kelly allocation](../../specs/stock-screener/SPEC-2026-10-03-portfolio-kelly.md) that loads SEC EDGAR XBRL data for every filer, turns it into 10+ years of per-share series and ratios, screens all companies interactively, pulls live prices, and solves small portfolio optimizations.
+A stack for the [stock screener](../../specs/SPEC-2026-10-03-stock-screener.md) and its [portfolio and Kelly allocation](../../specs/SPEC-2026-10-03-portfolio-kelly.md) that loads SEC EDGAR XBRL data for every filer, turns it into 10+ years of per-share series and ratios, screens all companies interactively, pulls live prices, and solves small portfolio optimizations.
 
 #### Non-functional
 
-Fast enough to screen every company in about a second on a laptop, local first, and installable in the pinned environment from [SPEC-2026-09-26-make-setup](../../specs/SPEC-2026-09-26-make-setup.md).
+Fast enough to screen every company in about a second on a laptop, local first, and installable in the pinned environment from [SPEC-2026-09-26-make-setup](../../../../specs/SPEC-2026-09-26-make-setup.md).
 
 ### Nice to haves
 

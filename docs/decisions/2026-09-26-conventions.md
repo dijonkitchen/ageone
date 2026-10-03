@@ -18,6 +18,8 @@
 
 2026-09-28: Amended by Claude, at JC's request: Markdown prose uses semantic line breaks.
 
+2026-09-30: Amended by Claude, at JC's request: project specs and decision records live in their project folder, and a project gets a nested `AGENTS.md` once it has code.
+
 2026-10-03: Amended by Claude, at JC's request: specs are named by date and slug instead of a sequential number, so parallel work can't collide on the next number.
 
 ## Objective Context
@@ -71,10 +73,11 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 - Git stores the symlinks themselves (mode `120000`), not the content, so the repo has one copy of the instructions.
   On a checkout that can't create symlinks, such as Windows without symlink support, each appears as a one-line file holding its target path; open the target by hand.
 - Add a new entry-point name the same way: symlink it to `AGENTS.md`, never to `README.md` directly and never as a copy.
+- Once a project in `projects/<slug>/` has code, it gets its own `AGENTS.md` (a regular file, from the project template) with `CLAUDE.md` symlinked to it, holding only what is specific to the project and linking to the root `AGENTS.md`.
 
 ### Specs
 
-- Path: `specs/SPEC-YYYY-MM-DD-short-slug.md`, or `specs/<project>/SPEC-YYYY-MM-DD-short-slug.md` once a project needs its own folder.
+- Path: `specs/SPEC-YYYY-MM-DD-short-slug.md` for repo-wide specs, or `projects/<slug>/specs/SPEC-YYYY-MM-DD-short-slug.md` for a project's ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
 - The file name without `.md` is the spec's ID, such as `SPEC-2026-10-03-stock-screener`.
   The date is when the spec is proposed, so IDs sort in the order specs were written.
 - IDs are unique across the whole repo and never reused, but nobody hands them out: parallel work picks its own date and slug.
@@ -97,7 +100,7 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 
 ### Decision records
 
-- Path: `docs/decisions/YYYY-MM-DD-short-slug.md`, dated when proposed.
+- Path: `docs/decisions/YYYY-MM-DD-short-slug.md` for repo-wide decisions, or `projects/<slug>/docs/decisions/YYYY-MM-DD-short-slug.md` for a project's, dated when proposed.
 - Covers any decision (ADRs), especially architectural decisions.
 - Title: `# Decision Record YYYY-MM-DD: Title`.
 - Follow the sections of [decision records](2026-09-25-decision-records.md).
