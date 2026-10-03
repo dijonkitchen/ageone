@@ -13,7 +13,7 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-09-26: Amended by Claude, at JC's request: Node.js and the eval sandbox come from the pinned devenv environment ([Reproducible Environment](2026-09-26-reproducible-environment.md)).
 
-2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
+2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
 
 2026-09-28: Amended by Claude, at JC's request: LLM observability platforms (LangSmith, Langfuse) considered and deferred.
 
@@ -190,7 +190,7 @@ person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Clau
   Mitigation: review the allowlist in the monthly model sweep.
 - Evals cost money and time on every switch.
   Mitigation: small case set, batch or slow tiers for the sweep, cheap judge model.
-- No LLM observability platform (LangSmith, Langfuse) for now: pi's JSONL sessions are the traces, `evals/cases/` the datasets, `evals/results/` in git the history, and [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md)'s static pages the dashboards.
+- No LLM observability platform (LangSmith, Langfuse) for now: pi's JSONL sessions are the traces, `evals/cases/` the datasets, `evals/results/` in git the history, and [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md)'s static pages the dashboards.
   A platform would add a service to run, send prompts to a third party unless self-hosted (undoing zero data retention), and hold data outside the repo, so pages could no longer be rebuilt from committed files.
   LangSmith is also closed and tied to one vendor, with self-hosting limited to enterprise plans.
   Revisit when something here serves real users in production (live tracing, cost alerts, user feedback), when several people review and label results together, or when results in git grow too large to search (thousands of runs).

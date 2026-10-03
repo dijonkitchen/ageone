@@ -1,4 +1,4 @@
-# SPEC-0002: Vendor-Neutral AI Harness With Evals
+# SPEC-2026-09-26-vendor-neutral-ai-harness: Vendor-Neutral AI Harness With Evals
 
 ## Functional requirements
 
