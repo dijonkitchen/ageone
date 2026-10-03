@@ -1,0 +1,8 @@
+{
+  "id": "mock-direct",
+  "mode": "direct",
+  "title": "Mock model replies with a fixed answer",
+  "prompt": "MOCK-REPLY: 42",
+  "timeoutSec": 60,
+  "maxTurns": 1
+}

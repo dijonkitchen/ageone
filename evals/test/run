@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+// Offline test of the eval runner: the pi and direct adapters against a local mock model,
+// checking that each run is graded and records the metrics. No API keys needed.
+import { spawn } from "node:child_process";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readRecords } from "../lib/results.mjs";
+import { startMock } from "./mock-provider.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const { server, url } = await startMock();
+const tmp = mkdtempSync(join(tmpdir(), "ageone-evals-test-"));
+const extra = join(tmp, "models.json");
+writeFileSync(extra, JSON.stringify({
+  providers: { mock: { baseUrl: url, api: "openai-completions", apiKey: "mock", models: [{ id: "scripted", cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0 } }] } },
+}));
+const env = { ...process.env, EVALS_PI_EXTRA_MODELS: extra, EVALS_DIRECT_BASE_URL: url, EVALS_DIRECT_API_KEY: "mock" };
+const results = join(tmp, "results");
+let failed = 0;
+try {
+  for (const harness of ["pi", "direct"]) {
+    // Async, so this process's mock server keeps answering while the runner waits on it.
+    const child = spawn(join(here, "..", "run"), ["--harness", harness, "--model", "mock/scripted", "--cases", join(here, "cases"), "--results", results, "--reps", "1"], { env, stdio: "inherit" });
+    const code = await new Promise((resolve) => child.on("close", resolve));
+    if (code !== 0) throw new Error(`evals/run --harness ${harness} exited ${code}`);
+  }
+  const files = readdirSync(results).map((f) => join(results, f));
+  const infra = files.filter((f) => f.endsWith(".infra.jsonl"));
+  if (infra.length) { failed++; console.error(`infra failures:\n${readRecords(infra).map((r) => `${r.harness} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
+  const records = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
+  const want = [["pi", "mock-agent", 2], ["pi", "mock-direct", 1], ["direct", "mock-direct", 1]];
+  for (const [harness, id, turns] of want) {
+    const r = records.find((x) => x.harness === harness && x.case === id);
+    const problems = !r ? ["no record"] : [
+      !r.pass && `not passed (${r.grader_note})`,
+      r.turns !== turns && `turns ${r.turns}, want ${turns}`,
+      !(r.tokens_in > 0 && r.tokens_out > 0) && "no tokens",
+      !(r.cost_usd > 0) && "no cost",
+      r.served_model !== "scripted" && `served model ${r.served_model}`,
+      !(r.wall_ms > 0) && "no wall time",
+      !r.commit && "no commit",
+    ].filter(Boolean);
+    console.log(`${problems.length ? "FAIL" : "ok"}: ${harness} ${id}${problems.length ? " " + problems.join(", ") : ""}`);
+    failed += problems.length ? 1 : 0;
+  }
+} finally {
+  server.close();
+  rmSync(tmp, { recursive: true, force: true });
+}
+process.exit(failed ? 1 : 0);
