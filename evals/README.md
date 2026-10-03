@@ -1,6 +1,6 @@
 # Evals
 
-Cases drawn from this repo's own tasks, run through a harness against any model, so switching a model, prompt, or harness rests on measurement ([SPEC-0002](../specs/SPEC-0002-vendor-neutral-ai-harness.md)).
+Cases drawn from this repo's own tasks, run through a harness against any model, so switching a model, prompt, or harness rests on measurement ([SPEC-2026-09-26-vendor-neutral-ai-harness](../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md)).
 
 ## Run
 
@@ -42,7 +42,7 @@ Add a case for every task a model fails, and turn completed tasks into regressio
 ## Results
 
 `results/<date>-<harness>-<model>.jsonl` holds one JSON line per case, model, and repetition:
-`pass`, `score`, `tokens_in` (cache reads and writes included), `tokens_out`, `cache_read`, `cost_usd`, `turns`, `wall_ms`, the `served_model` reported by the provider, `harness` and `harness_version`, `date`, `commit`, and `dirty`, plus `experiment` and `variant` for [SPEC-0004](../specs/SPEC-0004-eval-benchmark-pages.md) pages.
+`pass`, `score`, `tokens_in` (cache reads and writes included), `tokens_out`, `cache_read`, `cost_usd`, `turns`, `wall_ms`, the `served_model` reported by the provider, `harness` and `harness_version`, `date`, `commit`, and `dirty`, plus `experiment` and `variant` for [SPEC-2026-09-27-eval-benchmark-pages](../specs/SPEC-2026-09-27-eval-benchmark-pages.md) pages.
 
 Runs that could not be graded go to the matching `.infra.jsonl` with a `status` of `infra_error`, `timeout`, `truncated`, `refused`, or `model_mismatch` (the served model differs from the requested one), and never count as model failures.
 Running out of turns is a model failure.

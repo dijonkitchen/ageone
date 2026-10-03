@@ -17,10 +17,10 @@ only_changed() {
   [ -z "$extra" ] || fail "unexpected changes: $(echo "$extra" | tr '\n' ' ')"
 }
 
-# Rows of the priority table as tab-separated fields: number, dependency, priority, description, difficulty, status.
+# Rows of the priority table as tab-separated fields: spec, dependency, priority, description, difficulty, status.
 priority_rows() {
   grep -E '^\| *\[SPEC-' "${1:-specs/PRIORITIES.md}" |
-    sed -E 's/^\| *//; s/ *\| *$//; s/ *\| */\t/g; s/^\[(SPEC-[0-9]+)\]\([^)]*\)/\1/'
+    sed -E 's/^\| *//; s/ *\| *$//; s/ *\| */\t/g; s/^\[(SPEC-[^]]+)\]\([^)]*\)/\1/'
 }
 
 # The table is sorted by priority, then difficulty (Low, Medium, High).

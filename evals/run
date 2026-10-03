@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Run eval cases through a harness against one or more models and record the metrics.
-// See evals/README.md and specs/SPEC-0002-vendor-neutral-ai-harness.md.
+// See evals/README.md and specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,7 +19,7 @@ const USAGE = `usage: evals/run [options]
   --reps <n>          repetitions per case and model (default: 3)
   --cases <dir>       case folder (default: evals/cases)
   --results <dir>     results folder (default: evals/results)
-  --experiment <id>   label records with an experiment and --variant, for SPEC-0004 pages
+  --experiment <id>   label records with an experiment and --variant, for SPEC-2026-09-27-eval-benchmark-pages pages
   --variant <id>
   --keep              keep sandboxes for inspection
   --list              list cases and exit

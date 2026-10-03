@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Run an experiment: every variant's cases against every model, through evals/run.
-// See experiments/README.md and specs/SPEC-0004-eval-benchmark-pages.md.
+// See experiments/README.md and specs/SPEC-2026-09-27-eval-benchmark-pages.md.
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

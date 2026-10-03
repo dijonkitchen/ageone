@@ -1,6 +1,6 @@
 # Experiments
 
-Each experiment asks one question and compares variants of one choice on the same cases and models ([SPEC-0004](../specs/SPEC-0004-eval-benchmark-pages.md)).
+Each experiment asks one question and compares variants of one choice on the same cases and models ([SPEC-2026-09-27-eval-benchmark-pages](../specs/SPEC-2026-09-27-eval-benchmark-pages.md)).
 [`site/build`](../site/build) publishes every experiment here as a page; adding a folder is enough.
 
 ## Run

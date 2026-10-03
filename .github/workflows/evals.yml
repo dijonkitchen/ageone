@@ -1,5 +1,5 @@
 # Offline checks of the harness config and eval runner; no model calls and no API keys.
-# See specs/SPEC-0002-vendor-neutral-ai-harness.md and evals/README.md.
+# See specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md and evals/README.md.
 name: Evals
 
 on:

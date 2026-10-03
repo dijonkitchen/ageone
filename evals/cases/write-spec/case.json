@@ -2,7 +2,7 @@
   "id": "write-spec",
   "title": "Write a new spec and add it to the priority table",
   "source": "AGENTS.md agent workflow, steps 3 and 4; Conventions decision record, Specs and Priorities sections",
-  "prompt": "Write a spec for a `make lint` target that checks the repo's Markdown conventions (file names, titles, relative links, and the priority table's order). Add it to the priority table with priority 3, depending on SPEC-0003. Follow the repo's conventions.",
+  "prompt": "Write a spec for a `make lint` target that checks the repo's Markdown conventions (file names, titles, relative links, and the priority table's order). Add it to the priority table with priority 3, depending on SPEC-2026-09-26-make-setup. Follow the repo's conventions.",
   "timeoutSec": 500,
   "maxTurns": 30
 }

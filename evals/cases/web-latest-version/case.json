@@ -1,7 +1,7 @@
 {
   "id": "web-latest-version",
   "title": "Search the web, read a page, and cite it",
-  "source": "SPEC-0002 definition of done, item 3",
+  "source": "SPEC-2026-09-26-vendor-neutral-ai-harness definition of done, item 3",
   "needs": ["web"],
   "prompt": "Use web search to find the latest published version of the npm package `pi-web-access`, then fetch the page that shows it. Write answer.md with two lines: `version: <x.y.z>` and `source: <URL of the page you read it from>`. Don't use npm or any package manager command.",
   "timeoutSec": 400,

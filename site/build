@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build the eval and benchmark pages from committed files: experiments/*/{experiment.json,README.md,results/}.
 // Static HTML, no dependencies; the same commit always builds the same site.
-// See specs/SPEC-0004-eval-benchmark-pages.md and experiments/README.md.
+// See specs/SPEC-2026-09-27-eval-benchmark-pages.md and experiments/README.md.
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

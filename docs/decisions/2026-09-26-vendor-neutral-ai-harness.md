@@ -17,7 +17,7 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-09-28: Amended by Claude, at JC's request: LLM observability platforms (LangSmith, Langfuse) considered and deferred.
 
-2026-09-28: Amended by Claude, while implementing SPEC-0002: starting values for every role, where pi's user-level files come from, and how the runner keeps measurement honest (section 8).
+2026-09-28: Amended by Claude, while implementing SPEC-2026-09-26-vendor-neutral-ai-harness: starting values for every role, where pi's user-level files come from, and how the runner keeps measurement honest (section 8).
 
 ## Objective Context
 

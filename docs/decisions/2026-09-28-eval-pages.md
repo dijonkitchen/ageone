@@ -2,7 +2,7 @@
 
 ## Status timeline
 
-2026-09-28: Proposed by Claude, while implementing SPEC-0004
+2026-09-28: Proposed by Claude, while implementing SPEC-2026-09-27-eval-benchmark-pages
 
 ## Objective Context
 
@@ -10,7 +10,7 @@
 
 #### Functional
 
-Publish every experiment's question, results, and conclusion as a web page built only from committed files, as [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md) requires.
+Publish every experiment's question, results, and conclusion as a web page built only from committed files, as [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md) requires.
 
 #### Non-functional
 
@@ -60,7 +60,7 @@ experiments/*/ + results ──> site/build ──> _site/ ──> GitHub Pages
 
 ### Dependencies
 
-Node.js from the pinned environment, the eval runner from [SPEC-0002](../../specs/SPEC-0002-vendor-neutral-ai-harness.md), and GitHub Pages set to deploy from Actions.
+Node.js from the pinned environment, the eval runner from [SPEC-2026-09-26-vendor-neutral-ai-harness](../../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md), and GitHub Pages set to deploy from Actions.
 
 ### Interfaces
 

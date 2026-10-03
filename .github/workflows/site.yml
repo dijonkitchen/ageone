@@ -1,6 +1,6 @@
 # Build the eval and benchmark pages from committed results on every pull request; publish them from main.
 # Publishing needs GitHub Pages set to "GitHub Actions" in the repository's settings (once).
-# See specs/SPEC-0004-eval-benchmark-pages.md.
+# See specs/SPEC-2026-09-27-eval-benchmark-pages.md.
 name: Site
 
 on:
