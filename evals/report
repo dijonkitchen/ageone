@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+// Summarize committed results: evals/report [results files...] (default: every evals/results/*.jsonl).
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+import { ROOT } from "../harness/config.mjs";
+import { readRecords, summarize, table } from "./lib/results.mjs";
+
+const dir = join(ROOT, "evals", "results");
+const files = process.argv.length > 2 ? process.argv.slice(2) : readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f));
+const ok = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
+const infra = readRecords(files.filter((f) => f.endsWith(".infra.jsonl")));
+console.log(table(summarize(ok, infra)));

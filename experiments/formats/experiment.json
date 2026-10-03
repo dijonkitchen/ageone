@@ -1,0 +1,32 @@
+{
+  "question": "Which format should our tools use for data a model reads, and for data a model writes?",
+  "answer": null,
+  "decision": "docs/decisions/2026-09-27-agent-tool-interfaces.md",
+  "models": ["cheap", "openrouter/openai/gpt-6-luna", "openrouter/deepseek/deepseek-v4.1-flash"],
+  "reps": 3,
+  "variants": [
+    { "id": "csv", "label": "CSV", "harness": "direct", "cases": "variants/csv" },
+    { "id": "toon", "label": "TOON", "harness": "direct", "cases": "variants/toon" },
+    { "id": "ndjson", "label": "NDJSON", "harness": "direct", "cases": "variants/ndjson" },
+    { "id": "json-min", "label": "Minified JSON", "harness": "direct", "cases": "variants/json-min" },
+    { "id": "json-pretty", "label": "Pretty JSON", "harness": "direct", "cases": "variants/json-pretty" },
+    { "id": "kv", "label": "key: value", "harness": "direct", "cases": "variants/kv" }
+  ],
+  "outside": [
+    {
+      "source": "Our token count, not a model run (Agent Tool Interfaces record, 2026-09-27)",
+      "url": "docs/decisions/2026-09-27-agent-tool-interfaces.md",
+      "rows": [["TSV", "35-36% of pretty JSON's tokens"], ["CSV", "37-39%"], ["TOON", "42-43%"], ["Minified JSON", "59%"], ["NDJSON", "61-62%"]]
+    },
+    {
+      "source": "TOON's authors",
+      "url": "https://github.com/toon-format/toon",
+      "rows": [["TOON", "about 40% fewer tokens than pretty JSON, with similar accuracy for data a model reads"]]
+    },
+    {
+      "source": "arXiv 2603.03306",
+      "url": "https://arxiv.org/abs/2603.03306",
+      "rows": [["JSON", "more accurate than alternatives when a model writes the data"]]
+    }
+  ]
+}

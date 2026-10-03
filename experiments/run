@@ -1,0 +1,112 @@
+#!/usr/bin/env node
+// Run an experiment: every variant's cases against every model, through evals/run.
+// See experiments/README.md and specs/SPEC-2026-09-27-eval-benchmark-pages.md.
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { parseArgs } from "node:util";
+import { ROOT, loadConfig, resolveModel } from "../harness/config.mjs";
+import { loadCases } from "../evals/lib/sandbox.mjs";
+
+const USAGE = `usage: experiments/run <experiment> [options]
+
+  --model <m>      a role or provider/model ID; repeatable (default: the experiment's models)
+  --reps <n>       repetitions (default: the experiment's reps)
+  --variant <ids>  comma-separated variants (default: all)
+  --estimate       print the estimated cost and exit
+  --yes            run after printing the estimate (without it, a run stops at the estimate)
+  --self-check     run each variant's reference solutions (must pass) and null baseline (must fail), and record them
+
+Experiments: ${existsSync(join(ROOT, "experiments")) ? readdirSync(join(ROOT, "experiments")).filter((d) => existsSync(join(ROOT, "experiments", d, "experiment.json"))).join(", ") : "none"}
+`;
+
+const { values: opt, positionals } = parseArgs({
+  allowPositionals: true,
+  options: {
+    model: { type: "string", multiple: true },
+    reps: { type: "string" },
+    variant: { type: "string" },
+    estimate: { type: "boolean", default: false },
+    yes: { type: "boolean", default: false },
+    "self-check": { type: "boolean", default: false },
+    help: { type: "boolean", short: "h", default: false },
+  },
+});
+
+const id = positionals[0];
+if (opt.help || !id) {
+  console.log(USAGE);
+  process.exit(id || opt.help ? 0 : 2);
+}
+const dir = join(ROOT, "experiments", id);
+if (!existsSync(join(dir, "experiment.json"))) {
+  console.error(`error: no experiment ${id}\n\n${USAGE}`);
+  process.exit(2);
+}
+const exp = JSON.parse(readFileSync(join(dir, "experiment.json"), "utf8"));
+const config = loadConfig();
+const models = opt.model ?? exp.models;
+const reps = Number(opt.reps ?? exp.reps);
+const variants = opt.variant ? exp.variants.filter((v) => opt.variant.split(",").includes(v.id)) : exp.variants;
+// A variant's cases are relative to the experiment folder, or to the repo root when they start with evals/.
+const casesDir = (v) => (v.cases.startsWith("evals/") ? join(ROOT, v.cases) : join(dir, v.cases));
+const results = join(dir, "results");
+
+function evalsRun(args) {
+  const r = spawnSync(join(ROOT, "evals", "run"), args, { stdio: "inherit" });
+  return r.status ?? 1;
+}
+
+if (opt["self-check"]) {
+  let bad = 0;
+  for (const v of variants) {
+    for (const harness of ["reference", "null"]) {
+      bad += evalsRun(["--harness", harness, "--cases", casesDir(v), "--results", results, "--experiment", id, "--variant", v.id, "--reps", "1"]) ? 1 : 0;
+    }
+    bad += evalsRun(["--self-check", "--cases", casesDir(v)]);
+  }
+  process.exit(bad ? 1 : 0);
+}
+
+// Estimate: prompt tokens (about 4 characters each) plus an allowance for output and, in agent cases,
+// re-reading the context each turn, priced from OpenRouter's public model list.
+const pricing = new Map();
+try {
+  const res = await fetch("https://openrouter.ai/api/v1/models");
+  for (const m of (await res.json()).data) pricing.set(m.id, m.pricing);
+} catch {
+  console.error("warning: could not fetch OpenRouter prices; showing tokens only");
+}
+let total = 0;
+const lines = ["model,calls,est_tokens_in,est_tokens_out,est_cost_usd"];
+for (const m of models) {
+  const model = resolveModel(config, m);
+  let calls = 0, tin = 0, tout = 0;
+  for (const v of variants) {
+    for (const c of loadCases(casesDir(v))) {
+      const turns = c.mode === "direct" ? 1 : 8;
+      calls += reps;
+      tin += reps * turns * (Math.ceil(c.prompt.length / 4) + (c.mode === "direct" ? 0 : 6000));
+      tout += reps * turns * (c.mode === "direct" ? 400 : 800);
+    }
+  }
+  const p = model.provider === "openrouter" ? pricing.get(model.id) : null;
+  const cost = p ? tin * Number(p.prompt) + tout * Number(p.completion) : null;
+  if (cost !== null) total += cost;
+  lines.push(`${model.full},${calls},${tin},${tout},${cost === null ? "unknown" : cost.toFixed(4)}`);
+}
+console.log(lines.join("\n"));
+console.log(`# estimated total: $${total.toFixed(2)} for ${variants.length} variants x ${models.length} models x ${reps} reps`);
+if (opt.estimate) process.exit(0);
+if (!opt.yes) {
+  console.log("# not run: add --yes to run it");
+  process.exit(0);
+}
+
+let failed = 0;
+for (const v of variants) {
+  failed += evalsRun(["--harness", v.harness, "--cases", casesDir(v), "--results", results, "--experiment", id, "--variant", v.id, "--reps", String(reps),
+    ...models.flatMap((m) => ["--model", m])]) ? 1 : 0;
+}
+console.log(`# next: site/build, then open _site/${id}/index.html`);
+process.exit(failed ? 1 : 0);

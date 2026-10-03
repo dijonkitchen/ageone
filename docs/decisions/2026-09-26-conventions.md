@@ -18,7 +18,9 @@
 
 2026-09-28: Amended by Claude, at JC's request: Markdown prose uses semantic line breaks.
 
-2026-09-30: Amended by Claude, at JC's request: project specs and decision records live in their project folder, and each project has a nested `AGENTS.md`.
+2026-09-30: Amended by Claude, at JC's request: project specs and decision records live in their project folder, and a project gets a nested `AGENTS.md` once it has code.
+
+2026-10-03: Amended by Claude, at JC's request: specs are named by date and slug instead of a sequential number, so parallel work can't collide on the next number.
 
 ## Objective Context
 
@@ -71,13 +73,16 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 - Git stores the symlinks themselves (mode `120000`), not the content, so the repo has one copy of the instructions.
   On a checkout that can't create symlinks, such as Windows without symlink support, each appears as a one-line file holding its target path; open the target by hand.
 - Add a new entry-point name the same way: symlink it to `AGENTS.md`, never to `README.md` directly and never as a copy.
-- Each project in `projects/<slug>/` has its own `AGENTS.md` (a regular file) with `CLAUDE.md` symlinked to it, holding only what is specific to the project and linking to the root `AGENTS.md`.
+- Once a project in `projects/<slug>/` has code, it gets its own `AGENTS.md` (a regular file, from the project template) with `CLAUDE.md` symlinked to it, holding only what is specific to the project and linking to the root `AGENTS.md`.
 
 ### Specs
 
-- Path: `specs/SPEC-NNNN-short-slug.md` for repo-wide specs, or `projects/<slug>/specs/SPEC-NNNN-short-slug.md` for a project's ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
-- `NNNN` is a zero-padded number, unique across the whole repo, given in order and never reused.
-- Title: `# SPEC-NNNN: Title`.
+- Path: `specs/SPEC-YYYY-MM-DD-short-slug.md` for repo-wide specs, or `projects/<slug>/specs/SPEC-YYYY-MM-DD-short-slug.md` for a project's ([Projects in ageone](2026-09-30-projects-in-ageone.md)).
+- The file name without `.md` is the spec's ID, such as `SPEC-2026-10-03-stock-screener`.
+  The date is when the spec is proposed, so IDs sort in the order specs were written.
+- IDs are unique across the whole repo and never reused, but nobody hands them out: parallel work picks its own date and slug.
+  If an ID is already taken, append `-2` (then `-3`, and so on) to the slug.
+- Title: `# SPEC-YYYY-MM-DD-short-slug: Title`.
 - Sections: `## Functional requirements`, `## Non-functional requirements`, `## Definition of done`.
   A spec can't be `Done` without a definition of done.
 
@@ -88,7 +93,7 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 - `updated_at` at the top is the date of the last change to the table.
 - Whenever a spec is added or updated, re-evaluate every row's priority, then update `updated_at`.
 - Priority: integer, `1` is the highest.
-- Dependency: a spec number, or `None`.
+- Dependency: a spec ID, or `None`.
 - Difficulty: `Low`, `Medium`, or `High`.
 - Status: `Open`, `In progress (<owner>)`, `Blocked (<reason>)`, or `Done`.
   The owner is a person's handle or an agent session, and claims the spec so others pick a different one.
@@ -110,7 +115,7 @@ Conventional Commits: `type(optional-scope): summary`, with `!` before the colon
 Types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 
 Pull requests are squash merged, so the pull request title becomes the commit subject on `main`.
-Pull request titles follow the same format as commits, such as `docs: add SPEC-0004 for ...`, and are updated if the change's scope shifts before merge.
+Pull request titles follow the same format as commits, such as `docs: add a spec for eval and benchmark pages`, and are updated if the change's scope shifts before merge.
 The [PR title workflow](../../.github/workflows/pr-title.yml) fails a pull request whose title doesn't match; it is the source of truth for the pattern.
 
 Commit messages hold the detail for the long term: what changed and why.

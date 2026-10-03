@@ -1,0 +1,149 @@
+#!/usr/bin/env node
+// Run eval cases through a harness against one or more models and record the metrics.
+// See evals/README.md and specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md.
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { parseArgs } from "node:util";
+import { ROOT, loadConfig, resolveModel } from "../harness/config.mjs";
+import { ADAPTERS } from "./lib/adapters.mjs";
+import { append, resultsFile, summarize, table } from "./lib/results.mjs";
+import { loadCases, makeSandbox, repoCommit, scriptEnv } from "./lib/sandbox.mjs";
+
+const USAGE = `usage: evals/run [options]
+
+  --harness <name>    pi (default), claude-code, direct, reference, or null
+  --model <m>         a role from harness/models.json or a provider/model ID; repeatable (default: default)
+  --case <ids>        comma-separated case IDs (default: every case the harness can run)
+  --reps <n>          repetitions per case and model (default: 3)
+  --cases <dir>       case folder (default: evals/cases)
+  --results <dir>     results folder (default: evals/results)
+  --experiment <id>   label records with an experiment and --variant, for SPEC-2026-09-27-eval-benchmark-pages pages
+  --variant <id>
+  --keep              keep sandboxes for inspection
+  --list              list cases and exit
+  --self-check        run every case with the reference solution (must pass) and null baseline (must fail)
+
+Examples:
+  evals/run --self-check
+  evals/run --model default --model cheap --reps 3
+  evals/run --harness direct --model openrouter/deepseek/deepseek-v4.1-flash --case read-csv-total
+`;
+
+const { values: opt } = parseArgs({
+  options: {
+    harness: { type: "string", default: "pi" },
+    model: { type: "string", multiple: true },
+    case: { type: "string" },
+    reps: { type: "string", default: "3" },
+    cases: { type: "string", default: join(ROOT, "evals", "cases") },
+    results: { type: "string", default: join(ROOT, "evals", "results") },
+    experiment: { type: "string" },
+    variant: { type: "string" },
+    keep: { type: "boolean", default: false },
+    list: { type: "boolean", default: false },
+    "self-check": { type: "boolean", default: false },
+    help: { type: "boolean", short: "h", default: false },
+  },
+});
+
+if (opt.help) {
+  console.log(USAGE);
+  process.exit(0);
+}
+
+const config = loadConfig();
+let cases = loadCases(resolve(opt.cases));
+if (opt.case) {
+  const want = opt.case.split(",");
+  const missing = want.filter((id) => !cases.some((c) => c.id === id));
+  if (missing.length) throw new Error(`unknown case: ${missing.join(", ")}`);
+  cases = cases.filter((c) => want.includes(c.id));
+}
+
+if (opt.list) {
+  for (const c of cases) console.log(`${c.id}\t${c.mode}${c.needs.length ? "\tneeds " + c.needs.join(",") : ""}\t${c.title}`);
+  process.exit(0);
+}
+
+// Each run bills the project's own key for its provider. Refuse to start without it, so a harness
+// can never fall back to credentials it finds on the machine (a logged-in CLI, a host's managed login).
+const PROVIDER_KEYS = { openrouter: "OPENROUTER_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY", google: "GEMINI_API_KEY" };
+
+function checkKeys(harness, models) {
+  if (["reference", "null"].includes(harness)) return;
+  for (const m of models) {
+    const { provider } = resolveModel(config, m);
+    const key = PROVIDER_KEYS[provider];
+    if (key && !process.env[key]) {
+      console.error(`${m} needs ${key}; set it to the project's key (see evals/README.md)`);
+      process.exit(2);
+    }
+  }
+}
+
+async function runAll({ harness, models, reps, resultsDir, quiet }) {
+  const adapter = ADAPTERS[harness];
+  if (!adapter) throw new Error(`unknown harness: ${harness}`);
+  checkKeys(harness, models);
+  const date = new Date().toISOString().slice(0, 10);
+  const { commit, dirty } = repoCommit();
+  const runDir = mkdtempSync(join(tmpdir(), "ageone-evals-"));
+  mkdirSync(join(runDir, "home"));
+  const runnable = cases.filter((c) => harness !== "direct" || c.mode === "direct");
+  const all = { ok: [], infra: [] };
+  for (const modelArg of models) {
+    const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", role: null } : resolveModel(config, modelArg);
+    const file = resultsDir && resultsFile(resultsDir, date, harness, model.full, opt.variant);
+    for (const caseDef of runnable) {
+      for (let rep = 1; rep <= reps; rep++) {
+        const box = { ...makeSandbox(runDir, caseDef, rep), rep };
+        const started = Date.now();
+        const r = await adapter.run({ caseDef, box, model, config, runDir, timeoutMs: caseDef.timeoutSec * 1000 });
+        const wall_ms = Date.now() - started;
+        writeFileSync(box.output, r.output ?? "");
+        let pass = null;
+        let grader_note = null;
+        if (r.status === "ok") {
+          try {
+            execFileSync("bash", [join(caseDef.dir, "check.sh")], {
+              cwd: box.work, env: scriptEnv(caseDef, { EVAL_OUTPUT: box.output }), stdio: "pipe", timeout: 120_000,
+            });
+            pass = true;
+          } catch (err) {
+            pass = false;
+            grader_note = `${err.stdout ?? ""}${err.stderr ?? ""}`.trim().slice(-300) || String(err).slice(0, 300);
+          }
+        }
+        const { output, ...metrics } = r;
+        const record = {
+          date, commit, dirty,
+          experiment: opt.experiment ?? null, variant: opt.variant ?? null,
+          case: caseDef.id, harness, harness_version: adapter.version(config), model: model.full, role: model.role, rep,
+          ...metrics, pass, score: pass === null ? null : pass ? 1 : 0, wall_ms, grader_note,
+        };
+        (r.status === "ok" ? all.ok : all.infra).push(record);
+        if (resultsDir) append(file, record);
+        if (!quiet) console.error(`${harness} ${model.full} ${caseDef.id} #${rep}: ${r.status === "ok" ? (pass ? "pass" : "FAIL") : r.status}${r.error ? " " + String(r.error).slice(0, 200) : ""}`);
+        if (!opt.keep) rmSync(box.dir, { recursive: true, force: true });
+      }
+    }
+  }
+  if (!opt.keep) rmSync(runDir, { recursive: true, force: true });
+  else console.error(`sandboxes kept in ${runDir}`);
+  return all;
+}
+
+if (opt["self-check"]) {
+  let bad = 0;
+  const ref = await runAll({ harness: "reference", models: ["reference"], reps: 1, quiet: true });
+  const nul = await runAll({ harness: "null", models: ["null"], reps: 1, quiet: true });
+  for (const r of [...ref.ok, ...ref.infra]) if (!r.pass) { bad++; console.error(`reference fails ${r.case}: ${r.grader_note ?? r.error ?? r.status}`); }
+  for (const r of [...nul.ok, ...nul.infra]) if (r.pass) { bad++; console.error(`null baseline passes ${r.case}: the grader accepts doing nothing`); }
+  console.log(`${cases.length} cases: reference passes ${ref.ok.filter((r) => r.pass).length}, null baseline passes ${nul.ok.filter((r) => r.pass).length}`);
+  process.exit(bad ? 1 : 0);
+}
+
+const all = await runAll({ harness: opt.harness, models: opt.model ?? ["default"], reps: Number(opt.reps), resultsDir: resolve(opt.results) });
+console.log(table(summarize(all.ok, all.infra)));

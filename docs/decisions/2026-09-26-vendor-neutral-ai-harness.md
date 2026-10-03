@@ -13,9 +13,11 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-09-26: Amended by Claude, at JC's request: Node.js and the eval sandbox come from the pinned devenv environment ([Reproducible Environment](2026-09-26-reproducible-environment.md)).
 
-2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
+2026-09-27: Amended by Claude, at JC's request: the eval runner takes the harness as a setting (pi first) and has a direct mode with no harness, so [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md) can compare harnesses and formats with the same metrics.
 
 2026-09-28: Amended by Claude, at JC's request: LLM observability platforms (LangSmith, Langfuse) considered and deferred.
+
+2026-09-28: Amended by Claude, while implementing SPEC-2026-09-26-vendor-neutral-ai-harness: starting values for every role, where pi's user-level files come from, and how the runner keeps measurement honest (section 8).
 
 ## Objective Context
 
@@ -94,9 +96,9 @@ A second harness gets the same file.
 | Role | Purpose | Starting value (re-evaluate with evals) |
 |------|---------|------------------------------------------|
 | `default` | everyday agentic work | current-generation mid tier, such as `anthropic/claude-sonnet-5` |
-| `cheap` | subagents, bulk, drafts | small tier or best open-weight model that passes the eval |
-| `frontier` | hard tasks, escalation on failure | current top tier, such as `anthropic/claude-opus-5-5` |
-| `judge` | LLM grader in evals | a different vendor from the model under test where possible |
+| `cheap` | subagents, bulk, drafts | small tier or best open-weight model that passes the eval, such as `google/gemini-3.8-flash` |
+| `frontier` | hard tasks, escalation on failure | current top tier, such as `anthropic/claude-opus-5.5` |
+| `judge` | LLM grader in evals | a different vendor from the model under test where possible, such as `openai/gpt-6-sol` |
 
 Rules: pin exact IDs and versions in evals; prompt caching on for every role; effort tuned per role, measuring the newest model at lower effort before reaching for an older model at high effort; task budgets and max turns set on every unattended run.
 
@@ -167,6 +169,18 @@ When quality matters, time does not, and cost does, in this order:
 5. Open-weight models (DeepSeek, Qwen, Kimi, GLM, Llama) through OpenRouter with the host allowlist and ZDR (section 6) as the `cheap` role, once they pass the eval on our tasks.
 6. Task budgets and a max-turn cap on every unattended run so a stuck loop cannot spend unbounded money.
 
+### 8. Implementation notes
+
+- pi only reads `models.json` and the web search extension's `web-search.json` from its user-level agent directory.
+  Both are generated from the repo: `harness/models.json` gives the OpenRouter routing (`zdr`, `data_collection: "deny"` for every model, plus `only` the allowlisted hosts with no fallbacks for the models listed as open-weight), and `harness/web-search.json` pins search to Exa.
+  The eval runner writes them into a fresh agent directory per run; people apply them to their own pi once with `harness/sync --agent-dir ~/.pi/agent`.
+- Harness versions are pinned in `harness/models.json` and installed on first use; `harness/pi` runs the pinned pi.
+- pi-web-access 0.33 starts each session with a single `web_enable` tool that the model calls to get `web_search` and `fetch_content`, which keeps tool tokens down; the web eval case measures whether models call it.
+- The runner refuses to start unless the provider's own key is set, and passes harnesses only model and search keys and proxy settings.
+  A harness can otherwise authenticate with credentials it finds on the machine: in a Claude Code on the web container, Claude Code completed calls with no key set, which would bill the wrong account and measure the wrong thing.
+- Each case runs in a copy of the repo without `evals/cases/` and `evals/results/`, so no model can read the graders, reference solutions, or earlier answers.
+- `evals/run --self-check` (reference passes, null fails) and a mock OpenAI-compatible model test the graders and the runner in CI with no keys.
+
 ### High-level C4(context/container/component/code) diagram
 
 ```
@@ -190,7 +204,7 @@ person / CI ──> harness (pi) ──> pi-ai ──> OpenRouter (default: Clau
   Mitigation: review the allowlist in the monthly model sweep.
 - Evals cost money and time on every switch.
   Mitigation: small case set, batch or slow tiers for the sweep, cheap judge model.
-- No LLM observability platform (LangSmith, Langfuse) for now: pi's JSONL sessions are the traces, `evals/cases/` the datasets, `evals/results/` in git the history, and [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md)'s static pages the dashboards.
+- No LLM observability platform (LangSmith, Langfuse) for now: pi's JSONL sessions are the traces, `evals/cases/` the datasets, `evals/results/` in git the history, and [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md)'s static pages the dashboards.
   A platform would add a service to run, send prompts to a third party unless self-hosted (undoing zero data retention), and hold data outside the repo, so pages could no longer be rebuilt from committed files.
   LangSmith is also closed and tied to one vendor, with self-hosting limited to enterprise plans.
   Revisit when something here serves real users in production (live tracing, cost alerts, user feedback), when several people review and label results together, or when results in git grow too large to search (thousands of runs).
@@ -207,9 +221,10 @@ A sandbox (container) for eval runs, built with `devenv container build`.
 
 ### Interfaces
 
-- `harness/models.json`: role to model mapping.
+- `harness/models.json`: role to model mapping, OpenRouter privacy and host allowlist, pinned harness versions.
+- `harness/web-search.json`: web search settings; `harness/sync` mirrors both files into pi's config.
 - `.pi/settings.json`: pi's default model (the `default` role) and package list (web search).
-- `evals/cases/*.md|json`, `evals/run`, `evals/results/*.jsonl`.
+- `evals/cases/<id>/` (`case.json`, `setup.sh`, `check.sh`, `reference.sh`), `evals/run`, `evals/report`, `evals/results/*.jsonl`.
 - pi JSON or RPC mode as the boundary between harness and eval runner; one adapter per other harness, plus `direct` for single model calls.
 
 ## Key Results and retrospective feedback

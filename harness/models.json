@@ -1,0 +1,25 @@
+{
+  "roles": {
+    "default": "openrouter/anthropic/claude-sonnet-5",
+    "cheap": "openrouter/google/gemini-3.8-flash",
+    "frontier": "openrouter/anthropic/claude-opus-5.5",
+    "judge": "openrouter/openai/gpt-6-sol"
+  },
+  "openRouter": {
+    "routing": {
+      "zdr": true,
+      "data_collection": "deny"
+    },
+    "openWeightHosts": ["deepinfra", "fireworks", "together", "parasail", "baseten", "coreweave", "modal"],
+    "openWeightModels": [
+      "deepseek/deepseek-v4.1-flash",
+      "z-ai/glm-5.3",
+      "moonshotai/kimi-k3",
+      "qwen/qwen3.8-27b"
+    ]
+  },
+  "harnesses": {
+    "pi": { "package": "@earendil-works/pi-coding-agent", "version": "0.87.1", "bin": "pi" },
+    "claude-code": { "package": "@anthropic-ai/claude-code", "version": "2.1.283", "bin": "claude" }
+  }
+}

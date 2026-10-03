@@ -19,10 +19,15 @@ Run `make`.
 It installs Nix (asking first) and devenv if missing, builds the pinned environment, and checks it; rerunning is safe.
 `make help` lists the other targets, which are for debugging.
 
+## Models and evals
+
+Agentic work runs through [pi](harness/README.md) with models chosen by role in [`harness/models.json`](harness/models.json).
+[Evals](evals/README.md) on this repo's own tasks judge every model, prompt, or harness change, and [experiments](experiments/README.md) compare ways of doing the same work, published by `site/build`.
+
 ## Agent workflow
 
 1. Read [`specs/PRIORITIES.md`](specs/PRIORITIES.md).
-2. Take the highest priority spec (lowest number) whose status is `Open` and whose dependency is `Done` or `None`.
+2. Take the highest priority spec (lowest priority number) whose status is `Open` and whose dependency is `Done` or `None`.
    Claim it by setting its status to `In progress (<owner>)`.
 3. If nothing is open, or priorities look stale, reprioritize the table or write a new spec in `specs/`.
 4. Whenever a spec is added or updated, re-evaluate the whole priority table, then update `updated_at` in `specs/PRIORITIES.md`.

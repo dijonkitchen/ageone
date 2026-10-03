@@ -1,0 +1,9 @@
+tasks[8]{id,title,team,status,hours}:
+  T-01,Pin devenv,evals,open,2
+  T-02,"Fix, then retest the runner",infra,open,3
+  T-03,"Rename \"judge\" role",docs,blocked,6
+  T-04,"Add TOON: a reader case",infra,open,0.5
+  T-05,Reflow ADRs,evals,open,8
+  T-06,Sort priorities,infra,open,2
+  T-07,Cache pi installs,evals,done,0.5
+  T-08,Check links,docs,open,8

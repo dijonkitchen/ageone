@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+// Mirror harness/models.json into pi's config files.
+//
+//   harness/sync                    write the `default` role into .pi/settings.json
+//   harness/sync --check            exit 1 if .pi/settings.json is out of date (CI)
+//   harness/sync --agent-dir <dir>  also write <dir>/models.json (OpenRouter privacy and host allowlist)
+//                                   and <dir>/web-search.json; use ~/.pi/agent to apply them to your own pi
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { PI_SETTINGS_PATH, WEB_SEARCH_PATH, loadConfig, piAgentModels, piProjectSettings } from "./config.mjs";
+
+const args = process.argv.slice(2);
+const config = loadConfig();
+const current = existsSync(PI_SETTINGS_PATH) ? JSON.parse(readFileSync(PI_SETTINGS_PATH, "utf8")) : {};
+const want = JSON.stringify(piProjectSettings(config, current), null, 2) + "\n";
+const have = existsSync(PI_SETTINGS_PATH) ? readFileSync(PI_SETTINGS_PATH, "utf8") : "";
+
+if (args[0] === "--check") {
+  if (want !== have) {
+    console.error(".pi/settings.json does not match the default role in harness/models.json: run harness/sync");
+    process.exit(1);
+  }
+  console.log("ok: .pi/settings.json matches harness/models.json");
+  process.exit(0);
+}
+
+if (want !== have) {
+  writeFileSync(PI_SETTINGS_PATH, want);
+  console.log("wrote .pi/settings.json");
+}
+
+const i = args.indexOf("--agent-dir");
+if (i >= 0) {
+  const dir = args[i + 1];
+  if (!dir) throw new Error("--agent-dir needs a directory");
+  mkdirSync(dir, { recursive: true });
+  const files = { "models.json": JSON.stringify(piAgentModels(config), null, 2) + "\n", "web-search.json": readFileSync(WEB_SEARCH_PATH, "utf8") };
+  for (const [name, content] of Object.entries(files)) {
+    const path = join(dir, name);
+    if (existsSync(path) && readFileSync(path, "utf8") !== content) {
+      console.error(`${path} exists and differs; merge this into it by hand:\n${content}`);
+      process.exitCode = 1;
+      continue;
+    }
+    writeFileSync(path, content);
+    console.log(`wrote ${path}`);
+  }
+}

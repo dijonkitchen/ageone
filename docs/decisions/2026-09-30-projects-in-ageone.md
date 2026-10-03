@@ -6,6 +6,8 @@
 
 2026-09-30: Amended by Claude, at JC's request, before acceptance: each project's specs, decision records, and a nested `AGENTS.md` live in its project folder.
 
+2026-10-03: Amended by Claude, at JC's request, before acceptance: a project gets its nested `AGENTS.md` from the template once it has code, not as a stub; specs are named by date; the stock screener, tile-laying game, algorithm roguelike, and anatomy viewer specs move into project folders too.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -22,7 +24,7 @@ Keeps the [Structure](2026-09-25-structure.md) and [Conventions](2026-09-26-conv
 
 #### Functional
 
-Projects reuse this repo's shared parts: the model roles and eval runner from [SPEC-0002](../../specs/SPEC-0002-vendor-neutral-ai-harness.md), the pages from [SPEC-0004](../../specs/SPEC-0004-eval-benchmark-pages.md), and shared agent skills.
+Projects reuse this repo's shared parts: the model roles and eval runner from [SPEC-2026-09-26-vendor-neutral-ai-harness](../../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md), the pages from [SPEC-2026-09-27-eval-benchmark-pages](../../specs/SPEC-2026-09-27-eval-benchmark-pages.md), and shared agent skills.
 
 #### Non-functional
 
@@ -42,9 +44,9 @@ A build system spanning languages (Bazel, Nx, Pants): each project keeps its own
 
 Each project is self-contained in `projects/<slug>/`:
 
-- `AGENTS.md`, with `CLAUDE.md` symlinked to it: short project instructions (stack, commands, where to read), linking to the root `AGENTS.md` instead of repeating it.
+- `AGENTS.md`, with `CLAUDE.md` symlinked to it, added from the project template once the project has code (a stub before then would only say "no code yet"): short project instructions (stack, commands, where to read), linking to the root `AGENTS.md` instead of repeating it.
   Harnesses load the instructions nearest the files being edited, so an agent working in a project gets the root rules and the project's own.
-- `specs/`: its specs, numbered in the repo-wide `SPEC-NNNN` sequence and ranked in the one `specs/PRIORITIES.md`, whose rows link into the project.
+- `specs/`: its specs, named `SPEC-YYYY-MM-DD-slug` like every spec and ranked in the one `specs/PRIORITIES.md`, whose rows link into the project.
 - `docs/decisions/`: its decision records, in the usual format.
 - The code, tests, and anything else the project needs.
 
@@ -64,7 +66,7 @@ Shared agent skills live in `skills/<name>/`.
 
 ### Latest models
 
-- Any LLM feature picks its model by role (such as `cheap` or `frontier`) through the model roles config from SPEC-0002, never a model ID in code, so moving to a newer model is a config change.
+- Any LLM feature picks its model by role (such as `cheap` or `frontier`) through the model roles config from SPEC-2026-09-26-vendor-neutral-ai-harness, never a model ID in code, so moving to a newer model is a config change.
 - The roles config tracks the newest models; when a new one ships, rerun the project's evals before switching its role.
 - Work on the projects follows this repo's agent workflow, so current agents build them from the specs.
 
@@ -98,14 +100,14 @@ Several toolchains in one repo against [Structure](2026-09-25-structure.md)'s wa
 
 Old decision records aren't copied because their reasons may no longer hold; a new record can cite an old one.
 
-Colocated over parallel trees (`projects/<slug>/`, `specs/<slug>/`, `docs/decisions/<slug>/`): one folder holds everything about a project, its nested `AGENTS.md` points agents at its specs and decisions without their knowing a repo-wide convention, and a project can be extracted in one move.
+Colocated over parallel trees (`projects/<slug>/`, `specs/<slug>/`, `docs/decisions/<slug>/`): one folder holds everything about a project, its nested `AGENTS.md` (once it has code) points agents at its specs and decisions without their knowing a repo-wide convention, and a project can be extracted in one move.
 The cost is that specs are no longer all under `specs/`; the priority table is the index.
 
 All decisions at the root instead: fine for a few projects, but most records would be stack choices only one project cares about.
 
 ### Dependencies
 
-[SPEC-0005](../../specs/SPEC-0005-projects-scaffold.md) sets up the layout, toolchains, and per-project CI before any project starts.
+[SPEC-2026-09-30-projects-scaffold](../../specs/SPEC-2026-09-30-projects-scaffold.md) sets up the layout, toolchains, and per-project CI; projects started before it lands, like the stock screener, adopt it then.
 
 ### Interfaces
 

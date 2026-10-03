@@ -1,0 +1,9 @@
+{
+  "id": "read-count",
+  "mode": "direct",
+  "title": "Read CSV: count matching rows",
+  "source": "SPEC-2026-09-27-eval-benchmark-pages output-format experiment",
+  "prompt": "Here is a list of tasks in CSV format.\n\nid,title,team,status,hours\nT-01,Pin devenv,evals,open,2\nT-02,\"Fix, then retest the runner\",infra,open,3\nT-03,\"Rename \"\"judge\"\" role\",docs,blocked,6\nT-04,Add TOON: a reader case,infra,open,0.5\nT-05,Reflow ADRs,evals,open,8\nT-06,Sort priorities,infra,open,2\nT-07,Cache pi installs,evals,done,0.5\nT-08,Check links,docs,open,8\nT-09,Write SPEC-0005,evals,blocked,1.5\nT-10,true,docs,done,2\nT-11,\"Split cases, grade\",infra,done,1.5\nT-12,Draft site index,evals,blocked,4\nT-13,Chart pass rates,infra,open,8\nT-14,Add NDJSON export,evals,done,7.5\nT-15,Trim prompts,infra,done,7.5\nT-16,Measure cache hits,docs,open,7.5\nT-17,Pin pi-web-access,site,done,4\nT-18,Allowlist hosts,site,open,8\nT-19,Record served model,infra,blocked,3\nT-20,Null baseline,docs,done,1.5\nT-21,Reference runs,infra,open,8\nT-22,Estimate cost,evals,blocked,8\nT-23,Publish pages,infra,open,6\nT-24,\"Quote \"\"hi\"\", then save\",docs,done,0.5\nT-25,Label outside results,evals,done,8\nT-26,Dark theme,infra,done,6\nT-27,Phone layout,site,open,6\nT-28,Rerun command,docs,blocked,7.5\nT-29,Link raw results,infra,done,6\nT-30,0042,infra,done,7.5\n\nHow many tasks have the status blocked? Reply with the answer only.",
+  "timeoutSec": 180,
+  "maxTurns": 1
+}

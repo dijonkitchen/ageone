@@ -66,7 +66,7 @@ The repo already follows the LLM wiki pattern for specs and decisions:
    - Settings → Files & links → Use [[Wikilinks]]: off
    - Settings → Files & links → New link format: Relative path to file
 4. `.obsidian/` is ignored by Git, so each person's vault settings stay local.
-5. When a spec needs research that isn't a spec or a decision (for example, model comparisons or eval notes for [SPEC-0002](../../specs/SPEC-0002-vendor-neutral-ai-harness.md)), add the knowledge layer in this repo's style through that spec or a new decision record: saved sources and LLM-maintained notes under `docs/`, kebab-case names, relative links, with the maintenance rules written into `README.md`.
+5. When a spec needs research that isn't a spec or a decision (for example, model comparisons or eval notes for [SPEC-2026-09-26-vendor-neutral-ai-harness](../../specs/SPEC-2026-09-26-vendor-neutral-ai-harness.md)), add the knowledge layer in this repo's style through that spec or a new decision record: saved sources and LLM-maintained notes under `docs/`, kebab-case names, relative links, with the maintenance rules written into `README.md`.
 
 ### High-level C4(context/container/component/code) diagram
 
