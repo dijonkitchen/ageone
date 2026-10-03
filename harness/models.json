@@ -19,7 +19,7 @@
     ]
   },
   "harnesses": {
-    "pi": { "package": "@earendil-works/pi-coding-agent", "version": "0.87.1", "bin": "pi" },
+    "pi": { "package": "@earendil-works/pi-coding-agent", "version": "1.0.1", "bin": "pi" },
     "claude-code": { "package": "@anthropic-ai/claude-code", "version": "2.1.283", "bin": "claude" }
   }
 }
