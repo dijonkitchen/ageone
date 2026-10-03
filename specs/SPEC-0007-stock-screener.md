@@ -36,31 +36,34 @@ A stock screener for US-listed companies that pulls the latest public filing dat
   - Screens save to and load from a plain-text file (filters, sort, and composite weights), so a screen can be rerun after a refresh and diffed.
 - **Interfaces**:
   - A command-line tool that refreshes data, runs a saved screen, and prints a table or writes CSV or JSON.
-  - A local web page showing the screen results as a sortable table, with a company page that charts each per-share series and ratio over the years and lists the filings it came from.
+  - An interactive local web page: build a screen by adding and removing filters, dragging threshold sliders, choosing columns, and setting composite weights, with the results table re-sorting and re-ranking as you change them, and save or load the screen file from the page.
+  - A company page that charts each per-share series and ratio over the years and lists the filings it came from.
+  - Rows can be selected, so [SPEC-0008](SPEC-0008-portfolio-kelly.md) can build a portfolio from a screen.
 - **Data gaps**: each company and metric shows how many years are present and which concepts were missing, so a gap reads as missing data instead of a zero or a bad rank.
 
 ## Non-functional requirements
 
 - Follows the [SEC's fair access rules](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data): a `User-Agent` header with a contact email set in local config (never committed), at most 10 requests per second, and backoff on errors.
-- Local first: data lives in one embedded database file or a folder of columnar files on disk; no server, account, or cloud service.
+- Local first: data lives in a folder of columnar files on disk, served by a local process on `localhost`; no hosted server, account, or cloud service.
   A full load of all filers fits on a laptop and finishes in under an hour; screening all companies takes under a few seconds.
 - Correct: metric formulas, tag fallbacks, split adjustment, restatement handling, and CAGR edge cases are covered by tests that run on small recorded fixtures of real `companyfacts` responses, with no network in tests.
   A spot check compares 10 years of BVPS and EPS for a handful of well-known companies against their 10-K filings.
 - Deterministic: the same downloaded data and screen file give the same results.
 - Not financial advice: the UI and exports say the numbers come from company filings as tagged, may contain tagging errors, and are not investment advice.
+- Stack as in the [stock screener stack decision](../docs/decisions/2026-10-03-stock-screener-stack.md): Python with Polars, Parquet files, and a small TypeScript front end.
 - Runs in the pinned environment from [SPEC-0003](SPEC-0003-make-setup.md), with no global installs.
 
 ### Out of scope
 
 - Years before XBRL (pre-2009), which would mean parsing HTML or text filings.
 - Stock prices and price-based ratios (P/E, P/B, dividend yield, earnings yield), since the SEC doesn't publish prices.
-  A later spec can add a price source; the metric definitions file leaves room for price inputs.
+  [SPEC-0008](SPEC-0008-portfolio-kelly.md) adds them; the metric definitions file leaves room for price inputs.
 - Quarterly or trailing-twelve-month series, FX conversion, industry-specific statements (banks', insurers', and REITs' own line items beyond what the tag fallbacks cover), alerts, portfolios, and backtesting.
 
 ## Definition of done
 
 1. One command does a full load from SEC EDGAR and a second refresh picks up only new filings, with cached downloads and the fair access rules followed.
 2. For any company with the data, the tool shows at least 10 fiscal years of split-adjusted BVPS, EPS, revenue, free cash flow, and dividends per share, plus the ratios above, each traced to its filing.
-3. A saved screen filters, sorts, and ranks all companies by a composite score, from the command line (table, CSV, JSON) and on the local web page, with a company page charting each series.
+3. A saved screen filters, sorts, and ranks all companies by a composite score, from the command line (table, CSV, JSON) and interactively on the local web page, with a company page charting each series.
 4. Tests cover the formulas and edge cases above on recorded fixtures and run in CI, and the spot check matches the filings for the chosen companies.
-5. A decision record states the stack, the storage format, and the concept-to-tag mapping approach.
+5. The stack decision record is accepted, and states the storage format and the concept-to-tag mapping approach.
