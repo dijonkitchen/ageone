@@ -85,7 +85,7 @@ DuckDB over plain Parquet files: one file to back up instead of a folder, SQL fo
 The cost is SQL next to pandas, kept apart: SQL for set-wide queries (screens, ranks, joins), pandas for per-company series.
 
 OpenBB's SEC provider over our own XBRL normalizer: turning Company Facts into comparable statements (tag changes across taxonomy years, banks and insurers, restatements, accounting identities) is the hardest part of the screener, and OpenBB already does it with a documented method and a large validation set.
-The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
+The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; its restatement rule, which takes the latest annual filing within 450 days of a year end, so a restatement two filings later is not used; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
 
 OpenBB for prices over writing provider adapters: it gives many providers at once, behind keys the user already has.
 The cost is a large dependency tree; if it causes install or version trouble, a direct adapter for one provider replaces it behind the same interface.

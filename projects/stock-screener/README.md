@@ -27,7 +27,7 @@ uv run screener app                              # the interactive page on http:
 uv run screener columns                          # every screenable column and its definition
 ```
 
-- `refresh --pit` keeps values as first reported (for backtests); the default lets restated values win.
+- `refresh --pit` keeps values as first reported (for backtests); the default lets restated values win, as OpenBB picks them: from the latest annual filing within 450 days of the year end, so in practice the next year's 10-K.
   Switching reloads every company.
 - `rebuild` recomputes metrics from stored statements after editing `metrics.toml`, without the network.
 - `spot-check` compares loaded values with numbers from 10-K filings in `spot_check.toml`.
@@ -38,7 +38,7 @@ uv run screener columns                          # every screenable column and i
 1. `sec.py` fetches the ticker list, each company's `submissions` (to see whether a new 10-K, 20-F, or 40-F, or an amendment, was filed since the last run), and `companyfacts` only for companies that changed.
    It sends the configured User-Agent, keeps under 10 requests per second, and backs off on errors.
 2. `standardize.py` runs OpenBB's SEC provider on the Company Facts response for standardized annual statements, then adds the line items in [`gap_fill.toml`](src/screener/data/gap_fill.toml) (year-end shares, split ratios, and fallbacks), and records which filing each fiscal year came from.
-3. `splits.py` finds splits as jumps in share counts between consecutive years (tagged ratios first, otherwise whole-number ratios) and adjusts the years before each jump, since filers restate only recent years.
+3. `splits.py` finds splits as jumps in share counts between consecutive years (tagged ratios first, matched loosely enough to absorb a year of buybacks when the per-share value confirms it; otherwise whole-number ratios) and adjusts the years before each jump, since filers restate only recent years.
 4. `metrics.py` evaluates [`metrics.toml`](src/screener/data/metrics.toml), where every metric is defined once, then computes growth and consistency stats over 5, 10 (the latest year and the 10 before it), and all years.
 5. `store.py` keeps everything in one DuckDB file; `screen.py` compiles a screen file to one SQL query, with `percent_rank()` for the composite score.
 

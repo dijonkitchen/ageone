@@ -38,3 +38,18 @@ def test_share_issuance_is_not_a_split_when_eps_does_not_drop():
 def test_small_changes_are_not_splits():
     shares = pd.Series([100.0, 120, 90, 130], index=[2020, 2021, 2022, 2023])
     assert splits.detect(shares, [], "s") == []
+
+
+def test_tagged_split_matches_jump_that_includes_buybacks():
+    # Apple's 4:1 in fiscal 2020: diluted shares 5.00bn -> 18.60bn (3.72x) after a year of buybacks.
+    shares = pd.Series([5.000109e9, 1.859565e10], index=[2018, 2019])
+    eps = pd.Series([11.91, 2.97], index=[2018, 2019])
+    assert splits.detect(shares, [], "s", eps) == []
+    assert splits.detect(shares, [4.0], "s", eps) == [splits.Split(2019, 4.0, "tagged", "s")]
+    # The same jump without the per-share value moving is not the tagged split.
+    assert splits.detect(shares, [4.0], "s", pd.Series([11.91, 11.0], index=[2018, 2019])) == []
+
+
+def test_small_tagged_ratio_keeps_tight_match():
+    shares = pd.Series([100.0, 120], index=[2022, 2023])
+    assert splits.detect(shares, [1.1], "s") == []
