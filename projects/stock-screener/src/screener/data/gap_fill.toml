@@ -1,0 +1,46 @@
+# Gap-filling tag mapping (SPEC-2026-10-03-stock-screener): line items a metric needs that OpenBB's
+# standardized statements don't have, read straight from Company Facts.
+# Each item lists XBRL concepts in order; the first concept with a fact for the
+# fiscal year wins. Keep this data, not code: add a concept here, not a branch.
+#
+# period:
+#   instant  - a balance at the fiscal year end (or up to max_days_after it,
+#              for cover-page values dated after year end)
+#   duration - a full fiscal year ending on the fiscal year end
+#   any      - every fact, kept with its date (used for split ratios)
+
+[shares_outstanding]
+label = "Common shares outstanding at fiscal year end"
+period = "instant"
+concepts = [
+    "us-gaap:CommonStockSharesOutstanding",
+    "dei:EntityCommonStockSharesOutstanding",
+]
+# The dei cover-page count is dated a few weeks after year end.
+max_days_after = 100
+
+[interest_expense]
+label = "Interest expense"
+period = "duration"
+concepts = [
+    "us-gaap:InterestExpense",
+    "us-gaap:InterestExpenseNonoperating",
+    "us-gaap:InterestExpenseDebt",
+    "ifrs-full:FinanceCosts",
+]
+
+[dividends_declared_per_share]
+label = "Dividends declared per share"
+period = "duration"
+concepts = [
+    "us-gaap:CommonStockDividendsPerShareDeclared",
+    "us-gaap:CommonStockDividendsPerShareCashPaid",
+]
+
+[split_ratio]
+label = "Stock split conversion ratio"
+period = "any"
+concepts = [
+    "us-gaap:StockholdersEquityNoteStockSplitConversionRatio1",
+    "us-gaap:StockholdersEquityNoteStockSplitConversionRatio",
+]

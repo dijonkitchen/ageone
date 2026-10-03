@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+# Local config holds the SEC contact email; never commit it.
+config.toml
+# The database is built by `screener refresh`.
+*.duckdb
+*.duckdb.wal

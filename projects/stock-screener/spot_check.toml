@@ -1,0 +1,40 @@
+# Spot check (SPEC-2026-10-03-stock-screener): values read from each company's
+# 10-K, on today's share basis (per-share values divided by later split ratios).
+# Run `screener refresh --tickers AAPL,MSFT` then `screener spot-check`, and
+# again after every OpenBB upgrade.
+#
+# Status: typed from memory of the filings and not yet checked against the
+# 10-Ks themselves; confirm each number from the filing before relying on it.
+# Book value per share still needs entries.
+
+tolerance = 0.01  # relative
+
+[[companies]]
+ticker = "AAPL"
+note = "Diluted EPS from each year's 10-K; 4-for-1 split in fiscal 2020 (and 7-for-1 in 2014, already in the 2014 figure)."
+
+[companies.values.eps]
+2014 = 1.6125  # 6.45 / 4
+2015 = 2.305   # 9.22 / 4
+2016 = 2.0775  # 8.31 / 4
+2017 = 2.3025  # 9.21 / 4
+2018 = 2.9775  # 11.91 / 4
+2019 = 2.9725  # 11.89 / 4
+2020 = 3.28
+2021 = 5.61
+2022 = 6.11
+2023 = 6.13
+2024 = 6.08
+
+[[companies]]
+ticker = "MSFT"
+note = "Diluted EPS from each year's 10-K; no splits since 2003."
+
+[companies.values.eps]
+2018 = 2.13
+2019 = 5.06
+2020 = 5.76
+2021 = 8.05
+2022 = 9.65
+2023 = 9.68
+2024 = 11.80

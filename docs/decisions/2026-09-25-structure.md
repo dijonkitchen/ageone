@@ -8,6 +8,8 @@
 
 2026-09-26: Amended by JC: `/docs/decisions/` holds any decision records, not only architectural ones.
 
+2026-10-03: Amended by Claude, implementing the stock screener: `/projects/` holds each project's code, one folder per project.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -42,6 +44,7 @@ Complicated monorepo structures across multiple languages unless really needed.
 `/specs/`: Specification files for the projects in the monorepo.
 Broken down by subdirectories per project if needed.
 `/docs/decisions/`: Any decision records (ADRs), especially architectural decision records, for the projects in the monorepo.
+`/projects/<project>/`: A project's code, with its own build files, named like its specs folder.
 
 ### High-level C4(context/container/component/code) diagram
 
