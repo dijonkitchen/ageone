@@ -30,7 +30,7 @@ Extends the [stock screener](SPEC-0007-stock-screener.md) with live prices, pric
 
 ## Non-functional requirements
 
-- API keys live in local config, are never committed, and never reach the browser: the local process calls the provider and the page talks only to it.
+- API keys live in local config, are never committed, and never reach the browser: the local Python process calls the provider and sends the page only the results.
 - Not financial advice: the portfolio page says the allocation is a mathematical result of the user's own return assumptions, Kelly sizing is aggressive and assumes those assumptions are right, and nothing here is investment advice.
 - Correct: tests cover the Kelly solver against the closed-form answers (single asset `f = (μ − r) / σ²`, and unconstrained many assets `Σ⁻¹(μ − r)`), that constrained answers respect every constraint, the fractional Kelly form, a singular or near-singular Σ, the ratio formulas, and filing-date pricing, using recorded price fixtures with no network.
 - Deterministic: the same prices, filings, and portfolio file give the same allocation.

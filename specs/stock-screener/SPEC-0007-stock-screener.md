@@ -10,7 +10,7 @@ A stock screener for US-listed companies that pulls the latest public filing dat
   - The `submissions` API on `data.sec.gov` tells us which companies filed since the last refresh, and the ticker-to-CIK map (`company_tickers_exchange.json`) lets companies be looked up by ticker.
   - XBRL starts in 2009 to 2011 depending on filer size, so most companies have about 15 years of annual data; earlier years are out of scope (see below).
 - **Refresh**: one command pulls what changed since the last run, using filing dates from `submissions`, so a 10-K filed today shows up after the next refresh.
-  Standardized statements are cached on disk as Parquet, so a refresh with nothing new makes no data requests beyond the change check, and screening never waits on the network.
+  Standardized statements are cached in the local database, so a refresh with nothing new makes no data requests beyond the change check, and screening never waits on the network.
   Each company records the accession number and filing date of the latest filing used, so every number traces back to a filing.
 - **Annual series**: for each company, one value per fiscal year per line item, from OpenBB's standardized annual statements.
   - When a later filing restates a year, the latest filed value wins by default; an option uses OpenBB's point-in-time mode to keep the value as first reported, to avoid look-ahead in backtests.
@@ -44,14 +44,14 @@ A stock screener for US-listed companies that pulls the latest public filing dat
 ## Non-functional requirements
 
 - Follows the [SEC's fair access rules](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data): a `User-Agent` header with a contact email set in local config (never committed), at most 10 requests per second, and backoff on errors.
-- Local first: data lives in a folder of columnar files on disk, served by a local process on `localhost`; no hosted server, account, or cloud service.
+- Local first: data lives in one database file on disk, and the app runs as a local process on `localhost`; no hosted server, account, or cloud service.
   A full load of all filers fits on a laptop and finishes in under an hour; screening all companies takes under a few seconds.
 - Correct: metric formulas, split adjustment, the gap-filling tag mapping, restatement handling, and CAGR edge cases are covered by tests that run on small recorded fixtures of real standardized statements and Company Facts responses, with no network in tests.
   OpenBB is pinned to a version, and its standardized output is checked against the spot check below when it is upgraded.
   A spot check compares 10 years of BVPS and EPS for a handful of well-known companies against their 10-K filings.
 - Deterministic: the same downloaded data and screen file give the same results.
 - Not financial advice: the UI and exports say the numbers come from company filings as tagged, may contain tagging errors, and are not investment advice.
-- Stack as in the [stock screener stack decision](../../docs/decisions/2026-10-03-stock-screener-stack.md): Python with Polars, Parquet files, and a small TypeScript front end.
+- Stack as in the [stock screener stack decision](../../docs/decisions/2026-10-03-stock-screener-stack.md): Python only, with DuckDB, pandas, and a Streamlit front end.
 - Runs in the pinned environment from [SPEC-0003](../SPEC-0003-make-setup.md), with no global installs.
 
 ### Out of scope
