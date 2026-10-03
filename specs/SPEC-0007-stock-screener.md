@@ -1,0 +1,66 @@
+# SPEC-0007: Stock Screener
+
+## Functional requirements
+
+A stock screener for US-listed companies that pulls the latest public filing data from the SEC, builds 10 or more years of per-share history for each company, and sorts, filters, and ranks companies by growth, per-share metrics, and ratios.
+
+- **Data source**: SEC EDGAR's free structured XBRL data, with no paid data vendor.
+  - The bulk `companyfacts.zip` (rebuilt nightly) for a full load, and the per-company [`companyfacts`](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) and `submissions` APIs on `data.sec.gov` for updates.
+  - The ticker-to-CIK map from `company_tickers_exchange.json`, so companies can be looked up by ticker.
+  - XBRL starts in 2009 to 2011 depending on filer size, so most companies have about 15 years of annual data; earlier years are out of scope (see below).
+- **Refresh**: one command pulls what changed since the last run, using filing dates from `submissions`, so a 10-K filed today shows up after the next refresh.
+  Downloads are cached on disk, and a refresh with nothing new makes no data requests beyond the change check.
+  Each company records the accession number and filing date of the latest filing used, so every number traces back to a filing.
+- **Annual series**: for each company, one value per fiscal year per concept, taken from 10-K (and 10-K/A, 20-F, 40-F where present) full-year duration facts or fiscal-year-end instant facts.
+  - When a later filing restates a year, the latest filed value wins by default; an option keeps the value as first reported, to avoid look-ahead in backtests.
+  - Concepts map to an ordered list of XBRL tags, tried in order, since companies tag the same line item differently (for example revenue as `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, or `SalesRevenueNet`).
+    The mapping is one data file, not code, so it can grow without code changes.
+  - Values reported in other currencies (20-F, 40-F filers) keep their currency and are flagged; no FX conversion for now.
+  - A missing year stays missing; nothing is interpolated.
+- **Per-share values**: each value divided by the diluted weighted average shares for flow items (income, cash flow) and by shares outstanding at fiscal year end for balance-sheet items (book value), adjusted for stock splits so a 10-year series is comparable.
+  Splits come from the split ratio tags where tagged, otherwise from detecting a jump in share count that matches a whole-number ratio between consecutive filings.
+- **Metrics**, each as a yearly series for at least 10 fiscal years where the data exists:
+  - Per share: book value (BVPS), tangible book value, diluted EPS, revenue, operating cash flow, free cash flow (operating cash flow minus capital expenditure), and dividends.
+  - Profitability: return on equity, return on assets, return on invested capital, and gross, operating, and net margins.
+  - Balance sheet: debt to equity, current ratio, and interest coverage.
+  - Each metric is defined once (formula, inputs, and the concepts it uses) in a definitions file, and shown with its definition in the UI and exports.
+- **Growth and consistency** over a chosen window (5, 10, or all available years, default 10):
+  - Compound annual growth rate (CAGR) of each per-share series, such as 10-year BVPS growth.
+    A start or end value at or below zero has no CAGR and is marked so, rather than giving a misleading number.
+  - Consistency: the number of years the value grew, the longest growth streak, the standard deviation of yearly growth, and the R² of a log-linear fit, so steady compounders stand out from lucky endpoints.
+  - Averages and medians of each ratio over the window, such as 10-year average ROE.
+- **Screening**:
+  - Filter by any metric with thresholds (such as 10-year BVPS CAGR ≥ 10% and debt to equity ≤ 0.5), by minimum years of data, and by exchange, SIC industry, and fiscal year end recency (to drop companies that stopped filing).
+  - Sort by any column, ascending or descending.
+  - Rank by a composite score: a weighted sum of each chosen metric's percentile rank across the companies left after filtering, with the weights and direction (higher or lower is better) set per metric.
+  - Screens save to and load from a plain-text file (filters, sort, and composite weights), so a screen can be rerun after a refresh and diffed.
+- **Interfaces**:
+  - A command-line tool that refreshes data, runs a saved screen, and prints a table or writes CSV or JSON.
+  - A local web page showing the screen results as a sortable table, with a company page that charts each per-share series and ratio over the years and lists the filings it came from.
+- **Data gaps**: each company and metric shows how many years are present and which concepts were missing, so a gap reads as missing data instead of a zero or a bad rank.
+
+## Non-functional requirements
+
+- Follows the [SEC's fair access rules](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data): a `User-Agent` header with a contact email set in local config (never committed), at most 10 requests per second, and backoff on errors.
+- Local first: data lives in one embedded database file or a folder of columnar files on disk; no server, account, or cloud service.
+  A full load of all filers fits on a laptop and finishes in under an hour; screening all companies takes under a few seconds.
+- Correct: metric formulas, tag fallbacks, split adjustment, restatement handling, and CAGR edge cases are covered by tests that run on small recorded fixtures of real `companyfacts` responses, with no network in tests.
+  A spot check compares 10 years of BVPS and EPS for a handful of well-known companies against their 10-K filings.
+- Deterministic: the same downloaded data and screen file give the same results.
+- Not financial advice: the UI and exports say the numbers come from company filings as tagged, may contain tagging errors, and are not investment advice.
+- Runs in the pinned environment from [SPEC-0003](SPEC-0003-make-setup.md), with no global installs.
+
+### Out of scope
+
+- Years before XBRL (pre-2009), which would mean parsing HTML or text filings.
+- Stock prices and price-based ratios (P/E, P/B, dividend yield, earnings yield), since the SEC doesn't publish prices.
+  A later spec can add a price source; the metric definitions file leaves room for price inputs.
+- Quarterly or trailing-twelve-month series, FX conversion, industry-specific statements (banks', insurers', and REITs' own line items beyond what the tag fallbacks cover), alerts, portfolios, and backtesting.
+
+## Definition of done
+
+1. One command does a full load from SEC EDGAR and a second refresh picks up only new filings, with cached downloads and the fair access rules followed.
+2. For any company with the data, the tool shows at least 10 fiscal years of split-adjusted BVPS, EPS, revenue, free cash flow, and dividends per share, plus the ratios above, each traced to its filing.
+3. A saved screen filters, sorts, and ranks all companies by a composite score, from the command line (table, CSV, JSON) and on the local web page, with a company page charting each series.
+4. Tests cover the formulas and edge cases above on recorded fixtures and run in CI, and the spot check matches the filings for the chosen companies.
+5. A decision record states the stack, the storage format, and the concept-to-tag mapping approach.
