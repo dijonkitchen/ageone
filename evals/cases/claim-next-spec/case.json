@@ -1,0 +1,8 @@
+{
+  "id": "claim-next-spec",
+  "title": "Claim the next spec by the workflow's rules, skipping one whose dependency isn't done",
+  "source": "AGENTS.md agent workflow, step 2",
+  "prompt": "Following the agent workflow in AGENTS.md, claim the next spec to work on, with `eval-agent` as the owner. Only claim it: don't start the work, and don't change anything else.",
+  "timeoutSec": 300,
+  "maxTurns": 20
+}

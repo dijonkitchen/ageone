@@ -1,0 +1,12 @@
+{
+  "question": "Which harness completes this repo's own tasks best for the cost: pi or Claude Code?",
+  "answer": null,
+  "decision": "docs/decisions/2026-09-26-vendor-neutral-ai-harness.md",
+  "models": ["default", "cheap"],
+  "reps": 3,
+  "variants": [
+    { "id": "pi", "label": "pi", "harness": "pi", "cases": "evals/cases" },
+    { "id": "claude-code", "label": "Claude Code", "harness": "claude-code", "cases": "evals/cases" }
+  ],
+  "outside": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "read-csv-total",
+  "mode": "direct",
+  "title": "Read a CSV table and aggregate one column",
+  "source": "SPEC-2026-09-27-eval-benchmark-pages output-format experiment (reading)",
+  "prompt": "Here is a CSV table of tasks.\n\nid,team,status,hours\nT-01,infra,done,3.5\nT-02,docs,open,2\nT-03,infra,open,8\nT-04,evals,done,5.25\nT-05,docs,done,1\nT-06,infra,done,4\nT-07,evals,open,6\nT-08,infra,blocked,2.5\nT-09,docs,open,0.75\nT-10,infra,open,7\nT-11,evals,done,3\nT-12,infra,done,1.5\n\nWhat is the total of `hours` for tasks whose team is infra and whose status is not done? Reply with the number only.",
+  "timeoutSec": 120,
+  "maxTurns": 1
+}

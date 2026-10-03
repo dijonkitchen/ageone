@@ -1,0 +1,8 @@
+{
+  "id": "new-decision-record",
+  "title": "Write a decision record in the repo's format",
+  "source": "AGENTS.md agent workflow, step 6; Conventions decision record, Decision records section",
+  "prompt": "Write a decision record: eval results are committed as NDJSON (one JSON object per line) under evals/results/, so reports and pages can be rebuilt from the repo alone. It is proposed by eval-agent. Follow the repo's conventions.",
+  "timeoutSec": 400,
+  "maxTurns": 25
+}

@@ -1,0 +1,290 @@
+#!/usr/bin/env node
+// Build the eval and benchmark pages from committed files: experiments/*/{experiment.json,README.md,results/}.
+// Static HTML, no dependencies; the same commit always builds the same site.
+// See specs/SPEC-2026-09-27-eval-benchmark-pages.md and experiments/README.md.
+import { execFileSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { parseArgs } from "node:util";
+import { ROOT } from "../harness/config.mjs";
+import { readRecords, summarize } from "../evals/lib/results.mjs";
+
+const { values: opt } = parseArgs({ options: { out: { type: "string", default: join(ROOT, "_site") }, help: { type: "boolean", short: "h", default: false } } });
+if (opt.help) {
+  console.log("usage: site/build [--out <dir>]   (default: _site/)");
+  process.exit(0);
+}
+
+const REPO = JSON.parse(readFileSync(join(ROOT, "site", "config.json"), "utf8")).repo;
+const COMMIT = execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+const repoLink = (path) => `${REPO}/tree/${COMMIT}/${path}`;
+const GRADER_HARNESSES = ["reference", "null"];
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const pct = (x) => (x === null || x === undefined ? "-" : `${Math.round(x * 100)}%`);
+const num = (x, d = 0) => (x === null || x === undefined ? "-" : Number(x).toFixed(d));
+
+// Just enough Markdown for experiment write-ups: headings, paragraphs, lists, code blocks, inline code, bold, links.
+// Relative links resolve against the file's folder and point at the repo on GitHub.
+function markdown(text, baseDir) {
+  const link = (href) => {
+    if (/^[a-z]+:|^#/.test(href)) return href;
+    const parts = `${baseDir}/${href}`.split("/");
+    const out = [];
+    for (const p of parts) p === ".." ? out.pop() : p && p !== "." && out.push(p);
+    return repoLink(out.join("/"));
+  };
+  const inline = (s) =>
+    esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, h) => `<a href="${esc(link(h.replace(/&amp;/g, "&")))}">${t}</a>`);
+  const html = [];
+  const lines = text.split("\n");
+  let para = [], list = null;
+  const flush = () => {
+    if (para.length) html.push(`<p>${inline(para.join(" "))}</p>`);
+    if (list) html.push(`<ul>${list.map((i) => `<li>${inline(i)}</li>`).join("")}</ul>`);
+    para = []; list = null;
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith("```")) {
+      flush();
+      const code = [];
+      while (++i < lines.length && !lines[i].startsWith("```")) code.push(lines[i]);
+      html.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+    } else if (/^#{1,4} /.test(line)) {
+      flush();
+      const level = line.match(/^#+/)[0].length + 1;
+      html.push(`<h${level}>${inline(line.replace(/^#+ /, ""))}</h${level}>`);
+    } else if (/^\s*- /.test(line)) {
+      if (para.length) { html.push(`<p>${inline(para.join(" "))}</p>`); para = []; }
+      (list ??= []).push(line.replace(/^\s*- /, ""));
+    } else if (/^\s+\S/.test(line) && list) {
+      list[list.length - 1] += " " + line.trim();
+    } else if (!line.trim()) {
+      flush();
+    } else {
+      if (list) flush();
+      para.push(line.trim());
+    }
+  }
+  flush();
+  return html.join("\n");
+}
+
+// Split README.md into its title and ## sections.
+function sections(text) {
+  const title = text.match(/^# (.+)$/m)?.[1] ?? "";
+  const out = { title };
+  for (const part of text.split(/^## /m).slice(1)) {
+    const nl = part.indexOf("\n");
+    out[part.slice(0, nl).trim().toLowerCase()] = part.slice(nl + 1).trim();
+  }
+  return out;
+}
+
+function loadExperiment(id) {
+  const dir = join(ROOT, "experiments", id);
+  const exp = JSON.parse(readFileSync(join(dir, "experiment.json"), "utf8"));
+  const readme = existsSync(join(dir, "README.md")) ? readFileSync(join(dir, "README.md"), "utf8") : `# ${id}\n`;
+  const resultsDir = join(dir, "results");
+  const files = existsSync(resultsDir) ? readdirSync(resultsDir).filter((f) => f.endsWith(".jsonl")).sort() : [];
+  const ok = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")).map((f) => join(resultsDir, f)));
+  const infra = readRecords(files.filter((f) => f.endsWith(".infra.jsonl")).map((f) => join(resultsDir, f)));
+  const isModel = (r) => !GRADER_HARNESSES.includes(r.harness);
+  return {
+    id, dir, exp, files,
+    doc: sections(readme),
+    ok: ok.filter(isModel),
+    infra: infra.filter(isModel),
+    graders: ok.filter((r) => !isModel(r)),
+  };
+}
+
+// A variant is called better only when its lowest pass rate across repetitions beats every other variant's highest.
+function verdict(rows) {
+  const ran = rows.filter((r) => r.pass_rate !== null);
+  if (ran.length < 2) return "Only one variant has results.";
+  if (ran.some((r) => r.reps < 2)) return "Fewer than 2 repetitions: no variant can be called better yet.";
+  const best = [...ran].sort((a, b) => b.pass_rate - a.pass_rate)[0];
+  const others = ran.filter((r) => r !== best);
+  if (others.every((o) => best.pass_rate_range[0] > o.pass_rate_range[1])) {
+    return `${best.label} is better: its lowest pass rate across repetitions (${pct(best.pass_rate_range[0])}) beats every other variant's highest.`;
+  }
+  return "No variant is better beyond the spread across repetitions.";
+}
+
+// Horizontal bars: one group per model, one bar per variant, with a whisker for the range across repetitions.
+function chart(byModel) {
+  const barH = 18, gap = 6, labelW = 96, plotW = 240, pad = 8;
+  let y = pad;
+  const parts = [];
+  for (const [model, rows] of byModel) {
+    parts.push(`<text x="2" y="${y + 12}" class="c-model">${esc(model)}</text>`);
+    y += 20;
+    for (const r of rows) {
+      const w = (r.pass_rate ?? 0) * plotW;
+      parts.push(`<text x="${labelW - 6}" y="${y + 13}" text-anchor="end" class="c-label">${esc(r.label)}</text>`);
+      parts.push(`<rect x="${labelW}" y="${y}" width="${plotW}" height="${barH}" class="c-track"/>`);
+      if (r.pass_rate !== null) {
+        parts.push(`<rect x="${labelW}" y="${y}" width="${w.toFixed(1)}" height="${barH}" class="c-bar"/>`);
+        const [lo, hi] = r.pass_rate_range ?? [r.pass_rate, r.pass_rate];
+        if (hi > lo) parts.push(`<line x1="${(labelW + lo * plotW).toFixed(1)}" x2="${(labelW + hi * plotW).toFixed(1)}" y1="${y + barH / 2}" y2="${y + barH / 2}" class="c-range"/>`);
+        parts.push(`<text x="${labelW + plotW + 6}" y="${y + 13}" class="c-value">${pct(r.pass_rate)}</text>`);
+      } else {
+        parts.push(`<text x="${labelW + plotW + 6}" y="${y + 13}" class="c-value">-</text>`);
+      }
+      y += barH + gap;
+    }
+    y += 8;
+  }
+  const h = y + pad;
+  return `<svg viewBox="0 0 ${labelW + plotW + 50} ${h}" role="img" aria-label="Pass rate by variant and model; lines show the range across repetitions" class="chart">${parts.join("")}</svg>`;
+}
+
+const CSS = `
+:root { --bg: #fbfbfa; --fg: #1d1d1f; --muted: #5f6368; --line: #dcdcd8; --card: #ffffff; --accent: #2f6fdf; --track: #ececea; --range: #1d1d1f; }
+@media (prefers-color-scheme: dark) { :root { --bg: #16171a; --fg: #e8e8e6; --muted: #a0a4ab; --line: #34363b; --card: #1e2024; --accent: #7aa7ff; --track: #2a2c31; --range: #e8e8e6; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 64px; }
+a { color: var(--accent); }
+h1 { font-size: 1.7rem; line-height: 1.2; margin: 0.4em 0; }
+h2 { font-size: 1.25rem; margin-top: 2em; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { font-size: 1.05rem; margin-top: 1.5em; }
+.muted, .crumb { color: var(--muted); font-size: 0.92rem; }
+.table { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td.wrap, th.wrap { white-space: normal; min-width: 14em; }
+th { font-weight: 600; color: var(--muted); }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; }
+pre { background: var(--card); border: 1px solid var(--line); padding: 10px 12px; overflow-x: auto; border-radius: 6px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+.card h2 { border: 0; margin: 0 0 4px; padding: 0; font-size: 1.15rem; }
+.outside { border-left: 3px solid var(--muted); padding-left: 12px; }
+.chart { width: 100%; max-width: 560px; height: auto; display: block; margin: 8px 0; }
+.chart text { fill: var(--fg); font-size: 12px; }
+.chart .c-model { font-weight: 600; } .chart .c-value, .chart .c-label { fill: var(--muted); }
+.chart .c-track { fill: var(--track); } .chart .c-bar { fill: var(--accent); } .chart .c-range { stroke: var(--range); stroke-width: 2; }
+`;
+
+function page(title, body, depth) {
+  const up = depth ? "../" : "";
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<link rel="stylesheet" href="${up}style.css">
+</head>
+<body><main>
+${depth ? `<p class="crumb"><a href="../index.html">All experiments</a></p>` : ""}
+${body}
+<p class="muted">Built from commit <a href="${esc(`${REPO}/commit/${COMMIT}`)}"><code>${COMMIT.slice(0, 7)}</code></a>. Every number comes from committed results in <a href="${esc(repoLink("experiments"))}">experiments/</a>.</p>
+</main></body>
+</html>
+`;
+}
+
+const latest = (records) => records.map((r) => r.date).sort().at(-1) ?? null;
+const modelsOf = (records) => [...new Set(records.map((r) => r.model))].sort();
+
+function experimentPage(e) {
+  const { exp, doc, id } = e;
+  const labels = Object.fromEntries(exp.variants.map((v) => [v.id, v.label]));
+  const summary = summarize(e.ok, e.infra).map((s) => ({ ...s, label: labels[s.variant] ?? s.variant }));
+  const byModel = new Map();
+  for (const m of modelsOf([...e.ok, ...e.infra])) {
+    byModel.set(m, exp.variants.map((v) => summary.find((s) => s.model === m && s.variant === v.id) ?? { label: v.label, pass_rate: null }));
+  }
+
+  const results = byModel.size
+    ? [...byModel].map(([model, rows]) => `<h3>${esc(model)}</h3>
+<div class="table"><table>
+<tr><th>Variant</th><th>Pass rate</th><th>Range across reps</th><th>Runs (cases x reps)</th><th>Cost per completed task</th><th>Tokens in</th><th>Tokens out</th><th>Turns</th><th>Time (s)</th><th>Not graded</th></tr>
+${rows.map((r) => `<tr><td>${esc(r.label)}</td><td>${pct(r.pass_rate)}</td><td>${r.pass_rate_range ? r.pass_rate_range.map(pct).join(" to ") : "-"}</td><td>${r.runs ?? 0} (${r.cases ?? 0} x ${r.reps ?? 0})</td><td>${r.cost_per_completed == null ? "-" : "$" + num(r.cost_per_completed, 4)}</td><td>${num(r.tokens_in)}</td><td>${num(r.tokens_out)}</td><td>${num(r.turns, 1)}</td><td>${num(r.wall_s, 1)}</td><td>${r.infra ?? 0}</td></tr>`).join("\n")}
+</table></div>
+<p>${esc(verdict(rows))}</p>`).join("\n") + `\n<h3>Pass rate</h3>\n${chart(byModel)}`
+    : `<p><strong>No model runs yet.</strong> Run the command below to produce the first results.</p>`;
+
+  const graders = exp.variants.map((v) => {
+    const g = e.graders.filter((r) => r.variant === v.id);
+    const ref = g.filter((r) => r.harness === "reference"), nul = g.filter((r) => r.harness === "null");
+    return `<tr><td>${esc(v.label)}</td><td>${ref.length ? `${ref.filter((r) => r.pass).length} of ${ref.length}` : "not run"}</td><td>${nul.length ? `${nul.filter((r) => r.pass).length} of ${nul.length}` : "not run"}</td><td>${esc(latest(g) ?? "-")}</td></tr>`;
+  }).join("\n");
+
+  const outside = (exp.outside ?? []).length
+    ? `<h2>Outside results</h2>
+<div class="outside"><p class="muted">Not from our runs: shown for context only, and not compared with the numbers above.</p>
+${exp.outside.map((o) => `<p><strong>${esc(o.source)}</strong> (<a href="${esc(/^[a-z]+:/.test(o.url) ? o.url : repoLink(o.url))}">source</a>)</p>
+<div class="table"><table>${o.rows.map(([a, b]) => `<tr><td>${esc(a)}</td><td class="wrap">${esc(b)}</td></tr>`).join("")}</table></div>`).join("\n")}</div>`
+    : "";
+
+  const base = `experiments/${id}`;
+  const body = `<h1>${esc(doc.title || id)}</h1>
+<p><strong>${esc(exp.question)}</strong></p>
+<p>${exp.answer ? `Answer: ${esc(exp.answer)}` : "Answer: not settled yet."} Informs <a href="${esc(repoLink(exp.decision))}">${esc(exp.decision.split("/").pop())}</a>.</p>
+${doc.question ? markdown(doc.question, base) : ""}
+<h2>Variants</h2>
+<div class="table"><table><tr><th>Variant</th><th>Harness</th><th>Cases</th></tr>
+${exp.variants.map((v) => { const p = v.cases.startsWith("evals/") ? v.cases : `${base}/${v.cases}`; return `<tr><td>${esc(v.label)}</td><td>${esc(v.harness)}</td><td><a href="${esc(repoLink(p))}">${esc(p)}</a></td></tr>`; }).join("\n")}
+</table></div>
+${doc.setup ? `<h2>Setup</h2>\n${markdown(doc.setup, base)}` : ""}
+<h2>Results</h2>
+<p class="muted">Models: ${esc(exp.models.join(", "))} by default, ${esc(exp.reps)} repetitions per case. Cost per completed task is total cost over passing runs. Runs that could not be graded (infra errors, timeouts, truncation, refusals, a different served model) are counted apart and never as failures.</p>
+${results}
+<h2>Conclusion</h2>
+${doc.conclusion ? markdown(doc.conclusion, base) : "<p>None yet.</p>"}
+<h2>Not measured</h2>
+${doc["not measured"] ? markdown(doc["not measured"], base) : "<p>Not stated.</p>"}
+<h2>Grader check</h2>
+<p class="muted">Before numbers are trusted, each case's reference solution must pass its grader and a null baseline that does nothing must fail.</p>
+<div class="table"><table><tr><th>Variant</th><th>Reference passes</th><th>Null baseline passes</th><th>Checked</th></tr>
+${graders}
+</table></div>
+${outside}
+<h2>Rerun</h2>
+<pre><code>experiments/run ${esc(id)} --estimate
+experiments/run ${esc(id)} --yes</code></pre>
+<p>Raw results: ${e.files.length ? e.files.map((f) => `<a href="results/${esc(f)}">${esc(f)}</a>`).join(", ") : "none yet"}.</p>`;
+  return page(doc.title || id, body, 1);
+}
+
+function indexPage(exps) {
+  const cards = exps.map((e) => {
+    const models = modelsOf(e.ok);
+    return `<div class="card">
+<h2><a href="${esc(e.id)}/index.html">${esc(e.doc.title || e.id)}</a></h2>
+<p>${esc(e.exp.question)}</p>
+<p><strong>${e.exp.answer ? esc(e.exp.answer) : "Not settled yet."}</strong></p>
+<p class="muted">Latest run: ${esc(latest(e.ok) ?? "none")} · Models: ${models.length ? esc(models.join(", ")) : "none yet"} · ${e.exp.variants.length} variants</p>
+</div>`;
+  }).join("\n");
+  const body = `<h1>Evals and benchmarks</h1>
+<p>Our own measurements of different ways to do the same work, across models, so decisions in this repo rest on evidence. Each experiment asks one question and holds everything but one choice fixed.</p>
+${exps.length ? cards : "<p>No experiments yet.</p>"}
+<p class="muted">How experiments work: <a href="${esc(repoLink("experiments/README.md"))}">experiments/README.md</a>.</p>`;
+  return page("Evals and benchmarks", body, 0);
+}
+
+const ids = readdirSync(join(ROOT, "experiments"), { withFileTypes: true })
+  .filter((d) => d.isDirectory() && existsSync(join(ROOT, "experiments", d.name, "experiment.json")))
+  .map((d) => d.name)
+  .sort();
+const exps = ids.map(loadExperiment);
+
+rmSync(opt.out, { recursive: true, force: true });
+mkdirSync(opt.out, { recursive: true });
+writeFileSync(join(opt.out, "style.css"), CSS.trimStart());
+writeFileSync(join(opt.out, "index.html"), indexPage(exps));
+writeFileSync(join(opt.out, ".nojekyll"), "");
+for (const e of exps) {
+  mkdirSync(join(opt.out, e.id, "results"), { recursive: true });
+  writeFileSync(join(opt.out, e.id, "index.html"), experimentPage(e));
+  for (const f of e.files) copyFileSync(join(e.dir, "results", f), join(opt.out, e.id, "results", f));
+}
+console.log(`built ${exps.length} experiments into ${opt.out}`);

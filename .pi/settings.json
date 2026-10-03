@@ -1,0 +1,7 @@
+{
+  "defaultProvider": "openrouter",
+  "defaultModel": "anthropic/claude-sonnet-5",
+  "packages": [
+    "npm:pi-web-access@0.33.0"
+  ]
+}
