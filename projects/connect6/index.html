@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect6</title>
+    <link rel="stylesheet" href="./src/ui/styles.css" />
+  </head>
+  <body>
+    <main id="app">
+      <header class="app-header">
+        <h1>Connect6</h1>
+        <p class="subtitle">
+          Six in a row wins. Black opens with one stone; every turn after places
+          two.
+        </p>
+      </header>
+
+      <section class="controls" aria-label="Game settings">
+        <label class="control">
+          <span>Black</span>
+          <select id="black-player">
+            <option value="human" selected>Human</option>
+            <option value="mcts">AI · MCTS</option>
+            <option value="heuristic">AI · Heuristic</option>
+            <option value="random">AI · Random</option>
+            <option value="llm">AI · LLM (cheap model)</option>
+          </select>
+        </label>
+        <label class="control">
+          <span>White</span>
+          <select id="white-player">
+            <option value="human">Human</option>
+            <option value="mcts" selected>AI · MCTS</option>
+            <option value="heuristic">AI · Heuristic</option>
+            <option value="random">AI · Random</option>
+            <option value="llm">AI · LLM (cheap model)</option>
+          </select>
+        </label>
+        <button id="new-game" type="button">New game</button>
+      </section>
+
+      <output id="status" class="status" aria-live="polite"></output>
+
+      <section id="board" class="board" aria-label="Connect6 board"></section>
+
+      <footer class="app-footer">
+        <p>
+          Rules in <code>specs/rules.md</code>; pure engine in
+          <code>src/core</code>.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="./src/ui/main.ts"></script>
+  </body>
+</html>

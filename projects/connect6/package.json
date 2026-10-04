@@ -1,0 +1,17 @@
+{
+	"name": "connect6",
+	"private": true,
+	"type": "module",
+	"description": "Connect6 with a pure engine, random, heuristic, MCTS, and LLM players, a web UI, and a headless tournament (SPEC-2026-09-30-connect6-rebuild).",
+	"scripts": {
+		"dev": "bun --hot src/cli/server.ts",
+		"start": "NODE_ENV=production bun src/cli/server.ts",
+		"build": "bun build ./index.html --outdir dist",
+		"tournament": "bun src/cli/tournament.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"@types/bun": "^1.4.2",
+		"typescript": "^7.0.2"
+	}
+}
