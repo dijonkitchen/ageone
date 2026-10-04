@@ -2,6 +2,7 @@
 
 A new programming language, designed from first principles, that combines three things no mainstream language has together:
 memory control like Rust (no garbage collector, deterministic cleanup, no data races), syntax simple enough to read like pseudocode, and type inference and safety like ML (types rarely written, no null, every case handled).
+It also works with libraries that already exist, so a new language doesn't mean starting from an empty ecosystem.
 
 The language's name is chosen in its first decision record; until then the project lives in `projects/language/`.
 
@@ -10,7 +11,7 @@ The language's name is chosen in its first decision record; until then the proje
 ### Design document
 
 - A language design document in `projects/language/docs/` that starts from the goals below and justifies each feature by them, citing the prior art it borrows from or rejects (Rust, OCaml, Standard ML, Haskell, Swift, Hylo/Val, Vale, Koka, Austral, Gleam, Roc, Zig).
-- Each major choice is its own decision record in `projects/language/docs/decisions/`: memory model, syntax, type system, error handling, and implementation strategy.
+- Each major choice is its own decision record in `projects/language/docs/decisions/`: memory model, syntax, type system, error handling, interop, and implementation strategy.
 - A short language reference with the grammar and the typing and ownership rules, precise enough that a second implementation could follow it.
 
 ### Memory control, like Rust
@@ -38,11 +39,20 @@ The language's name is chosen in its first decision record; until then the proje
 - Traits or type classes for shared behavior, resolved at compile time.
 - Safe code has no undefined behavior: bounds are checked, integer overflow is an error rather than a silent wrap, and data races can't compile.
 
+### Compatible with existing libraries
+
+- Calls libraries written in other languages through the C ABI, the one interface nearly every language and operating system shares, and exports its own functions through it so other languages can call in.
+- Bindings are generated from C headers rather than written by hand, and the C types map to the language's own types (pointers, structs, enums, nullable pointers as `Option`).
+- Foreign calls are `unsafe` at the boundary only: each binding can be wrapped once in a safe API that states ownership (who frees what) in its types, so callers never see raw pointers.
+- Reaches the two richest ecosystems near this language's niche: Rust crates (through their C ABI, or a generated bridge like [cxx](https://cxx.rs) or [Diplomat](https://github.com/rust-diplomat/diplomat)) and C++ libraries (through a C wrapper).
+  The interop decision record weighs these against compiling to a platform with a large library ecosystem of its own (WebAssembly components, the JVM, .NET, or Python extension modules), and records which the implementation supports first.
+- The implementation strategy is chosen with interop in mind: compiling through C, LLVM, or Cranelift makes C ABI calls cheap and direct, while a tree-walking interpreter would need a foreign function library such as libffi.
+
 ### Implementation
 
 - A compiler or interpreter for a core subset: integers, booleans, strings, functions, closures, records, tagged unions, pattern matching, generics, traits, ownership and borrowing, `Option`, and `Result`.
 - It parses, infers types, checks ownership, and runs the program, reporting errors with source locations.
-- Example programs in `projects/language/examples/`, including a linked list, a binary tree, a small text parser, and a program that mutates a collection while borrowing from it safely.
+- Example programs in `projects/language/examples/`, including a linked list, a binary tree, a small text parser, a program that mutates a collection while borrowing from it safely, and a program that uses an existing C library (such as SQLite or zlib) through a safe wrapper.
 - A test suite of programs that must compile and run with an expected output, and programs that must be rejected with an expected error: use after move, two mutable borrows, a reference outliving its value, a non-exhaustive match, a type mismatch, and a missing trait.
 
 ## Non-functional requirements
@@ -55,9 +65,10 @@ The language's name is chosen in its first decision record; until then the proje
 
 ## Definition of done
 
-1. The design document and decision records for memory model, syntax, type system, error handling, and implementation strategy are written, and the first one names the language.
+1. The design document and decision records for memory model, syntax, type system, error handling, interop, and implementation strategy are written, and the first one names the language.
 2. The language reference covers the grammar and the typing and ownership rules of the core subset.
 3. One command builds the implementation, and one command runs a program file.
 4. The example programs run and print their expected output without a single type or lifetime annotation inside function bodies.
 5. The test suite passes in CI, including every rejected-program case above, each with a readable error message.
-6. A side-by-side page compares a few example programs with the same programs in Rust and OCaml, showing the line count and annotations each needs.
+6. An example program calls an existing C library through bindings generated from its headers and wrapped in a safe API, and a C program calls a function exported by the language; both run in CI.
+7. A side-by-side page compares a few example programs with the same programs in Rust and OCaml, showing the line count and annotations each needs.
