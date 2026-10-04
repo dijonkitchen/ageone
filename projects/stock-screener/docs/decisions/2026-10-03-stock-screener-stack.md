@@ -6,6 +6,10 @@
 
 2026-10-03: Accepted by JC
 
+2026-10-03: Amended by Claude, implementing the spec: record the storage format, the pinned OpenBB version, the gap-filling tag mapping, and where the code lives, from the first implementation.
+
+2026-10-03: Amended by Claude, at JC's request: the latest 10-K's value wins for a restated year, even past OpenBB's 450-day window.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -54,6 +58,17 @@ A distributed or hosted data stack (warehouses, queues, cloud databases) for dat
   API keys stay in the Python process; the browser only gets the rendered page.
 - **Environment**: Python and its packages come from the pinned devenv environment, with `uv` for the lock file.
 
+### Implementation details
+
+- **Code**: [`projects/stock-screener/`](../../), a uv project with its own `uv.lock`; Python 3.12 comes from devenv.
+- **OpenBB**: `openbb-sec==2.0.0` and `openbb-core==2.0.1`, pinned in `pyproject.toml`.
+  We call its `resolve_company_facts` on Company Facts responses we fetch ourselves, so the SEC client (User-Agent, rate limit, backoff) and the change check stay ours.
+  A test compares its output on a recorded real filer with a recording, so an upgrade that changes numbers fails until reviewed.
+- **Storage format**: one DuckDB file (`screener.duckdb`, git-ignored) with tables `companies`, `line_items` (OpenBB's standardized annual line items plus gap fills, each with its source), `filings` (the filing behind each fiscal year), `split_facts`, `splits`, `metric_values` (one row per company, year, and metric), `stats` (per window, metric, and stat), and `gaps`.
+  Raw Company Facts responses are not kept; `rebuild` recomputes metrics from `line_items`.
+- **Gap-filling tag mapping**: [`gap_fill.toml`](../../src/screener/data/gap_fill.toml) maps each missing line item to an ordered list of XBRL concepts (year-end shares outstanding, interest expense, dividends declared per share, and split ratios).
+- **Metric definitions**: [`metrics.toml`](../../src/screener/data/metrics.toml), formulas over line items and named inputs.
+
 ### High-level C4(context/container/component/code) diagram
 
 ```text
@@ -72,7 +87,7 @@ DuckDB over plain Parquet files: one file to back up instead of a folder, SQL fo
 The cost is SQL next to pandas, kept apart: SQL for set-wide queries (screens, ranks, joins), pandas for per-company series.
 
 OpenBB's SEC provider over our own XBRL normalizer: turning Company Facts into comparable statements (tag changes across taxonomy years, banks and insurers, restatements, accounting identities) is the hardest part of the screener, and OpenBB already does it with a documented method and a large validation set.
-The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
+The costs are a dependency on its schema and correctness, handled by pinning its version, recording fixtures of its output for our tests, and spot checking against filings on each upgrade; its restatement rule, which ignores restatements filed more than 450 days after a year end, so outside point-in-time mode we give every period the latest annual filing's value before calling it, and the latest 10-K wins as JC asked; and fetching company by company instead of from the nightly bulk file, which is slower for a first full load but fine within the SEC's 10 requests per second.
 
 OpenBB for prices over writing provider adapters: it gives many providers at once, behind keys the user already has.
 The cost is a large dependency tree; if it causes install or version trouble, a direct adapter for one provider replaces it behind the same interface.

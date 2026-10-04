@@ -1,0 +1,9 @@
+# Copy to config.toml (git-ignored) and fill in. The SEC requires a contact in
+# the User-Agent of every request: https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data
+user_agent = "Your Name you@example.com"
+
+# Where the database file lives (default: screener.duckdb next to this file).
+# database = "~/data/screener.duckdb"
+
+# At most 10 (the SEC's limit); the default leaves headroom.
+requests_per_second = 8

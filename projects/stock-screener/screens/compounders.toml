@@ -1,0 +1,45 @@
+# Steady compounders: book value and earnings per share grew for ten years,
+# steadily rather than between two lucky endpoints, with modest debt.
+# Run: screener screen screens/compounders.toml
+name = "Steady compounders"
+window = "10"
+min_years = 11
+currencies = ["USD"]
+max_fiscal_year_age = 1
+columns = ["bvps.cagr", "bvps.r2", "eps.cagr", "roe.avg", "debt_to_equity.latest", "fcf_ps.cagr"]
+limit = 50
+
+[sort]
+by = "score"
+descending = true
+
+[[filters]]
+column = "bvps.cagr"
+op = ">="
+value = 0.10
+
+[[filters]]
+column = "bvps.years_grew"
+op = ">="
+value = 8
+
+[[filters]]
+column = "debt_to_equity.latest"
+op = "<="
+value = 0.5
+
+[[score]]
+column = "bvps.cagr"
+weight = 2.0
+
+[[score]]
+column = "bvps.r2"
+weight = 1.0
+
+[[score]]
+column = "roe.median"
+weight = 1.0
+
+[[score]]
+column = "eps.cagr"
+weight = 1.0

@@ -17,7 +17,17 @@
     npm.enable = true;
   };
 
+  # Python for the stock screener (projects/stock-screener); uv installs its locked packages
+  # into the project's .venv on `uv run` or `uv sync`. See docs/decisions/2026-10-03-stock-screener-stack.md.
+  languages.python = {
+    enable = true;
+    package = pkgs.python312;
+    uv.enable = true;
+  };
+
   enterTest = ''
+    python --version
+    uv --version
     node --version
     node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 19) ? 0 : 1)'
   '';

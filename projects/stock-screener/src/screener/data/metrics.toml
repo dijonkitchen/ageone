@@ -1,0 +1,178 @@
+# Metric definitions (SPEC-2026-10-03-stock-screener). Each metric is defined once here, and the CLI,
+# the web page, and exports show the definition next to the number.
+#
+# Names in formulas are inputs below, OpenBB standardized line items (such as
+# total_revenue), or gap-fill items from gap_fill.toml (such as
+# shares_outstanding). Two names come from split adjustment in code:
+#   flow_split_factor     - splits after this year, measured on diluted shares
+#   balance_split_factor  - splits after this year, measured on year-end shares
+# A split-adjusted share count is shares * factor; a per-share value is
+# value / factor.
+#
+# An input is one of:
+#   from = [...]     the first listed item with a value that year
+#   sum = [...]      the sum of the listed items present that year (missing if none)
+#   formula = "..."  arithmetic on earlier inputs, with optional clip = [lo, hi]
+# A metric is a formula. requires_positive lists inputs that must be above zero
+# for the metric to mean anything (no ROE on negative equity); otherwise the
+# year is missing.
+#
+# Price inputs (SPEC-2026-10-03-portfolio-kelly) will add names such as price; nothing here assumes
+# there are none.
+
+[splits]
+flow_shares = "diluted_shares_reported"
+balance_shares = "shares_outstanding"
+
+[inputs.diluted_shares_reported]
+from = ["weighted_ave_diluted_shares_os", "weighted_ave_basic_diluted_shares_os", "weighted_ave_basic_shares_os"]
+
+[inputs.diluted_shares]
+formula = "diluted_shares_reported * flow_split_factor"
+
+[inputs.year_end_shares]
+formula = "shares_outstanding * balance_split_factor"
+
+[inputs.common_equity]
+from = ["total_common_equity", "total_equity"]
+
+[inputs.intangibles]
+sum = ["goodwill", "intangible_assets"]
+
+[inputs.net_income_common]
+from = ["net_income_to_common", "net_income"]
+
+[inputs.revenue]
+from = ["total_revenue", "revenues_excl_interest_dividends", "operating_revenue"]
+
+[inputs.operating_cash_flow]
+from = ["net_cash_from_operating_activities", "net_cash_from_continuing_operating_activities"]
+
+[inputs.capex]
+# Cash flow statements report capital expenditure as a negative outflow.
+formula = "-purchase_of_plant_property_and_equipment"
+
+[inputs.dividends_per_share_reported]
+from = ["cash_dividends_per_share", "dividends_declared_per_share"]
+
+[inputs.interest]
+from = ["total_interest_expense", "interest_expense"]
+
+[inputs.total_debt]
+sum = ["short_term_debt", "current_portion_of_long_term_debt", "long_term_debt"]
+
+[inputs.tax_rate]
+formula = "income_tax_expense / total_pretax_income"
+clip = [0.0, 0.5]
+
+# Per share
+
+[metrics.bvps]
+label = "Book value per share"
+group = "per_share"
+formula = "common_equity / year_end_shares"
+description = "Common equity at fiscal year end divided by split-adjusted common shares outstanding at fiscal year end."
+
+[metrics.tbvps]
+label = "Tangible book value per share"
+group = "per_share"
+formula = "(common_equity - intangibles) / year_end_shares"
+description = "Common equity less goodwill and intangible assets, divided by split-adjusted year-end shares."
+
+[metrics.eps]
+label = "Diluted EPS"
+group = "per_share"
+formula = "diluted_eps / flow_split_factor"
+description = "Diluted earnings per share as reported, adjusted for later stock splits."
+
+[metrics.revenue_ps]
+label = "Revenue per share"
+group = "per_share"
+formula = "revenue / diluted_shares"
+description = "Total revenue divided by split-adjusted diluted weighted average shares."
+
+[metrics.ocf_ps]
+label = "Operating cash flow per share"
+group = "per_share"
+formula = "operating_cash_flow / diluted_shares"
+description = "Net cash from operating activities divided by split-adjusted diluted weighted average shares."
+
+[metrics.fcf_ps]
+label = "Free cash flow per share"
+group = "per_share"
+formula = "(operating_cash_flow - capex) / diluted_shares"
+description = "Operating cash flow minus capital expenditure (purchases of property, plant, and equipment), divided by split-adjusted diluted weighted average shares."
+
+[metrics.dps]
+label = "Dividends per share"
+group = "per_share"
+formula = "dividends_per_share_reported / flow_split_factor"
+description = "Cash dividends declared per common share, adjusted for later stock splits."
+
+# Profitability
+
+[metrics.roe]
+label = "Return on equity"
+group = "profitability"
+formula = "net_income_common / common_equity"
+requires_positive = ["common_equity"]
+description = "Net income to common shareholders divided by common equity at fiscal year end."
+
+[metrics.roa]
+label = "Return on assets"
+group = "profitability"
+formula = "net_income / total_assets"
+requires_positive = ["total_assets"]
+description = "Net income divided by total assets at fiscal year end."
+
+[metrics.roic]
+label = "Return on invested capital"
+group = "profitability"
+formula = "total_operating_income * (1 - tax_rate) / (common_equity + total_debt)"
+requires_positive = ["common_equity"]
+description = "Operating income after tax at the effective rate (clipped to 0 to 50%), divided by common equity plus total debt at fiscal year end."
+
+[metrics.gross_margin]
+label = "Gross margin"
+group = "profitability"
+formula = "total_gross_profit / revenue"
+requires_positive = ["revenue"]
+description = "Gross profit divided by total revenue."
+
+[metrics.operating_margin]
+label = "Operating margin"
+group = "profitability"
+formula = "total_operating_income / revenue"
+requires_positive = ["revenue"]
+description = "Operating income divided by total revenue."
+
+[metrics.net_margin]
+label = "Net margin"
+group = "profitability"
+formula = "net_income / revenue"
+requires_positive = ["revenue"]
+description = "Net income divided by total revenue."
+
+# Balance sheet
+
+[metrics.debt_to_equity]
+label = "Debt to equity"
+group = "balance_sheet"
+formula = "total_debt / common_equity"
+requires_positive = ["common_equity"]
+higher_is_better = false
+description = "Short-term debt, current portion of long-term debt, and long-term debt, divided by common equity at fiscal year end."
+
+[metrics.current_ratio]
+label = "Current ratio"
+group = "balance_sheet"
+formula = "total_current_assets / total_current_liabilities"
+requires_positive = ["total_current_liabilities"]
+description = "Total current assets divided by total current liabilities (not reported by most banks and insurers)."
+
+[metrics.interest_coverage]
+label = "Interest coverage"
+group = "balance_sheet"
+formula = "total_operating_income / interest"
+requires_positive = ["interest"]
+description = "Operating income divided by interest expense."

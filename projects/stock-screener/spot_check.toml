@@ -1,0 +1,84 @@
+# Spot check (SPEC-2026-10-03-stock-screener): values read from 10-K filings,
+# on today's share basis (per-share values filed before a split are divided by
+# its ratio). Run `screener refresh --tickers AAPL,MSFT` then
+# `screener spot-check`, and again after every OpenBB upgrade.
+#
+# Each value is the one in the latest 10-K reporting that year, so a later
+# restatement wins however many years on it came: MSFT 2016 is the 2.56 the
+# fiscal 2018 10-K restated it to for ASC 606, not the 2.10 first reported.
+#
+# EPS is diluted EPS as filed. BVPS is total stockholders' equity divided by
+# common shares outstanding at fiscal year end, both from the balance sheet.
+# Checked against the SEC's Company Facts for those filings on 2026-10-03.
+
+tolerance = 0.01  # relative
+
+[[companies]]
+ticker = "AAPL"
+note = "7-for-1 split in fiscal 2014 and 4-for-1 in fiscal 2020; fiscal 2018 and later EPS are restated in the fiscal 2020 10-K or after, earlier years are divided by the ratios."
+
+[companies.values.eps]
+2013 = 1.42    # 39.75 in the fiscal 2013 10-K, 5.68 restated in fiscal 2014; / 4
+2014 = 1.6125  # 6.45 / 4
+2015 = 2.305   # 9.22 / 4
+2016 = 2.0775  # 8.31 / 4
+2017 = 2.3025  # 9.21 / 4
+2018 = 2.98    # restated in the fiscal 2020 10-K (11.91 first reported)
+2019 = 2.97
+2020 = 3.28
+2021 = 5.61
+2022 = 6.11
+2023 = 6.13
+2024 = 6.08
+2025 = 7.46
+
+[companies.values.bvps]
+2013 = 4.907   # 123.549bn / 6,294m restated shares / 4
+2014 = 4.7538  # 111.547bn / 5,866m / 4
+2015 = 5.3486  # 119.355bn / 5,579m / 4
+2016 = 6.0085  # 128.249bn / 5,336m / 4
+2017 = 6.5373  # 134.047bn / 5,126m / 4
+2018 = 5.6334  # 107.147bn / 4,755m / 4
+2019 = 5.0913  # 90.488bn / 17,773m restated shares
+2020 = 3.8487  # 65.339bn / 16,977m
+2021 = 3.8407  # 63.090bn / 16,427m
+2022 = 3.1782  # 50.672bn / 15,943m
+2023 = 3.9965  # 62.146bn / 15,550m
+2024 = 3.7673  # 56.950bn / 15,117m
+2025 = 4.991   # 73.733bn / 14,773m
+
+[[companies]]
+ticker = "MSFT"
+note = "No splits since 2003; fiscal 2016 and 2017 are restated for ASC 606 in the fiscal 2018 10-K."
+
+[companies.values.eps]
+2013 = 2.58
+2014 = 2.63
+2015 = 1.48
+2016 = 2.56    # 2.10 as first reported
+2017 = 3.25    # 2.71 as first reported
+2018 = 2.13
+2019 = 5.06
+2020 = 5.76
+2021 = 8.05
+2022 = 9.65
+2023 = 9.68
+2024 = 11.80
+2025 = 13.64
+2026 = 17.95
+
+[companies.values.bvps]
+2013 = 9.4793   # 78.944bn / 8,328m
+2014 = 10.8974  # 89.784bn / 8,239m
+2015 = 9.9767   # 80.083bn / 8,027m
+2016 = 10.6416  # 83.090bn restated / 7,808m (71.997bn as first reported)
+2017 = 11.3792  # 87.711bn restated / 7,708m (72.394bn as first reported)
+2018 = 10.7748  # 82.718bn / 7,677m
+2019 = 13.3887  # 102.330bn / 7,643m
+2020 = 15.6259  # 118.304bn / 7,571m
+2021 = 18.8839  # 141.988bn / 7,519m
+2022 = 22.3127  # 166.542bn / 7,464m
+2023 = 27.748   # 206.223bn / 7,432m
+2024 = 36.1147  # 268.477bn / 7,434m
+2025 = 46.2038  # 343.479bn / 7,434m
+2026 = 59.5647  # 442.387bn / 7,427m

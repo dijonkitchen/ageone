@@ -1,0 +1,287 @@
+fiscal_year,period_ending,statement,tag,value,unit,currency,source
+2023,2023-12-31,balance_sheet,accounts_receivable,3916000000.0,monetary,USD,us-gaap:AccountsReceivableNet
+2023,2023-12-31,balance_sheet,accumulated_depreciation,1439000000.0,monetary,USD,us-gaap:AccumulatedDepreciationDepletionAndAmortizationPropertyPlantAndEquipment
+2023,2023-12-31,balance_sheet,accumulated_other_comprehensive_income,-840000000.0,monetary,USD,us-gaap:AccumulatedOtherComprehensiveIncomeLossNetOfTax
+2023,2023-12-31,balance_sheet,additional_paid_in_capital,19833000000.0,monetary,USD,us-gaap:AdditionalPaidInCapitalCommonStock
+2023,2023-12-31,balance_sheet,cash_and_equivalents,8736000000.0,monetary,USD,us-gaap:CashAndCashEquivalentsAtCarryingValue
+2023,2023-12-31,balance_sheet,common_equity,2000000.0,monetary,USD,us-gaap:CommonStockValue
+2023,2023-12-31,balance_sheet,goodwill,15524000000.0,monetary,USD,us-gaap:Goodwill
+2023,2023-12-31,balance_sheet,gross_ppe,2551000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentGross
+2023,2023-12-31,balance_sheet,intangible_assets,18258000000.0,monetary,USD,us-gaap:IntangibleAssetsNetExcludingGoodwill
+2023,2023-12-31,balance_sheet,long_term_debt,7918000000.0,monetary,USD,us-gaap:LongTermDebt
+2023,2023-12-31,balance_sheet,net_ppe,1112000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentNet
+2023,2023-12-31,balance_sheet,noncontrolling_interests,153000000.0,monetary,USD,us-gaap:MinorityInterest
+2023,2023-12-31,balance_sheet,noncurrent_deferred_tax_liabilities,3506000000.0,monetary,USD,us-gaap:DeferredIncomeTaxLiabilities
+2023,2023-12-31,balance_sheet,noncurrent_employee_benefit_liabilities,2393000000.0,monetary,USD,us-gaap:EmployeeRelatedLiabilitiesCurrentAndNoncurrent
+2023,2023-12-31,balance_sheet,operating_lease_right_of_use_asset,1421000000.0,monetary,USD,us-gaap:OperatingLeaseRightOfUseAsset
+2023,2023-12-31,balance_sheet,other_assets,74227000000.0,monetary,USD,imputed-plug: total_assets - (cash_and_equivalents(+) + restricted_cash(+) + accounts_receivable(+) + net_ppe(+) + operating_lease_right_of_use_asset(+) + goodwill(+) + intangible_assets(+))
+2023,2023-12-31,balance_sheet,other_liabilities,68154000000.0,monetary,USD,imputed-plug: total_liabilities - (long_term_debt(+) + noncurrent_deferred_tax_liabilities(+) + noncurrent_employee_benefit_liabilities(+))
+2023,2023-12-31,balance_sheet,restricted_cash,17000000.0,monetary,USD,us-gaap:RestrictedCash
+2023,2023-12-31,balance_sheet,retained_earnings,32343000000.0,monetary,USD,us-gaap:RetainedEarningsUnappropriated
+2023,2023-12-31,balance_sheet,temporary_equity,1740000000.0,monetary,USD,us-gaap:TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests
+2023,2023-12-31,balance_sheet,total_assets,123211000000.0,monetary,USD,us-gaap:Assets
+2023,2023-12-31,balance_sheet,total_common_equity,39347000000.0,monetary,USD,imputed-rollup: common_equity(+) + additional_paid_in_capital(+) + retained_earnings(+) + treasury_stock(-) + accumulated_other_comprehensive_income(+)
+2023,2023-12-31,balance_sheet,total_equity,39347000000.0,monetary,USD,us-gaap:StockholdersEquity
+2023,2023-12-31,balance_sheet,total_equity_and_noncontrolling_interests,39500000000.0,monetary,USD,us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
+2023,2023-12-31,balance_sheet,total_liabilities,81971000000.0,monetary,USD,us-gaap:Liabilities
+2023,2023-12-31,balance_sheet,total_liabilities_and_equity,123211000000.0,monetary,USD,us-gaap:LiabilitiesAndStockholdersEquity
+2023,2023-12-31,balance_sheet,treasury_stock,11991000000.0,monetary,USD,us-gaap:TreasuryStockValue
+2023,2023-12-31,cash_flow,acquisitions,-189000000.0,monetary,USD,us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired
+2023,2023-12-31,cash_flow,cash_at_end_of_period,8753000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2023,2023-12-31,cash_flow,cash_income_taxes_paid,1392000000.0,monetary,USD,us-gaap:IncomeTaxesPaidNet
+2023,2023-12-31,cash_flow,cash_interest_paid,200000000.0,monetary,USD,us-gaap:InterestPaidNet
+2023,2023-12-31,cash_flow,change_in_accounts_payable,-26000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsPayableAndAccruedLiabilities
+2023,2023-12-31,cash_flow,change_in_accounts_receivable,-586000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsReceivable
+2023,2023-12-31,cash_flow,change_in_other_operating_assets_and_liabilities,-326000000.0,monetary,USD,us-gaap:IncreaseDecreaseInOtherOperatingAssets
+2023,2023-12-31,cash_flow,deferred_income_tax,124000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2023,2023-12-31,cash_flow,depreciation_and_amortization,263000000.0,monetary,USD,us-gaap:DepreciationAndAmortization(identity_lock:cash_flow)
+2023,2023-12-31,cash_flow,effect_of_exchange_rate_changes,106000000.0,monetary,USD,us-gaap:EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2023,2023-12-31,cash_flow,gain_loss_on_investments,-699000000.0,monetary,USD,us-gaap:GainLossOnInvestments
+2023,2023-12-31,cash_flow,income_loss_from_equity_method_investments,-378000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2023,2023-12-31,cash_flow,increase_decrease_in_operating_capital,-938000000.0,monetary,USD,imputed-rollup: change_in_accounts_receivable(+) + change_in_accounts_payable(+) + change_in_other_operating_assets_and_liabilities(+)
+2023,2023-12-31,cash_flow,issuance_of_common_equity,95000000.0,monetary,USD,us-gaap:ProceedsFromStockOptionsExercised
+2023,2023-12-31,cash_flow,issuance_of_debt,1238000000.0,monetary,USD,us-gaap:ProceedsFromIssuanceOfLongTermDebt
+2023,2023-12-31,cash_flow,net_cash_from_continuing_financing_activities,-1992000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2023,2023-12-31,cash_flow,net_cash_from_continuing_investing_activities,-959000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2023,2023-12-31,cash_flow,net_cash_from_continuing_operating_activities,4165000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2023,2023-12-31,cash_flow,net_cash_from_financing_activities,-1992000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2023,2023-12-31,cash_flow,net_cash_from_investing_activities,-959000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2023,2023-12-31,cash_flow,net_cash_from_operating_activities,4165000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2023,2023-12-31,cash_flow,net_change_in_cash,1320000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect
+2023,2023-12-31,cash_flow,net_income,5676000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2023,2023-12-31,cash_flow,net_income_continuing,5676000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2023,2023-12-31,cash_flow,other_financing_activities_net,1594000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_financing_activities - (repayment_of_debt(+) + repurchase_of_common_equity(+) + payment_of_dividends(+) + issuance_of_debt(+) + issuance_of_common_equity(+))
+2023,2023-12-31,cash_flow,other_investing_activities_net,420000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_investing_activities - (purchase_of_plant_property_and_equipment(+) + acquisitions(+) + purchase_of_investments(+))
+2023,2023-12-31,cash_flow,other_operating_activities,-513000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_operating_activities - (net_income_continuing(+) + depreciation_and_amortization(+) + stock_based_compensation(+) + deferred_income_tax(+) + gain_loss_on_investments(+) + income_loss_from_equity_method_investments(+) + asset_impairment_charges(+) + increase_decrease_in_operating_capital(+))
+2023,2023-12-31,cash_flow,payment_of_dividends,-3035000000.0,monetary,USD,us-gaap:PaymentsOfDividends
+2023,2023-12-31,cash_flow,purchase_of_investments,-846000000.0,monetary,USD,us-gaap:PaymentsToAcquireInvestments
+2023,2023-12-31,cash_flow,purchase_of_plant_property_and_equipment,-344000000.0,monetary,USD,us-gaap:PaymentsToAcquirePropertyPlantAndEquipment
+2023,2023-12-31,cash_flow,repayment_of_debt,0.0,monetary,USD,us-gaap:RepaymentsOfLongTermDebt
+2023,2023-12-31,cash_flow,repurchase_of_common_equity,-1884000000.0,monetary,USD,us-gaap:PaymentsForRepurchaseOfCommonStock
+2023,2023-12-31,cash_flow,stock_based_compensation,630000000.0,monetary,USD,us-gaap:ShareBasedCompensation
+2023,2023-12-31,gap_fill,dividends_declared_per_share,20.0,per_share,USD,gap-fill:us-gaap:CommonStockDividendsPerShareDeclared
+2023,2023-12-31,gap_fill,interest_expense,292000000.0,monetary,USD,gap-fill:us-gaap:InterestExpenseNonoperating
+2023,2023-12-31,gap_fill,shares_outstanding,148500074.0,shares,USD,gap-fill:us-gaap:CommonStockSharesOutstanding
+2023,2023-12-31,income_statement,basic_eps,36.85,per_share,USD,us-gaap:EarningsPerShareBasic
+2023,2023-12-31,income_statement,cash_dividends_per_share,20.0,per_share,USD,us-gaap:CommonStockDividendsPerShareDeclared
+2023,2023-12-31,income_statement,comprehensive_income,5937000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTaxIncludingPortionAttributableToNoncontrollingInterest
+2023,2023-12-31,income_statement,comprehensive_income_nci,174000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTaxAttributableToNoncontrollingInterest
+2023,2023-12-31,income_statement,comprehensive_income_parent,5763000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTax
+2023,2023-12-31,income_statement,costs_and_expenses,4737000000.0,monetary,USD,imputed-plug: total_operating_income - (total_revenue(+))
+2023,2023-12-31,income_statement,depreciation_and_amortization,263000000.0,monetary,USD,us-gaap:DepreciationAndAmortization
+2023,2023-12-31,income_statement,diluted_eps,36.51,per_share,USD,us-gaap:EarningsPerShareDiluted
+2023,2023-12-31,income_statement,equity_method_investments,378000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2023,2023-12-31,income_statement,income_before_equity_method,7155000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2023,2023-12-31,income_statement,income_tax_current,1355000000.0,monetary,USD,us-gaap:CurrentIncomeTaxExpenseBenefit
+2023,2023-12-31,income_statement,income_tax_deferred,124000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2023,2023-12-31,income_statement,income_tax_expense,1479000000.0,monetary,USD,us-gaap:IncomeTaxExpenseBenefit
+2023,2023-12-31,income_statement,net_income,5676000000.0,monetary,USD,us-gaap:ProfitLoss
+2023,2023-12-31,income_statement,net_income_continuing,5676000000.0,monetary,USD,us-gaap:ProfitLoss
+2023,2023-12-31,income_statement,net_income_to_common,5502000000.0,monetary,USD,us-gaap:NetIncomeLoss
+2023,2023-12-31,income_statement,net_income_to_noncontrolling_interest,174000000.0,monetary,USD,us-gaap:NetIncomeLossAttributableToNoncontrollingInterest
+2023,2023-12-31,income_statement,operating_revenue,17859000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+2023,2023-12-31,income_statement,other_adjustments_to_consolidated_net_income,261000000.0,monetary,USD,us-gaap:OtherComprehensiveIncomeLossNetOfTax
+2023,2023-12-31,income_statement,other_income,699000000.0,monetary,USD,imputed-plug: total_other_income - (total_interest_income(+) + total_interest_expense(-))
+2023,2023-12-31,income_statement,other_operating_expenses,2584000000.0,monetary,USD,imputed-plug: costs_and_expenses - (sga_expense(+) + impairment_expense(+) + restructuring_charge(+))
+2023,2023-12-31,income_statement,other_revenue,-6847000000.0,monetary,USD,imputed-plug: total_revenue - (operating_revenue(+))
+2023,2023-12-31,income_statement,restructuring_charge,61000000.0,monetary,USD,us-gaap:RestructuringCharges
+2023,2023-12-31,income_statement,sga_expense,2092000000.0,monetary,USD,us-gaap:GeneralAndAdministrativeExpense
+2023,2023-12-31,income_statement,total_interest_expense,292000000.0,monetary,USD,us-gaap:InterestExpenseNonoperating
+2023,2023-12-31,income_statement,total_interest_income,473000000.0,monetary,USD,us-gaap:InvestmentIncomeInterestAndDividend
+2023,2023-12-31,income_statement,total_operating_expenses,11584000000.0,monetary,USD,us-gaap:OperatingExpenses
+2023,2023-12-31,income_statement,total_operating_income,6275000000.0,monetary,USD,us-gaap:OperatingIncomeLoss
+2023,2023-12-31,income_statement,total_other_income,880000000.0,monetary,USD,us-gaap:NonoperatingIncomeExpense
+2023,2023-12-31,income_statement,total_pretax_income,7155000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2023,2023-12-31,income_statement,total_revenue,11012000000.0,monetary,USD,us-gaap:Revenues
+2023,2023-12-31,income_statement,weighted_ave_basic_shares_os,149327558.0,shares,USD,us-gaap:WeightedAverageNumberOfSharesOutstandingBasic
+2023,2023-12-31,income_statement,weighted_ave_diluted_shares_os,150706451.0,shares,USD,us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding
+2024,2024-12-31,balance_sheet,accounts_receivable,4304000000.0,monetary,USD,us-gaap:AccountsReceivableNet
+2024,2024-12-31,balance_sheet,accumulated_depreciation,1553000000.0,monetary,USD,us-gaap:AccumulatedDepreciationDepletionAndAmortizationPropertyPlantAndEquipment
+2024,2024-12-31,balance_sheet,accumulated_other_comprehensive_income,-1178000000.0,monetary,USD,us-gaap:AccumulatedOtherComprehensiveIncomeLossNetOfTax
+2024,2024-12-31,balance_sheet,additional_paid_in_capital,13446000000.0,monetary,USD,us-gaap:AdditionalPaidInCapitalCommonStock
+2024,2024-12-31,balance_sheet,cash_and_equivalents,12762000000.0,monetary,USD,us-gaap:CashAndCashEquivalentsAtCarryingValue
+2024,2024-12-31,balance_sheet,common_equity,2000000.0,monetary,USD,us-gaap:CommonStockValue
+2024,2024-12-31,balance_sheet,goodwill,25949000000.0,monetary,USD,us-gaap:Goodwill
+2024,2024-12-31,balance_sheet,gross_ppe,2656000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentGross
+2024,2024-12-31,balance_sheet,intangible_assets,20743000000.0,monetary,USD,us-gaap:IntangibleAssetsNetExcludingGoodwill
+2024,2024-12-31,balance_sheet,long_term_debt,12314000000.0,monetary,USD,us-gaap:LongTermDebt
+2024,2024-12-31,balance_sheet,net_ppe,1103000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentNet
+2024,2024-12-31,balance_sheet,noncontrolling_interests,169000000.0,monetary,USD,us-gaap:MinorityInterest
+2024,2024-12-31,balance_sheet,noncurrent_deferred_tax_liabilities,3334000000.0,monetary,USD,us-gaap:DeferredIncomeTaxLiabilities
+2024,2024-12-31,balance_sheet,noncurrent_employee_benefit_liabilities,2964000000.0,monetary,USD,us-gaap:EmployeeRelatedLiabilitiesCurrentAndNoncurrent
+2024,2024-12-31,balance_sheet,operating_lease_right_of_use_asset,1519000000.0,monetary,USD,us-gaap:OperatingLeaseRightOfUseAsset
+2024,2024-12-31,balance_sheet,other_assets,72218000000.0,monetary,USD,imputed-plug: total_assets - (cash_and_equivalents(+) + restricted_cash(+) + accounts_receivable(+) + net_ppe(+) + operating_lease_right_of_use_asset(+) + goodwill(+) + intangible_assets(+))
+2024,2024-12-31,balance_sheet,other_liabilities,70648000000.0,monetary,USD,imputed-plug: total_liabilities - (long_term_debt(+) + noncurrent_deferred_tax_liabilities(+) + noncurrent_employee_benefit_liabilities(+))
+2024,2024-12-31,balance_sheet,restricted_cash,17000000.0,monetary,USD,us-gaap:RestrictedCash
+2024,2024-12-31,balance_sheet,retained_earnings,35611000000.0,monetary,USD,us-gaap:RetainedEarningsUnappropriated
+2024,2024-12-31,balance_sheet,temporary_equity,1691000000.0,monetary,USD,us-gaap:TemporaryEquityCarryingAmountIncludingPortionAttributableToNoncontrollingInterests(fallback)
+2024,2024-12-31,balance_sheet,total_assets,138615000000.0,monetary,USD,us-gaap:Assets
+2024,2024-12-31,balance_sheet,total_common_equity,47495000000.0,monetary,USD,imputed-rollup: common_equity(+) + additional_paid_in_capital(+) + retained_earnings(+) + treasury_stock(-) + accumulated_other_comprehensive_income(+)
+2024,2024-12-31,balance_sheet,total_equity,47495000000.0,monetary,USD,us-gaap:StockholdersEquity
+2024,2024-12-31,balance_sheet,total_equity_and_noncontrolling_interests,47664000000.0,monetary,USD,us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
+2024,2024-12-31,balance_sheet,total_liabilities,89260000000.0,monetary,USD,us-gaap:Liabilities
+2024,2024-12-31,balance_sheet,total_liabilities_and_equity,138615000000.0,monetary,USD,us-gaap:LiabilitiesAndStockholdersEquity
+2024,2024-12-31,balance_sheet,treasury_stock,386000000.0,monetary,USD,us-gaap:TreasuryStockValue
+2024,2024-12-31,cash_flow,acquisitions,-2936000000.0,monetary,USD,us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired
+2024,2024-12-31,cash_flow,cash_at_beginning_of_period,8753000000.0,monetary,USD,derived: cash_at_end_of_period(2023-12-31)
+2024,2024-12-31,cash_flow,cash_at_end_of_period,12779000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2024,2024-12-31,cash_flow,cash_income_taxes_paid,1699000000.0,monetary,USD,us-gaap:IncomeTaxesPaidNet
+2024,2024-12-31,cash_flow,cash_interest_paid,289000000.0,monetary,USD,us-gaap:InterestPaidNet
+2024,2024-12-31,cash_flow,change_in_accounts_payable,259000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsPayableAndAccruedLiabilities
+2024,2024-12-31,cash_flow,change_in_accounts_receivable,-443000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsReceivable
+2024,2024-12-31,cash_flow,change_in_other_operating_assets_and_liabilities,317000000.0,monetary,USD,us-gaap:IncreaseDecreaseInOtherOperatingAssets
+2024,2024-12-31,cash_flow,deferred_income_tax,-106000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2024,2024-12-31,cash_flow,depreciation_and_amortization,270000000.0,monetary,USD,us-gaap:DepreciationAndAmortization(identity_lock:cash_flow)
+2024,2024-12-31,cash_flow,effect_of_exchange_rate_changes,-162000000.0,monetary,USD,us-gaap:EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2024,2024-12-31,cash_flow,gain_loss_on_investments,-492000000.0,monetary,USD,us-gaap:GainLossOnInvestments
+2024,2024-12-31,cash_flow,income_loss_from_equity_method_investments,-41000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2024,2024-12-31,cash_flow,increase_decrease_in_operating_capital,133000000.0,monetary,USD,imputed-rollup: change_in_accounts_receivable(+) + change_in_accounts_payable(+) + change_in_other_operating_assets_and_liabilities(+)
+2024,2024-12-31,cash_flow,issuance_of_common_equity,464000000.0,monetary,USD,us-gaap:ProceedsFromStockOptionsExercised
+2024,2024-12-31,cash_flow,issuance_of_debt,5474000000.0,monetary,USD,us-gaap:ProceedsFromIssuanceOfLongTermDebt
+2024,2024-12-31,cash_flow,net_cash_from_continuing_financing_activities,2236000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2024,2024-12-31,cash_flow,net_cash_from_continuing_investing_activities,-3004000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2024,2024-12-31,cash_flow,net_cash_from_continuing_operating_activities,4956000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2024,2024-12-31,cash_flow,net_cash_from_financing_activities,2236000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2024,2024-12-31,cash_flow,net_cash_from_investing_activities,-3004000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2024,2024-12-31,cash_flow,net_cash_from_operating_activities,4956000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2024,2024-12-31,cash_flow,net_change_in_cash,4026000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect
+2024,2024-12-31,cash_flow,net_income,6512000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2024,2024-12-31,cash_flow,net_income_continuing,6512000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2024,2024-12-31,cash_flow,other_financing_activities_net,2329000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_financing_activities - (repayment_of_debt(+) + repurchase_of_common_equity(+) + payment_of_dividends(+) + issuance_of_debt(+) + issuance_of_common_equity(+))
+2024,2024-12-31,cash_flow,other_investing_activities_net,1005000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_investing_activities - (purchase_of_plant_property_and_equipment(+) + acquisitions(+) + purchase_of_investments(+))
+2024,2024-12-31,cash_flow,other_operating_activities,-2073000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_operating_activities - (net_income_continuing(+) + depreciation_and_amortization(+) + stock_based_compensation(+) + deferred_income_tax(+) + gain_loss_on_investments(+) + income_loss_from_equity_method_investments(+) + asset_impairment_charges(+) + increase_decrease_in_operating_capital(+))
+2024,2024-12-31,cash_flow,payment_of_dividends,-3101000000.0,monetary,USD,us-gaap:PaymentsOfDividends(fallback)
+2024,2024-12-31,cash_flow,purchase_of_investments,-818000000.0,monetary,USD,us-gaap:PaymentsToAcquireInvestments
+2024,2024-12-31,cash_flow,purchase_of_plant_property_and_equipment,-255000000.0,monetary,USD,us-gaap:PaymentsToAcquirePropertyPlantAndEquipment
+2024,2024-12-31,cash_flow,repayment_of_debt,-1000000000.0,monetary,USD,us-gaap:RepaymentsOfLongTermDebt
+2024,2024-12-31,cash_flow,repurchase_of_common_equity,-1930000000.0,monetary,USD,us-gaap:PaymentsForRepurchaseOfCommonStock(fallback)
+2024,2024-12-31,cash_flow,stock_based_compensation,753000000.0,monetary,USD,us-gaap:ShareBasedCompensation
+2024,2024-12-31,gap_fill,dividends_declared_per_share,20.4,per_share,USD,gap-fill:us-gaap:CommonStockDividendsPerShareDeclared
+2024,2024-12-31,gap_fill,interest_expense,538000000.0,monetary,USD,gap-fill:us-gaap:InterestExpenseNonoperating
+2024,2024-12-31,gap_fill,shares_outstanding,154947813.0,shares,USD,gap-fill:us-gaap:CommonStockSharesOutstanding
+2024,2024-12-31,income_statement,basic_eps,42.45,per_share,USD,us-gaap:EarningsPerShareBasic
+2024,2024-12-31,income_statement,cash_dividends_per_share,20.4,per_share,USD,us-gaap:CommonStockDividendsPerShareDeclared
+2024,2024-12-31,income_statement,comprehensive_income,6174000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTaxIncludingPortionAttributableToNoncontrollingInterest
+2024,2024-12-31,income_statement,comprehensive_income_nci,143000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTaxAttributableToNoncontrollingInterest(fallback)
+2024,2024-12-31,income_statement,comprehensive_income_parent,6031000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTax
+2024,2024-12-31,income_statement,costs_and_expenses,12833000000.0,monetary,USD,us-gaap:OperatingExpenses
+2024,2024-12-31,income_statement,depreciation_and_amortization,270000000.0,monetary,USD,us-gaap:DepreciationAndAmortization
+2024,2024-12-31,income_statement,diluted_eps,42.01,per_share,USD,us-gaap:EarningsPerShareDiluted
+2024,2024-12-31,income_statement,equity_method_investments,41000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2024,2024-12-31,income_statement,income_before_equity_method,8295000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2024,2024-12-31,income_statement,income_tax_current,1889000000.0,monetary,USD,us-gaap:CurrentIncomeTaxExpenseBenefit
+2024,2024-12-31,income_statement,income_tax_deferred,-106000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2024,2024-12-31,income_statement,income_tax_expense,1783000000.0,monetary,USD,us-gaap:IncomeTaxExpenseBenefit
+2024,2024-12-31,income_statement,net_income,6512000000.0,monetary,USD,us-gaap:ProfitLoss
+2024,2024-12-31,income_statement,net_income_continuing,6512000000.0,monetary,USD,us-gaap:ProfitLoss
+2024,2024-12-31,income_statement,net_income_to_common,6369000000.0,monetary,USD,us-gaap:NetIncomeLoss
+2024,2024-12-31,income_statement,net_income_to_noncontrolling_interest,143000000.0,monetary,USD,us-gaap:NetIncomeLossAttributableToNoncontrollingInterest(fallback)
+2024,2024-12-31,income_statement,operating_revenue,20407000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+2024,2024-12-31,income_statement,other_adjustments_to_consolidated_net_income,-338000000.0,monetary,USD,us-gaap:OtherComprehensiveIncomeLossNetOfTax
+2024,2024-12-31,income_statement,other_income,492000000.0,monetary,USD,imputed-plug: total_other_income - (total_interest_income(+) + total_interest_expense(-))
+2024,2024-12-31,income_statement,other_operating_expenses,10576000000.0,monetary,USD,imputed-plug: costs_and_expenses - (sga_expense(+) + impairment_expense(+) + restructuring_charge(+))
+2024,2024-12-31,income_statement,restructuring_charge,0.0,monetary,USD,us-gaap:RestructuringCharges
+2024,2024-12-31,income_statement,sga_expense,2257000000.0,monetary,USD,us-gaap:GeneralAndAdministrativeExpense
+2024,2024-12-31,income_statement,total_interest_expense,538000000.0,monetary,USD,us-gaap:InterestExpenseNonoperating
+2024,2024-12-31,income_statement,total_interest_income,767000000.0,monetary,USD,us-gaap:InvestmentIncomeInterestAndDividend
+2024,2024-12-31,income_statement,total_operating_expenses,12833000000.0,monetary,USD,us-gaap:OperatingExpenses
+2024,2024-12-31,income_statement,total_operating_income,7574000000.0,monetary,USD,us-gaap:OperatingIncomeLoss
+2024,2024-12-31,income_statement,total_other_income,721000000.0,monetary,USD,us-gaap:NonoperatingIncomeExpense
+2024,2024-12-31,income_statement,total_pretax_income,8295000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2024,2024-12-31,income_statement,total_revenue,20407000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+2024,2024-12-31,income_statement,weighted_ave_basic_shares_os,150042269.0,shares,USD,us-gaap:WeightedAverageNumberOfSharesOutstandingBasic
+2024,2024-12-31,income_statement,weighted_ave_diluted_shares_os,151615085.0,shares,USD,us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding
+2025,2025-12-31,balance_sheet,accounts_receivable,5158000000.0,monetary,USD,us-gaap:AccountsReceivableNet
+2025,2025-12-31,balance_sheet,accumulated_depreciation,1692000000.0,monetary,USD,us-gaap:AccumulatedDepreciationDepletionAndAmortizationPropertyPlantAndEquipment
+2025,2025-12-31,balance_sheet,accumulated_other_comprehensive_income,-545000000.0,monetary,USD,us-gaap:AccumulatedOtherComprehensiveIncomeLossNetOfTax
+2025,2025-12-31,balance_sheet,additional_paid_in_capital,19748000000.0,monetary,USD,us-gaap:AdditionalPaidInCapitalCommonStock
+2025,2025-12-31,balance_sheet,cash_and_equivalents,11468000000.0,monetary,USD,us-gaap:CashAndCashEquivalentsAtCarryingValue
+2025,2025-12-31,balance_sheet,common_equity,2000000.0,monetary,USD,us-gaap:CommonStockValue
+2025,2025-12-31,balance_sheet,goodwill,35283000000.0,monetary,USD,us-gaap:Goodwill
+2025,2025-12-31,balance_sheet,gross_ppe,2948000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentGross
+2025,2025-12-31,balance_sheet,intangible_assets,27968000000.0,monetary,USD,us-gaap:IntangibleAssetsNetExcludingGoodwill
+2025,2025-12-31,balance_sheet,long_term_debt,12768000000.0,monetary,USD,us-gaap:LongTermDebt
+2025,2025-12-31,balance_sheet,net_ppe,1256000000.0,monetary,USD,us-gaap:PropertyPlantAndEquipmentNet
+2025,2025-12-31,balance_sheet,noncontrolling_interests,227000000.0,monetary,USD,us-gaap:MinorityInterest
+2025,2025-12-31,balance_sheet,noncurrent_deferred_tax_liabilities,4618000000.0,monetary,USD,us-gaap:DeferredIncomeTaxLiabilities
+2025,2025-12-31,balance_sheet,noncurrent_employee_benefit_liabilities,3830000000.0,monetary,USD,us-gaap:EmployeeRelatedLiabilitiesCurrentAndNoncurrent
+2025,2025-12-31,balance_sheet,operating_lease_right_of_use_asset,1874000000.0,monetary,USD,us-gaap:OperatingLeaseRightOfUseAsset
+2025,2025-12-31,balance_sheet,other_assets,86969000000.0,monetary,USD,imputed-plug: total_assets - (cash_and_equivalents(+) + restricted_cash(+) + accounts_receivable(+) + net_ppe(+) + operating_lease_right_of_use_asset(+) + goodwill(+) + intangible_assets(+))
+2025,2025-12-31,balance_sheet,other_liabilities,87240000000.0,monetary,USD,imputed-plug: total_liabilities - (long_term_debt(+) + noncurrent_deferred_tax_liabilities(+) + noncurrent_employee_benefit_liabilities(+))
+2025,2025-12-31,balance_sheet,restricted_cash,22000000.0,monetary,USD,us-gaap:RestrictedCash
+2025,2025-12-31,balance_sheet,retained_earnings,37899000000.0,monetary,USD,us-gaap:RetainedEarningsUnappropriated
+2025,2025-12-31,balance_sheet,temporary_equity,5427000000.0,monetary,USD,imputed-plug: total_liabilities_and_equity - (total_liabilities(+) + total_equity_and_noncontrolling_interests(+))
+2025,2025-12-31,balance_sheet,total_assets,169998000000.0,monetary,USD,us-gaap:Assets
+2025,2025-12-31,balance_sheet,total_common_equity,55888000000.0,monetary,USD,imputed-rollup: common_equity(+) + additional_paid_in_capital(+) + retained_earnings(+) + treasury_stock(-) + accumulated_other_comprehensive_income(+)
+2025,2025-12-31,balance_sheet,total_equity,55888000000.0,monetary,USD,us-gaap:StockholdersEquity
+2025,2025-12-31,balance_sheet,total_equity_and_noncontrolling_interests,56115000000.0,monetary,USD,us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
+2025,2025-12-31,balance_sheet,total_liabilities,108456000000.0,monetary,USD,us-gaap:Liabilities
+2025,2025-12-31,balance_sheet,total_liabilities_and_equity,169998000000.0,monetary,USD,us-gaap:LiabilitiesAndStockholdersEquity
+2025,2025-12-31,balance_sheet,treasury_stock,1216000000.0,monetary,USD,us-gaap:TreasuryStockValue
+2025,2025-12-31,cash_flow,acquisitions,-3496000000.0,monetary,USD,us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired
+2025,2025-12-31,cash_flow,cash_at_beginning_of_period,12779000000.0,monetary,USD,derived: cash_at_end_of_period(2024-12-31)
+2025,2025-12-31,cash_flow,cash_at_end_of_period,11490000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2025,2025-12-31,cash_flow,cash_income_taxes_paid,2298000000.0,monetary,USD,us-gaap:IncomeTaxesPaidNet
+2025,2025-12-31,cash_flow,cash_interest_paid,482000000.0,monetary,USD,us-gaap:InterestPaidNet
+2025,2025-12-31,cash_flow,change_in_accounts_payable,75000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsPayableAndAccruedLiabilities
+2025,2025-12-31,cash_flow,change_in_accounts_receivable,-619000000.0,monetary,USD,us-gaap:IncreaseDecreaseInAccountsReceivable
+2025,2025-12-31,cash_flow,change_in_other_operating_assets_and_liabilities,-722000000.0,monetary,USD,us-gaap:IncreaseDecreaseInOtherOperatingAssets
+2025,2025-12-31,cash_flow,deferred_income_tax,-631000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2025,2025-12-31,cash_flow,depreciation_and_amortization,297000000.0,monetary,USD,us-gaap:DepreciationAndAmortization(identity_lock:cash_flow)
+2025,2025-12-31,cash_flow,effect_of_exchange_rate_changes,329000000.0,monetary,USD,us-gaap:EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+2025,2025-12-31,cash_flow,gain_loss_on_investments,-634000000.0,monetary,USD,us-gaap:GainLossOnInvestments
+2025,2025-12-31,cash_flow,income_loss_from_equity_method_investments,-51000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2025,2025-12-31,cash_flow,increase_decrease_in_operating_capital,-1266000000.0,monetary,USD,imputed-rollup: change_in_accounts_receivable(+) + change_in_accounts_payable(+) + change_in_other_operating_assets_and_liabilities(+)
+2025,2025-12-31,cash_flow,issuance_of_common_equity,167000000.0,monetary,USD,us-gaap:ProceedsFromStockOptionsExercised
+2025,2025-12-31,cash_flow,issuance_of_debt,1080000000.0,monetary,USD,us-gaap:ProceedsFromIssuanceOfLongTermDebt
+2025,2025-12-31,cash_flow,net_cash_from_continuing_financing_activities,-1127000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2025,2025-12-31,cash_flow,net_cash_from_continuing_investing_activities,-4418000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2025,2025-12-31,cash_flow,net_cash_from_continuing_operating_activities,3927000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2025,2025-12-31,cash_flow,net_cash_from_financing_activities,-1127000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInFinancingActivities
+2025,2025-12-31,cash_flow,net_cash_from_investing_activities,-4418000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInInvestingActivities
+2025,2025-12-31,cash_flow,net_cash_from_operating_activities,3927000000.0,monetary,USD,us-gaap:NetCashProvidedByUsedInOperatingActivities
+2025,2025-12-31,cash_flow,net_change_in_cash,-1289000000.0,monetary,USD,us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect
+2025,2025-12-31,cash_flow,net_income,5942000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2025,2025-12-31,cash_flow,net_income_continuing,5942000000.0,monetary,USD,us-gaap:ProfitLoss(identity_lock:cash_flow)
+2025,2025-12-31,cash_flow,other_financing_activities_net,-1578000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_financing_activities - (repayment_of_debt(+) + issuance_of_debt(+) + issuance_of_common_equity(+))
+2025,2025-12-31,cash_flow,other_investing_activities_net,837000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_investing_activities - (purchase_of_plant_property_and_equipment(+) + acquisitions(+) + purchase_of_investments(+))
+2025,2025-12-31,cash_flow,other_operating_activities,-1037000000.0,monetary,USD,imputed-plug: net_cash_from_continuing_operating_activities - (net_income_continuing(+) + depreciation_and_amortization(+) + stock_based_compensation(+) + deferred_income_tax(+) + gain_loss_on_investments(+) + income_loss_from_equity_method_investments(+) + asset_impairment_charges(+) + increase_decrease_in_operating_capital(+))
+2025,2025-12-31,cash_flow,purchase_of_investments,-1384000000.0,monetary,USD,us-gaap:PaymentsToAcquireInvestments
+2025,2025-12-31,cash_flow,purchase_of_plant_property_and_equipment,-375000000.0,monetary,USD,us-gaap:PaymentsToAcquirePropertyPlantAndEquipment
+2025,2025-12-31,cash_flow,repayment_of_debt,-796000000.0,monetary,USD,us-gaap:RepaymentsOfLongTermDebt
+2025,2025-12-31,cash_flow,stock_based_compensation,1307000000.0,monetary,USD,us-gaap:ShareBasedCompensation
+2025,2025-12-31,gap_fill,dividends_declared_per_share,20.84,per_share,USD,gap-fill:us-gaap:CommonStockDividendsPerShareDeclared
+2025,2025-12-31,gap_fill,interest_expense,614000000.0,monetary,USD,gap-fill:us-gaap:InterestExpenseNonoperating
+2025,2025-12-31,gap_fill,shares_outstanding,155069171.0,shares,USD,gap-fill:us-gaap:CommonStockSharesOutstanding
+2025,2025-12-31,income_statement,basic_eps,35.83,per_share,USD,us-gaap:EarningsPerShareBasic
+2025,2025-12-31,income_statement,cash_dividends_per_share,20.84,per_share,USD,us-gaap:CommonStockDividendsPerShareDeclared
+2025,2025-12-31,income_statement,comprehensive_income,6548000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTaxIncludingPortionAttributableToNoncontrollingInterest
+2025,2025-12-31,income_statement,comprehensive_income_nci,389000000.0,monetary,USD,imputed-plug: comprehensive_income - (comprehensive_income_parent(+))
+2025,2025-12-31,income_statement,comprehensive_income_parent,6159000000.0,monetary,USD,us-gaap:ComprehensiveIncomeNetOfTax
+2025,2025-12-31,income_statement,costs_and_expenses,17171000000.0,monetary,USD,us-gaap:OperatingExpenses
+2025,2025-12-31,income_statement,depreciation_and_amortization,297000000.0,monetary,USD,us-gaap:DepreciationAndAmortization
+2025,2025-12-31,income_statement,diluted_eps,35.31,per_share,USD,us-gaap:EarningsPerShareDiluted
+2025,2025-12-31,income_statement,equity_method_investments,51000000.0,monetary,USD,us-gaap:IncomeLossFromEquityMethodInvestments
+2025,2025-12-31,income_statement,income_before_equity_method,7619000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2025,2025-12-31,income_statement,income_tax_current,2308000000.0,monetary,USD,us-gaap:CurrentIncomeTaxExpenseBenefit
+2025,2025-12-31,income_statement,income_tax_deferred,-631000000.0,monetary,USD,us-gaap:DeferredIncomeTaxExpenseBenefit
+2025,2025-12-31,income_statement,income_tax_expense,1677000000.0,monetary,USD,us-gaap:IncomeTaxExpenseBenefit
+2025,2025-12-31,income_statement,net_income,5942000000.0,monetary,USD,us-gaap:ProfitLoss
+2025,2025-12-31,income_statement,net_income_continuing,5942000000.0,monetary,USD,us-gaap:ProfitLoss
+2025,2025-12-31,income_statement,net_income_to_common,5553000000.0,monetary,USD,us-gaap:NetIncomeLoss
+2025,2025-12-31,income_statement,operating_revenue,24216000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+2025,2025-12-31,income_statement,other_adjustments_to_consolidated_net_income,606000000.0,monetary,USD,us-gaap:OtherComprehensiveIncomeLossNetOfTax
+2025,2025-12-31,income_statement,other_adjustments_to_net_income_to_common,389000000.0,monetary,USD,imputed-plug: net_income_to_common - (net_income(+))
+2025,2025-12-31,income_statement,other_income,634000000.0,monetary,USD,imputed-plug: total_other_income - (total_interest_income(+) + total_interest_expense(-))
+2025,2025-12-31,income_statement,other_operating_expenses,14401000000.0,monetary,USD,imputed-plug: costs_and_expenses - (sga_expense(+) + restructuring_charge(+))
+2025,2025-12-31,income_statement,restructuring_charge,39000000.0,monetary,USD,us-gaap:RestructuringCharges
+2025,2025-12-31,income_statement,sga_expense,2731000000.0,monetary,USD,us-gaap:GeneralAndAdministrativeExpense
+2025,2025-12-31,income_statement,total_interest_expense,614000000.0,monetary,USD,us-gaap:InterestExpenseNonoperating
+2025,2025-12-31,income_statement,total_interest_income,554000000.0,monetary,USD,us-gaap:InvestmentIncomeInterestAndDividend
+2025,2025-12-31,income_statement,total_operating_expenses,17171000000.0,monetary,USD,us-gaap:OperatingExpenses
+2025,2025-12-31,income_statement,total_operating_income,7045000000.0,monetary,USD,us-gaap:OperatingIncomeLoss
+2025,2025-12-31,income_statement,total_other_income,574000000.0,monetary,USD,us-gaap:NonoperatingIncomeExpense
+2025,2025-12-31,income_statement,total_pretax_income,7619000000.0,monetary,USD,us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+2025,2025-12-31,income_statement,total_revenue,24216000000.0,monetary,USD,us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+2025,2025-12-31,income_statement,weighted_ave_basic_shares_os,154984319.0,shares,USD,us-gaap:WeightedAverageNumberOfSharesOutstandingBasic
+2025,2025-12-31,income_statement,weighted_ave_diluted_shares_os,160866521.0,shares,USD,us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding
