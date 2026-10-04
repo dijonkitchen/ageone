@@ -28,3 +28,7 @@ jobs:
         run: experiments/formats/generate && git diff --exit-code -- experiments/formats
       - name: Experiment graders pass reference solutions and fail null baselines
         run: for d in experiments/formats/variants/*/; do evals/run --self-check --cases "$d" || exit 1; done
+      - name: Prompt injection cases match their generator
+        run: experiments/prompt-injection/generate && git diff --exit-code -- experiments/prompt-injection
+      - name: Prompt injection graders pass reference solutions and fail null baselines
+        run: for d in experiments/prompt-injection/variants/*/; do evals/run --self-check --cases "$d" || exit 1; done
