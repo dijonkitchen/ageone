@@ -1,0 +1,57 @@
+# Runs `make check` in each project folder a pull request changes, and in every project on main.
+# Each job sets up the pinned devenv environment with the root `make`, which also checks Bun and uv.
+# See specs/SPEC-2026-09-30-projects-scaffold.md and docs/decisions/2026-10-04-project-template.md.
+name: Projects
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  changed:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.list.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List the projects to check
+        id: list
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          projects=$(projects/changed "$BASE")
+          echo "projects=$projects" | tee -a "$GITHUB_OUTPUT"
+
+  check:
+    needs: changed
+    if: needs.changed.outputs.projects != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJSON(needs.changed.outputs.projects) }}
+    name: check (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find Nix and devenv once installed
+        run: |
+          echo /nix/var/nix/profiles/default/bin >> "$GITHUB_PATH"
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+      - name: Set up and check the pinned environment
+        run: make
+      - name: make check
+        if: matrix.project != '_template'
+        run: devenv shell -- make -C projects/${{ matrix.project }} check
+      - name: New projects from the template pass make check
+        if: matrix.project == '_template'
+        run: |
+          for stack in bun python; do
+            devenv shell -- make new PROJECT=ci-example-$stack STACK=$stack
+            devenv shell -- make -C projects/ci-example-$stack check
+          done

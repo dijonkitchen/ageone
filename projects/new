@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Create projects/<slug>/ from projects/_template/ with one stack (bun or python), then lock its dependencies.
+# Usage: projects/new <slug> [bun|python]   (or `make new PROJECT=<slug> [STACK=python]` from the repo root)
+# See specs/SPEC-2026-09-30-projects-scaffold.md and docs/decisions/2026-10-04-project-template.md.
+set -euo pipefail
+
+slug=${1:-}
+stack=${2:-bun}
+here=$(cd "$(dirname "$0")" && pwd)
+template=$here/_template
+dest=$here/$slug
+
+[[ $slug =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "usage: $0 <kebab-case-slug> [bun|python]" >&2; exit 2; }
+[[ -d $template/stacks/$stack ]] || { echo "unknown stack '$stack': use one of $(ls "$template/stacks" | tr '\n' ' ')" >&2; exit 2; }
+# A project folder may already hold its specs; refuse only if it has been set up.
+for f in AGENTS.md Makefile; do
+  [[ ! -e $dest/$f ]] || { echo "$dest/$f exists: $slug is already set up" >&2; exit 1; }
+done
+
+date=$(date -u +%F)
+package=${slug//-/_}
+
+mkdir -p "$dest"
+(cd "$template" && tar -cf - --exclude=./stacks .) | (cd "$dest" && tar -xf -)
+cp -R "$template/stacks/$stack/." "$dest/"
+# The template's empty specs/ only needs .gitkeep when no specs exist yet.
+[[ $(ls -A "$dest/specs") == .gitkeep ]] || rm -f "$dest/specs/.gitkeep"
+
+# Fill in placeholders, deepest paths first so renaming a folder never strands its children.
+cd "$dest"
+find . -depth \( -name '*__PROJECT__*' -o -name '*__PACKAGE__*' -o -name '*__DATE__*' \) | while read -r path; do
+  name=$(basename "$path")
+  name=${name//__PROJECT__/$slug}; name=${name//__PACKAGE__/$package}; name=${name//__DATE__/$date}
+  mv "$path" "$(dirname "$path")/$name"
+done
+grep -rlI --exclude-dir=.git -e __PROJECT__ -e __PACKAGE__ -e __DATE__ -e __STACK__ . | while read -r file; do
+  sed -i.bak -e "s/__PROJECT__/$slug/g; s/__PACKAGE__/$package/g; s/__DATE__/$date/g; s/__STACK__/$stack/g" "$file"
+  rm "$file.bak"
+done
+
+case $stack in
+  bun) bun install ;;
+  python) uv lock ;;
+esac
+
+echo "Created projects/$slug ($stack). Next: write its spec and stack decision, then run 'make check' there."
