@@ -8,7 +8,7 @@ Webpages that publish our evals and benchmarks comparing different ways of doing
   Each variant runs on the same cases against more than one model.
   Planned experiments, starting with the choices already open in decision records:
   - Output formats a model reads and writes: CSV, TOON, NDJSON, minified and pretty JSON, `key: value` ([Agent Tool Interfaces](../docs/decisions/2026-09-27-agent-tool-interfaces.md)).
-  - Tool interfaces for the same task: an existing CLI (such as `gh`), an MCP server, and an AXI-style wrapper.
+  - Tool interfaces for the same task: an existing CLI (such as `gh`), an MCP server called directly, the same MCP server through pi's codemode, and an AXI-style wrapper.
   - Harnesses running the same tasks: pi, Claude Code, and OpenCode ([Vendor-Neutral AI Harness](../docs/decisions/2026-09-26-vendor-neutral-ai-harness.md)).
   - Later: prompt and instruction styles, effort or thinking levels, and providers serving the same open-weight model.
 - An experiment is a folder of plain files in the repo: the question, the variants, the cases, the models, and the grader.

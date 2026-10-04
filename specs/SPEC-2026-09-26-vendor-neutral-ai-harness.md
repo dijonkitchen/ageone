@@ -10,7 +10,7 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 - OpenRouter is the default access for all roles (Claude, GPT, Gemini, and open-weight models on one key), with zero data retention enforced account-wide.
   At least one vendor API direct also works, so leaving the gateway is a config change.
 - Web search and page fetch work in the harness.
-  pi ships only `read`, `bash`, `edit`, and `write`, with no web search and no MCP, so a search extension is declared in project `.pi/settings.json` and covered by an eval case.
+  pi ships only `read`, `bash`, `edit`, and `write`, with no web search (MCP arrived built in with pi 0.99.0, but adds no search), so a search extension is declared in project `.pi/settings.json` and covered by an eval case.
 - Open-weight models (including Chinese-lab models such as DeepSeek, Qwen, Kimi, GLM) run only on hosts that neither train on nor retain prompts: US or EU inference providers, reached through OpenRouter with zero data retention and an allowlist of hosts.
   China-based hosts, including the labs' own APIs, are not used for this repo's work.
 - Prompts, skills, and instructions live in the repo as plain files (`AGENTS.md`, `specs/`, `docs/decisions/`), not inside any vendor's product, so any harness can read them.

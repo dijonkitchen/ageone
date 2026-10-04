@@ -19,6 +19,8 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-09-28: Amended by Claude, while implementing SPEC-2026-09-26-vendor-neutral-ai-harness: starting values for every role, where pi's user-level files come from, and how the runner keeps measurement honest (section 8).
 
+2026-10-03: Amended by Claude, at JC's request: pi is pinned at 1.0.1, which has MCP and codemode built in.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -125,7 +127,8 @@ Without them "cheaper" and "better" are guesses.
 
 ### 5. Web search
 
-pi deliberately ships four tools (`read`, `bash`, `edit`, `write`), no web search, and no MCP; extensions and skills fill the gap.
+pi deliberately ships four tools (`read`, `bash`, `edit`, `write`) and no web search; extensions and skills fill the gap.
+Since 0.99.0 it also has MCP and codemode built in ([Agent Tool Interfaces](2026-09-27-agent-tool-interfaces.md)), but neither includes web search.
 Native search in other harnesses is built in and maintained by the vendor: Claude's web search and fetch tools, OpenAI's web search, Gemini's Google Search grounding, and Perplexity Sonar (search plus a cited answer, a model rather than a search tool).
 
 - Use the community extension [pi-web-access](https://github.com/nicobailon/pi-web-access) (`web_search`, `fetch_content`), declared as a package in `.pi/settings.json` so every checkout gets it.
