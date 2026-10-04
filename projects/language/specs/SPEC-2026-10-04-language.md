@@ -66,8 +66,12 @@ The language's name is chosen in its first decision record; until then the proje
 - One canonical format, like `gofmt`: the formatter has no options, ships with the language, and is the printer of the code tree, so every program has one layout, style is never debated, and agents' diffs stay minimal.
   CI rejects unformatted code.
 - One standard tool, like the `go` command: a single command line tool builds, runs, formats, tests, documents, and lints code, with conventions instead of configuration files (where tests and docs live, how a project is laid out).
-  It also evaluates an expression, shows the type at a location, and lists a module's definitions, each with JSON output an agent can parse.
-- Structured errors: each error has a stable code, a location, a plain explanation, and, where possible, a suggested fix as a code edit an agent can apply.
+  It also evaluates an expression, shows the type at a location, and lists a module's definitions, in compact output an agent can parse cheaply.
+- Token-lean output, following the repo's [Agent Tool Interfaces](../../../docs/decisions/2026-09-27-agent-tool-interfaces.md) record rather than defaulting to JSON, which spends tokens repeating keys and quotes (pretty JSON cost about 2.7 times as many tokens as CSV in that record's sample): one line per item by default, such as `file:line:col: error E0042: message` for errors (the shape models have seen most from other compilers), CSV for lists, and `key: value` lines for single records.
+  The output stays short by default, with counts up front and a flag for the full detail, and `--json` gives NDJSON for scripts.
+  Because the language is homoiconic, nested results such as a code tree print in the language's own data notation, which the tool can read back.
+  The agent tooling decision record measures the chosen formats with [`experiments/formats`](../../../experiments/README.md), adding a case for reading and acting on compiler errors.
+- Structured errors: each error has a stable code, a location, a plain explanation, and, where possible, a suggested fix as a code edit an agent can apply, all in the compact one-line format above with the fix as a unified diff.
 - Fast feedback: checking a changed file returns in well under a second, so agents can check after every edit.
 - Executable examples: examples in doc comments run as tests, so documentation an agent reads stays correct.
 - Deterministic: the same source always builds and runs the same way, and pure functions can be tested without setup.
@@ -104,7 +108,7 @@ The language's name is chosen in its first decision record; until then the proje
 2. The language reference covers the grammar and the typing, effect, and ownership rules of the core subset, and fits in one plain-text file for agents.
 3. One command builds the implementation, and the language's single tool runs, formats, and tests a program file, with no configuration file needed.
 4. The example programs run and print their expected output without a single type, effect, or lifetime annotation inside function bodies, and the in-place example shows no copy of its data.
-5. The test suite passes in CI, including every rejected-program case above, each with a readable error message and a structured JSON error with a stable code.
+5. The test suite passes in CI, including every rejected-program case above, each with a readable error message, a stable code, and the same error in compact form and as `--json`.
 6. Every example parses to its code tree and prints back to the same formatted source, and the code-rewriting example runs in CI.
 7. An example program calls an existing C library through bindings generated from its headers and wrapped in a safe API, and a C program calls a function exported by the language; both run in CI.
 8. An eval in [`evals/`](../../../evals/README.md) gives agents only the language reference and a set of small programming tasks, and compares their pass rate and number of check-and-fix rounds with the same tasks in Rust and OCaml, across the models in `harness/models.json`.
