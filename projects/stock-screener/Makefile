@@ -3,6 +3,8 @@
 # format check (20 files predate it) or mypy. Run inside the root `make shell` environment.
 
 .DEFAULT_GOAL := check
+# Each project's own venv, even where the environment points uv at a shared one.
+export UV_PROJECT_ENVIRONMENT := $(CURDIR)/.venv
 .PHONY: check fix
 
 check: ## Lint and tests on recorded fixtures, no network to the SEC.

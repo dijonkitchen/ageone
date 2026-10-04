@@ -3,6 +3,8 @@
 # Run inside the root `make shell` environment, which provides Bun, Python, and uv.
 
 .DEFAULT_GOAL := check
+# Each project's own venv, even where the environment points uv at a shared one.
+export UV_PROJECT_ENVIRONMENT := $(CURDIR)/.venv
 .PHONY: check fix
 
 BUN := $(wildcard package.json)

@@ -1,6 +1,6 @@
 # Development and eval environment. Pinned by devenv.lock; update with `devenv update`.
 # See docs/decisions/2026-09-26-reproducible-environment.md.
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   packages = [
@@ -28,6 +28,9 @@
     package = pkgs.python312;
     uv.enable = true;
   };
+  # devenv points uv at one shared venv in .devenv/state; each project keeps its own .venv instead,
+  # resolved from the folder uv runs in, so two projects' locked packages never overwrite each other.
+  env.UV_PROJECT_ENVIRONMENT = lib.mkForce ".venv";
 
   enterTest = ''
     python --version
