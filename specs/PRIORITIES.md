@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-10-03
+updated_at: 2026-10-04
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -14,7 +14,7 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | Spec | Dependency | Priority | Description | Difficulty | Status |
 |--------|------------|----------|-------------|------------|--------|
 | [SPEC-2026-09-26-make-setup](SPEC-2026-09-26-make-setup.md) | None | 1 | Make setup: one idempotent `make` installs Nix and devenv, builds the pinned environment (Node.js LTS for pi), and checks it | Low | Done |
-| [SPEC-2026-09-30-projects-scaffold](SPEC-2026-09-30-projects-scaffold.md) | None | 2 | Projects scaffold: `projects/`, per-project specs and decision records, Bun and uv in devenv, a project template, and CI per changed project | Low | Open |
+| [SPEC-2026-09-30-projects-scaffold](SPEC-2026-09-30-projects-scaffold.md) | None | 2 | Projects scaffold: `projects/`, per-project specs and decision records, Bun and uv in devenv, a project template, and CI per changed project | Low | Done |
 | [SPEC-2026-09-26-vendor-neutral-ai-harness](SPEC-2026-09-26-vendor-neutral-ai-harness.md) | SPEC-2026-09-25-agent-todo-repo | 2 | Vendor-neutral AI harness: pi + model roles config + web search + private open-weight models + evals on our own tasks, with a runner that swaps harnesses or calls models directly | Medium | Blocked (needs an OPENROUTER_API_KEY to run definition of done items 1-3, 5, and 6) |
 | [SPEC-2026-09-30-prompt-injection-skill](SPEC-2026-09-30-prompt-injection-skill.md) | SPEC-2026-09-30-projects-scaffold | 3 | Prompt injection skill: shared CaMeL-style skill and library for projects that feed untrusted text to models, restarted from the skills repo | Low | Open |
 | [SPEC-2026-09-27-eval-benchmark-pages](SPEC-2026-09-27-eval-benchmark-pages.md) | SPEC-2026-09-26-vendor-neutral-ai-harness | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Blocked (needs an OPENROUTER_API_KEY for definition of done items 2, 3, and 5, and GitHub Pages enabled for publishing) |

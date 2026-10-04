@@ -3,7 +3,7 @@
 # The environment itself is devenv.nix, pinned by devenv.lock. See specs/SPEC-2026-09-26-make-setup.md.
 
 .DEFAULT_GOAL := all
-.PHONY: all help setup tools links shell check update
+.PHONY: all help setup tools links shell check update new
 
 # Find Nix and devenv right after installing them, before the shell is restarted.
 # NIX_FLAGS covers a Nix installed earlier without flakes; new installs get --enable-flakes.
@@ -30,12 +30,12 @@ tools: ## Install Nix (asks first, needs sudo) and devenv if missing.
 	have=$$(devenv version | cut -d' ' -f2); \
 	[ "$$have" = "$$want" ] || echo "warning: devenv $$have is not the pinned $$want and may rewrite devenv.lock. Run 'nix profile remove devenv', then make."
 
-links: ## Recreate AGENTS.md -> README.md and CLAUDE.md -> AGENTS.md; refuse if a copy has edits.
-	@for pair in AGENTS.md:README.md CLAUDE.md:AGENTS.md; do \
-		link=$${pair%%:*}; target=$${pair#*:}; \
+links: ## Recreate AGENTS.md -> README.md, CLAUDE.md -> AGENTS.md, and each project's CLAUDE.md -> AGENTS.md; refuse if a copy has edits.
+	@for pair in AGENTS.md:README.md CLAUDE.md:AGENTS.md $(patsubst %/AGENTS.md,%/CLAUDE.md:AGENTS.md,$(wildcard projects/*/AGENTS.md)); do \
+		link=$${pair%%:*}; target=$${pair#*:}; dir=$$(dirname $$link); \
 		[ "$$(readlink $$link)" = "$$target" ] && continue; \
-		if [ -e $$link ] && ! cmp -s $$link $$target; then \
-			echo "$$link differs from $$target: move its edits into README.md, delete it, and rerun."; exit 1; \
+		if [ -e $$link ] && ! cmp -s $$link $$dir/$$target; then \
+			echo "$$link differs from $$dir/$$target: move its edits into $$dir/$$(readlink -f $$dir/$$target | xargs basename), delete it, and rerun."; exit 1; \
 		fi; \
 		rm -f $$link; ln -s $$target $$link; echo "fixed $$link -> $$target"; \
 	done
@@ -45,6 +45,10 @@ shell: setup ## Enter the pinned environment.
 
 check: setup ## Run the environment's tests.
 	devenv test
+
+new: ## Create a project from the template: make new PROJECT=<slug> [STACK=bun|python].
+	@[ -n "$(PROJECT)" ] || { echo "usage: make new PROJECT=<slug> [STACK=bun|python]"; exit 2; }
+	$(if $(DEVENV_ROOT),,devenv shell --) projects/new $(PROJECT) $(or $(STACK),bun)
 
 update: tools ## Bump devenv.lock to the latest inputs; commit the diff only if 'make check' passes.
 	devenv update

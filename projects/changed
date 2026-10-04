@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Print, as a JSON array, the projects whose `make check` CI should run.
+# Usage: projects/changed [<base-ref>]
+# With a base ref (a pull request), lists projects with a Makefile that changed since it;
+# without one (a push to main), lists every project with a Makefile.
+# Changes to the shared environment or this CI run them all, and template changes add "_template".
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+all=$(for m in projects/*/Makefile; do [[ -e $m ]] && basename "$(dirname "$m")"; done | grep -v '^_template$' || true)
+base=${1:-}
+
+if [[ -z $base ]]; then
+  picked=$(printf '%s\n_template\n' "$all")
+else
+  files=$(git diff --name-only "$base"...HEAD)
+  if grep -qE '^(devenv\.(nix|lock|yaml)|\.github/workflows/projects\.yml|projects/(new|changed))$' <<<"$files"; then
+    picked=$(printf '%s\n_template\n' "$all")
+  else
+    picked=$(grep -oE '^projects/[^/]+/' <<<"$files" | cut -d/ -f2 | sort -u |
+      while read -r p; do [[ -e projects/$p/Makefile ]] && echo "$p"; done || true)
+  fi
+fi
+
+grep -v '^$' <<<"$picked" | sort -u | jq -Rnc '[inputs]'
