@@ -16,7 +16,10 @@ The language's name is chosen in its first decision record; until then the proje
 
 ### Design document
 
-- A language design document in `projects/language/docs/` that starts from the goals above and justifies each feature by them, citing the prior art it borrows from or rejects (Rust, OCaml, Standard ML, Haskell, Go, Koka, Roc, Lean 4, Clojure, Racket and Rhombus, Elixir, Julia, Unison, Hylo/Val, Vale, Austral, Gleam, Zig).
+- A language design document in `projects/language/docs/` that starts from the goals above and justifies each feature by them, citing the prior art it borrows from or rejects (Rust, OCaml, Standard ML, Haskell, Go, Koka, Roc, Lean 4, Clojure, jank, Carp, Coalton, Racket and Rhombus, Elixir, Julia, Unison, Hylo/Val, Vale, Austral, Gleam, Zig).
+- A "why not use an existing language" section that tests the closest languages against the goals and says what each misses, so the project only goes ahead if none is close enough:
+  Clojure and jank (code as data and minimalism, but dynamic types and a garbage collector), Carp (a typed Lisp with ownership and no garbage collector, the closest match), Coalton (ML-style types inside Common Lisp, with a garbage collector), and Roc, Koka, and Lean 4 (pure and typed with in-place reuse, but code isn't plain data).
+  It also weighs building on one of them, such as a Clojure dialect implemented in Rust, against starting fresh.
 - Each major choice is its own decision record in `projects/language/docs/decisions/`: memory model, purity and effects, syntax and code as data, type system, error handling, agent tooling, interop, and implementation strategy.
 - A short language reference with the grammar and the typing, effect, and ownership rules, precise enough that a second implementation could follow it.
 
