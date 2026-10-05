@@ -101,5 +101,5 @@ describe("MctsAgent (REQ-PLAYERS)", () => {
 			if (result.winner === (mctsBlack ? "black" : "white")) wins += 1;
 		}
 		expect(wins).toBeGreaterThanOrEqual(0.8 * games);
-	});
+	}, 60_000); // ten full games; about 4 s locally, slower on CI runners
 });
