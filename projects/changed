@@ -22,4 +22,4 @@ else
   fi
 fi
 
-grep -v '^$' <<<"$picked" | sort -u | jq -Rnc '[inputs]'
+{ grep -v '^$' <<<"$picked" || true; } | sort -u | jq -Rnc '[inputs]'
