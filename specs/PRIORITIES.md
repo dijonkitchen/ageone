@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-10-04
+updated_at: 2026-10-05
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -18,6 +18,7 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | [SPEC-2026-09-26-vendor-neutral-ai-harness](SPEC-2026-09-26-vendor-neutral-ai-harness.md) | SPEC-2026-09-25-agent-todo-repo | 2 | Vendor-neutral AI harness: pi + model roles config + web search + private open-weight models + evals on our own tasks, with a runner that swaps harnesses or calls models directly | Medium | Blocked (needs an OPENROUTER_API_KEY to run definition of done items 1-3, 5, and 6) |
 | [SPEC-2026-09-30-prompt-injection-skill](SPEC-2026-09-30-prompt-injection-skill.md) | SPEC-2026-09-30-projects-scaffold | 3 | Prompt injection skill: shared CaMeL-style skill and library for projects that feed untrusted text to models, restarted from the skills repo | Low | Open |
 | [SPEC-2026-09-27-eval-benchmark-pages](SPEC-2026-09-27-eval-benchmark-pages.md) | SPEC-2026-09-26-vendor-neutral-ai-harness | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Blocked (needs an OPENROUTER_API_KEY for definition of done items 2, 3, and 5, and GitHub Pages enabled for publishing) |
+| [SPEC-2026-10-05-eval-hillclimbing](SPEC-2026-10-05-eval-hillclimbing.md) | None | 3 | Eval hill-climbing: held-out test cases, transcripts kept for every run, and a failures view, so prompts and harnesses can be tuned without overfitting | Medium | Open |
 | [SPEC-2026-10-03-stock-screener](../projects/stock-screener/specs/SPEC-2026-10-03-stock-screener.md) | SPEC-2026-09-26-make-setup | 3 | Stock screener: pulls the latest SEC EDGAR XBRL filings into 10+ years of split-adjusted per-share history (BVPS, EPS, FCF, dividends) and ratios, then filters, sorts, and ranks companies interactively by growth, consistency, and a composite score | Medium | Done |
 | [SPEC-2026-09-30-og-trail-rebuild](../projects/og-trail/specs/SPEC-2026-09-30-og-trail-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | OG Trail rebuild: modern-life Oregon Trail engine, terminal and browser frontends, and agent players feeding the eval pages | Medium | Open |
 | [SPEC-2026-09-30-connect6-rebuild](../projects/connect6/specs/SPEC-2026-09-30-connect6-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | Connect6 rebuild: pure engine, web UI, MCTS and LLM players, and a tournament feeding the eval pages | Medium | Open |
