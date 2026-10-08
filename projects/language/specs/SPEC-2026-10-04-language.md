@@ -1,5 +1,8 @@
 # SPEC-2026-10-04-language: A Programming Language from First Principles
 
+Dropped on 2026-10-08 by [Languages for Agentic Work](../../../docs/decisions/2026-10-08-languages-for-agentic-work.md): a new language starts with no training data, which costs agents more than any design gains, so new code prefers Rust instead.
+The spec stays as a record of the design.
+
 A new programming language, designed from first principles for both people and AI agents to write, read, and change safely.
 It combines things no mainstream language has together:
 

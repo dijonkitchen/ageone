@@ -1,11 +1,11 @@
 # Priorities
 
-updated_at: 2026-10-05
+updated_at: 2026-10-08
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
 Rows are sorted by priority (highest first), then by difficulty (easiest first).
-Status is one of `Open`, `In progress (<owner>)`, `Blocked (<reason>)`, or `Done`.
+Status is one of `Open`, `In progress (<owner>)`, `Blocked (<reason>)`, `Dropped (<reason>)`, or `Done`.
 
 Whenever a spec is added or updated, re-evaluate every row's priority, then update `updated_at`.
 
@@ -35,5 +35,5 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | [SPEC-2026-09-30-aiprofile-mvp](../projects/aiprofile/specs/SPEC-2026-09-30-aiprofile-mvp.md) | SPEC-2026-09-26-vendor-neutral-ai-harness | 7 | AI profile platform MVP: GitHub sign-in, evidence ingest, cited profile patches the worker accepts | High | Open |
 | [SPEC-2026-09-30-algorithm-roguelike](../projects/algorithm-roguelike/specs/SPEC-2026-09-30-algorithm-roguelike.md) | SPEC-2026-09-26-make-setup | 7 | Algorithm roguelike: a browser roguelike where learning an algorithm or data structure (by puzzle or by writing code) unlocks it as a game system, so the dungeon grows with the player | High | Open |
 | [SPEC-2026-09-30-llm-from-scratch](../projects/llm-from-scratch/specs/SPEC-2026-09-30-llm-from-scratch.md) | SPEC-2026-09-30-projects-scaffold | 8 | LLM from scratch: tokenizer, small transformer, and training loop on a laptop, compared with a tiny open-weight model | Medium | Open |
-| [SPEC-2026-10-04-language](../projects/language/specs/SPEC-2026-10-04-language.md) | SPEC-2026-09-26-make-setup | 8 | Programming language from first principles, built for people and AI agents: Rust-like ownership with inferred lifetimes, a mostly pure functional core with tracked effects, readable homoiconic syntax, ML-style inference and exhaustive matching, agent-friendly tools and errors, and C ABI interop, with a design document and an implementation of the core subset | High | Open |
+| [SPEC-2026-10-04-language](../projects/language/specs/SPEC-2026-10-04-language.md) | SPEC-2026-09-26-make-setup | 8 | Programming language from first principles, built for people and AI agents: Rust-like ownership with inferred lifetimes, a mostly pure functional core with tracked effects, readable homoiconic syntax, ML-style inference and exhaustive matching, agent-friendly tools and errors, and C ABI interop, with a design document and an implementation of the core subset | High | Dropped (no new language for agents: [Languages for Agentic Work](../docs/decisions/2026-10-08-languages-for-agentic-work.md)) |
 | [SPEC-2026-09-25-agent-todo-repo](SPEC-2026-09-25-agent-todo-repo.md) | None | 9 | Agent todo repo: monorepo foundation of specs, decisions, and priorities | Low | Done |
