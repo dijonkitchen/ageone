@@ -67,6 +67,9 @@ Rewriting existing projects in Rust.
 - Common Lisp, as argued in [Why Common Lisp is now the best programming language](https://www.vivienhenz.com/common-lisp) ([HN discussion](https://news.ycombinator.com/item?id=49973598)): a live image removes rebuilds, but the claim rests on the author's experience, its standard has no threads, sockets, or networking ([HyperSpec contents](https://www.lispworks.com/documentation/HyperSpec/Front/Contents.htm)), and models know it less well.
 - Rust over Go: stronger guarantees and interop, paid for in build time, tokens, and dependencies for TLS and Unicode.
 - Dropping the language spec gives up a language shaped exactly to the repo's wishes (homoiconic, effect-typed); the spec stays in the repo as a record of that design.
+- Deterministic refactoring: every language above has a mature language server with an official Claude Code plugin ([code intelligence plugins](https://code.claude.com/docs/en/plugins/code-intelligence)), but Claude Code's LSP tool is read-only (diagnostics, definitions, references), and plugin language servers don't start in cloud sessions.
+  So agents refactor through command lines: Go has a safety-checked `gopls rename -w file.go:line:col NewName` ([gopls](https://go.googlesource.com/tools/+/refs/heads/master/gopls/internal/cmd/rename.go)), while Rust has structural search and replace through `rust-analyzer ssr` and `rust-analyzer search` ([rust-analyzer SSR](https://rust-lang.github.io/rust-analyzer/src/ide_ssr/lib.rs.html)) but no confirmed command-line rename.
+  This is a known gap on Rust's side, not enough to change the choice.
 - Feedback speed is not the whole bottleneck: model thinking time often outweighs build time, so a fast checker matters more than a REPL.
 
 ### Dependencies
