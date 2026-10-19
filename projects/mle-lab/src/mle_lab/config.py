@@ -1,19 +1,22 @@
-"""Where each stage reads and writes, and the names they share."""
+"""Names and settings every stage shares."""
 
 from dataclasses import dataclass
 from pathlib import Path
 
-MODEL_NAME = "churn"
-TRAINING_EXPERIMENT = "churn-training"
-MONITORING_EXPERIMENT = "churn-monitoring"
-EVAL_EXPERIMENT = "churn-evals"
+# FRED series ids: the S&P 500 close and the VIX close. Both are copyrighted, so they are fetched
+# at run time into the git-ignored data folder and never committed.
+SERIES = {"sp500": "SP500", "vix": "VIXCLS"}
+FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
+
+HORIZON = 5  # Trading days ahead we forecast, and so how long each label takes to arrive.
+TRADING_DAYS = 252
+FEATURES = ["rv_1d", "rv_5d", "rv_21d", "vix"]
+TARGET = "target_rv_5d"
+
+MODEL_NAME = "sp500-vol"
+EXPERIMENT = "sp500-vol"
 CHAMPION = "champion"
 CHALLENGER = "challenger"
-
-CATEGORICAL = ["plan", "region"]
-NUMERIC = ["tenure_days", "logins_30d", "tickets_30d", "payment_failures_30d", "days_since_login"]
-FEATURES = CATEGORICAL + NUMERIC
-LABEL = "churned"
 
 
 @dataclass(frozen=True)
@@ -29,32 +32,3 @@ class Paths:
     @property
     def warehouse(self) -> Path:
         return self.data_dir / "warehouse.duckdb"
-
-    @property
-    def reports(self) -> Path:
-        return self.data_dir / "reports"
-
-
-@dataclass(frozen=True)
-class Months:
-    """How the generated months split: train, then a validation month, then production months.
-
-    Month 0 is history only (it feeds month 1's features), so labels start at month 1.
-    The first model trains on `train` and is judged on `validation`; each production month then
-    runs one turn of the feedback loop.
-    """
-
-    total: int = 15
-    validation: int = 8
-    drift_from: int = 9
-
-    @property
-    def train(self) -> range:
-        return range(1, self.validation)
-
-    @property
-    def production(self) -> range:
-        return range(self.validation + 1, self.total)
-
-
-DEFAULT_MONTHS = Months()

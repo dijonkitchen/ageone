@@ -1,59 +1,52 @@
 # mle-lab
 
-A small but complete machine learning system, built to learn ML engineering end to end on a laptop.
-It predicts which subscribers churn next month, on generated data that changes on purpose, so every stage has something real to do.
+A small, complete ML system on real market data, built to learn ML engineering by iterating on it.
+After each close it forecasts the S&P 500's volatility over the next week, learns from the labels that arrive five days later, and retrains behind an eval gate.
 See the [spec](specs/SPEC-2026-10-16-mle-lab.md) and the [stack decision](docs/decisions/2026-10-16-mle-lab-stack.md).
+It is an exercise, not investment advice.
 
 ## Run it
 
 From this folder, inside the root `make shell` environment:
 
 ```sh
-uv run mle all          # generate data, build features, bootstrap a champion, then run the loop month by month
-uv run mlflow ui        # browse runs, model versions, and evals at http://127.0.0.1:5000
+uv run mle fetch        # download the S&P 500 and VIX from FRED (no key) and build features
+uv run mle replay       # run the daily loop over every trading day since 2019, then summarize by year
+uv run mlflow ui        # browse training runs, coefficients, and model versions at http://127.0.0.1:5000
+uv run mle step         # today's forecast, monitoring, and a retrain if one is due
 uv run mle serve        # serve the champion over HTTP on port 5001
 ```
 
-Ask the served model for churn probabilities:
+Ask the served model for a forecast (volatilities as fractions, so 0.15 is 15%):
 
 ```sh
-curl -s localhost:5001/invocations -H 'Content-Type: application/json' -d '{"dataframe_records": [
-  {"plan": "basic", "region": "eu", "tenure_days": 30, "logins_30d": 0, "tickets_30d": 3, "payment_failures_30d": 1, "days_since_login": 40}]}'
+curl -s localhost:5001/invocations -H 'Content-Type: application/json' \
+  -d '{"dataframe_records": [{"rv_1d": 0.12, "rv_5d": 0.14, "rv_21d": 0.13, "vix": 0.17}]}'
 ```
 
-Query what the system stored with DuckDB, for example how every model did on every month:
+Query the loop's history, for example every day the champion fell behind the baseline:
 
 ```sh
 uv run python -c "import duckdb; print(duckdb.connect('data/warehouse.duckdb', read_only=True).sql(
-  'SELECT snapshot_date, model_version, role, round(roc_auc, 3) AS auc, round(calibration_gap, 3) AS gap, passed FROM evaluations ORDER BY ALL'))"
+  'SELECT date, model_version, round(model_qlike, 3) AS model, round(baseline_qlike, 3) AS baseline, retrained, promoted FROM monitoring WHERE alert LIKE \'%behind%\' ORDER BY date'))"
 ```
 
 ## The stages
 
-Each stage is one module in `src/mle_lab/` and one `mle` command; run `uv run mle --help` for options.
-
 | Stage | Command | Module | What it teaches |
 |---|---|---|---|
-| Data | `generate` | `data.py` | Seeded raw Parquet: customers, events, monthly churn labels, and a release in month 9 that shifts behavior. |
-| Features | `features` | `features.py` | Point-in-time SQL in DuckDB over Parquet, so no feature leaks the future; data quality checks that stop the pipeline. |
-| Training | `train` | `train.py` | scikit-learn pipelines tracked in MLflow: params, input datasets with digests, metrics, and a signed model, registered as `challenger`. |
-| Evals | `promote` | `evaluate.py`, `registry.py` | Metrics, per-plan slices, and gates on the newest labeled month; the `champion` alias moves only when a challenger earns it. |
-| Serving | `score`, `serve` | `serve.py` | Batch scores into DuckDB, and the champion over HTTP with `mlflow models serve`. |
-| Monitoring | `monitor` | `monitor.py` | Drift (PSI) against the champion's training data, and evals of what was actually served once labels land. |
-| Feedback loop | `turn --month M` | `loop.py` | Score, learn from new labels, retrain on alert, and promote behind the gates. |
+| Data | `fetch` | `data.py` | Pulling a real source, and keeping data you may not redistribute out of git. |
+| Features | `build` | `features.py` | Window functions in DuckDB SQL; a label that arrives late; checks that stop bad data. |
+| Model | `bootstrap` | `model.py` | Training only on what was known, tracking in MLflow, registering versions, and a gate against a baseline. |
+| Serving | `serve` | `serve.py` | The champion over HTTP with `mlflow models serve`. |
+| Loop | `step`, `replay` | `loop.py` | Daily forecasts, monitoring on arriving labels, and retraining when the model falls behind or goes stale. |
 
-## The feedback loop
+## Things to try
 
-Months 1 to 7 train the first models and month 8 judges them.
-Months 9 to 14 are production: each runs one turn of the loop.
+Each is a small change whose effect shows in the next `mle replay` and `mle summary`:
 
-1. Score month M with the champion, before anyone churns.
-2. When M's labels land, monitor M: drift against the champion's training months, and evals of the served predictions.
-3. On any alert, train challengers on the four labeled months before M and evaluate them on M.
-4. Promote a challenger only if it passes the gates and does at least as well as the champion on M.
-
-A run of `mle all` shows the loop at work: the release in month 9 shifts logins and tickets, which shows in month 10's snapshot as drift and a calibration gate failure.
-Challengers trained on pre-release months fail the same gate, so the old champion stays.
-In month 11 a challenger trained with post-release data passes and is promoted, and later months are served by it within the gates.
-
-Things to try next: change the gates in `evaluate.py`, the drift in `data.py`, or the window in `loop.py`, and watch how the loop reacts; or point `MLFLOW_TRACKING_URI` at a remote MLflow server.
+- Drop the VIX from `FEATURES` in `config.py` and see how much of the edge it carries.
+- Add a model (a gradient boosted tree, say) to `model.py` and let the gate pick between them.
+- Change `MONITOR_DAYS`, `RETRAIN_DAYS`, or `COOLDOWN_DAYS` in `loop.py` and watch retrains and quality trade off.
+- Retrain every day instead of on alerts, and see whether the extra versions buy anything.
+- Set `HORIZON` to 1 or 21 days.

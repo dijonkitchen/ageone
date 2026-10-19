@@ -1564,7 +1564,6 @@ dependencies = [
     { name = "duckdb" },
     { name = "mlflow" },
     { name = "pandas" },
-    { name = "pyarrow" },
     { name = "scikit-learn" },
 ]
 
@@ -1582,7 +1581,6 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.5" },
     { name = "mlflow", specifier = ">=3.17" },
     { name = "pandas", specifier = ">=3.0" },
-    { name = "pyarrow", specifier = ">=25.0.1" },
     { name = "scikit-learn", specifier = ">=1.9" },
 ]
 
