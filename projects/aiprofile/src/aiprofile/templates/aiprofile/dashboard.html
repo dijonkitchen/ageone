@@ -1,0 +1,24 @@
+{% extends "aiprofile/base.html" %}
+{% block body %}
+<h1>Your profile</h1>
+<p>Visibility: <strong>{{ profile.visibility }}</strong>
+{% if profile.visibility == "public" %}(<a href="{% url 'public_profile' profile.user.username %}">public page</a>){% endif %}</p>
+<form method="post" action="{% url 'visibility' %}">{% csrf_token %}
+  <select name="visibility">{% for value, label in visibilities %}<option value="{{ value }}"{% if value == profile.visibility %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  <button>Set visibility</button></form>
+<form method="post" action="{% url 'refresh' %}">{% csrf_token %}<button>Refresh from GitHub</button></form>
+{% for job in jobs %}<p><small>Refresh {{ job.created_at }}: {{ job.status }}{% if job.error %} ({{ job.error }}){% endif %}</small></p>{% endfor %}
+<h2>Proposed changes</h2>
+{% for patch in pending %}
+<form method="post">{% csrf_token %}
+  <ul>{% for claim in patch.claims.all %}
+    <li>{{ claim.text }}
+      <small>Evidence: {% for e in claim.evidence.all %}<a href="{{ e.url }}">{{ e.text }}</a>{% if not forloop.last %}; {% endif %}{% endfor %}</small></li>
+  {% endfor %}</ul>
+  <button formaction="{% url 'decide' patch.id 'accept' %}">Accept</button>
+  <button formaction="{% url 'decide' patch.id 'reject' %}">Reject</button>
+</form>
+{% empty %}<p>None. Refresh to look for more.</p>{% endfor %}
+<h2>Accepted</h2>
+<ul>{% for claim in accepted_claims %}<li>{{ claim.text }}</li>{% empty %}<li>Nothing accepted yet.</li>{% endfor %}</ul>
+{% endblock %}
