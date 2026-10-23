@@ -1,0 +1,11 @@
+title = "POSSE bliki"
+description = "A blog and wiki written in Obsidian, published here first and copied elsewhere."
+url = "https://dijonkitchen.github.io/ageone/bliki"
+language = "en"
+# Where Webmentions for this site are received (webmention.io needs a one-time sign-in with the site's rel="me" link).
+webmention_endpoint = ""
+
+[author]
+name = "JC"
+url = "https://github.com/dijonkitchen"
+note = "Writes in Obsidian, publishes here, copies elsewhere."

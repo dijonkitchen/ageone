@@ -1,6 +1,7 @@
 # Build the eval and benchmark pages from committed results on every pull request; publish them from main.
 # Publishing needs GitHub Pages set to "GitHub Actions" in the repository's settings (once).
-# See specs/SPEC-2026-09-27-eval-benchmark-pages.md.
+# The POSSE bliki shares this deploy under /bliki/ (GitHub Pages serves one site per repository).
+# See specs/SPEC-2026-09-27-eval-benchmark-pages.md and projects/posse-bliki/.
 name: Site
 
 on:
@@ -20,6 +21,9 @@ jobs:
         with:
           node-version: 22
       - run: site/build
+      - uses: astral-sh/setup-uv@v6
+      - name: Build the POSSE bliki into _site/bliki
+        run: uv run --project projects/posse-bliki bliki --root projects/posse-bliki build --out "$PWD/_site/bliki"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -37,3 +41,8 @@ jobs:
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Send Webmentions for recent posts
+        continue-on-error: true
+        run: uv run --project projects/posse-bliki bliki --root projects/posse-bliki webmention
