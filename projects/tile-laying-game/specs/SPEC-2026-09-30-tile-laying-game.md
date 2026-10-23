@@ -3,7 +3,6 @@
 ## Functional requirements
 
 A two-player, turn-based tile-laying game in the style of Carcassonne, played on one device, following the tournament rules of the base game, with a freshly generated tile set each game.
-
 - **Board**: an open grid that grows as tiles are placed, starting from the start tile.
 - **Tiles**: square tiles whose four edges are each city, road, or field, with internal connections between edges, and optionally a monastery in the center or a shield on a city.
 - **Generated tile sets**: each game generates its own set of 72 tiles (including the start tile) from a seed, instead of using the fixed base set.

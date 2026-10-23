@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Tile Towns: a two-player tile-laying game on one device, with a new tile set every game.">
+<title>Tile Towns</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+<h1>Tile Towns</h1>
+<span id="seed"></span>
+<nav>
+<button id="new" type="button">New game</button>
+<button id="rematch" type="button" title="Same tiles, other player starts">Rematch</button>
+<button id="save" type="button">Save</button>
+<button id="load" type="button">Load</button>
+<input id="file" type="file" accept=".json,application/json" hidden>
+</nav>
+</header>
+<main>
+<canvas id="board" aria-label="Game board">Tile Towns needs a browser with canvas support.</canvas>
+<aside>
+<section id="card0" class="player p0">
+<h2>Red <strong id="score0">0</strong></h2>
+<canvas id="hand0" width="96" height="96" aria-label="Red's tile"></canvas>
+<p id="meeples0"></p>
+</section>
+<section id="card1" class="player p1">
+<h2>Blue <strong id="score1">0</strong></h2>
+<canvas id="hand1" width="96" height="96" aria-label="Blue's tile"></canvas>
+<p id="meeples1"></p>
+</section>
+<p id="left"></p>
+<div class="controls">
+<button id="rotate" type="button">Rotate (R)</button>
+<button id="place" type="button" class="primary">Place (Enter)</button>
+<button id="cancel" type="button">Cancel</button>
+</div>
+<p id="status" role="status"></p>
+<p id="message" aria-live="polite"></p>
+</aside>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
