@@ -3,18 +3,18 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-# FRED series ids: the S&P 500 close and the VIX close. Both are copyrighted, so they are fetched
-# at run time into the git-ignored data folder and never committed.
-SERIES = {"sp500": "SP500", "vix": "VIXCLS"}
-FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
+# EIA-930 six-month balance files: hourly demand and the operator's day-ahead forecast for every
+# U.S. balancing authority. Public domain; cite "Source: U.S. Energy Information Administration".
+EIA_URL = "https://www.eia.gov/electricity/gridmonitor/sixMonthFiles/EIA930_BALANCE_{year}_{half}.csv"
+FIRST_YEAR = 2022
+REGION = "ERCO"  # ERCOT, Texas.
+TIMEZONE = "America/Chicago"  # The region's local time, which sets its days and hours.
 
-HORIZON = 5  # Trading days ahead we forecast, and so how long each label takes to arrive.
-TRADING_DAYS = 252
-FEATURES = ["rv_1d", "rv_5d", "rv_21d", "vix"]
-TARGET = "target_rv_5d"
+FEATURES = ["hour", "dow", "doy", "holiday", "lag_2d", "lag_7d", "prev_mean", "prev_min", "prev_max"]
+TARGET = "demand"
 
-MODEL_NAME = "sp500-vol"
-EXPERIMENT = "sp500-vol"
+MODEL_NAME = "grid-demand"
+EXPERIMENT = "grid-demand"
 CHAMPION = "champion"
 CHALLENGER = "challenger"
 

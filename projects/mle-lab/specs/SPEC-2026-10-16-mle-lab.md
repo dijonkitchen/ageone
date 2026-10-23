@@ -7,7 +7,7 @@ The task: each morning, forecast every hour of tomorrow's electricity demand on 
 It is the forecast grid operators make every day, so there are two bars to measure against.
 The floor is a seasonal naive forecast (the same hour last week), which every model must beat to ship.
 The stretch goal is the operator's own published day-ahead forecast, which is in the same data.
-Labels arrive the day after each forecasted day, and replaying the loop over past years takes about a minute.
+Labels arrive the day after each forecasted day, and replaying the loop over past years takes a couple of minutes.
 
 History: the first version forecast churn on generated data, and the second forecast S&P 500 volatility from FRED.
 JC chose electricity demand because finance data is hard to get and makes it hard to tell whether a forecast is good; both earlier versions are in this branch's history.
@@ -32,7 +32,7 @@ JC chose electricity demand because finance data is hard to get and makes it har
 
 - Real data: EIA data is public domain, so tests run offline on a committed year of real ERCOT hours.
 - Honest: on any replayed day, features, training, evaluation, and monitoring use only data known by that day's cutoff, and tests check it.
-- Fast feedback: tests run in under a minute, and a replay from 2024 runs in about a minute.
+- Fast feedback: tests run in under a minute, and a replay from 2024 runs in a couple of minutes.
 - Small: a handful of short modules, so a change is easy to try and its effect shows in the next replay.
 
 ## Out of scope

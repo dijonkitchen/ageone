@@ -1,4 +1,5 @@
 import io
+from datetime import date
 from pathlib import Path
 
 import duckdb
@@ -6,74 +7,101 @@ import pandas as pd
 import pytest
 
 from mle_lab import data, features
-from mle_lab.config import HORIZON, TARGET, TRADING_DAYS, Paths
+from mle_lab.config import Paths
 
 
-def test_fetch_downloads_each_series(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    urls = []
+def test_fetch_downloads_past_halves_once_and_the_current_one_every_time(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    urls: list[str] = []
 
-    def fake_urlopen(url: str, timeout: int) -> io.BytesIO:
-        urls.append(url)
-        return io.BytesIO(b"observation_date,X\n2026-01-02,1\n")
+    def fake_urlopen(request: object, timeout: int) -> io.BytesIO:
+        urls.append(request.full_url)  # type: ignore[attr-defined]
+        return io.BytesIO(b"Balancing Authority\nERCO\n")
 
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     paths = Paths(tmp_path)
-    data.fetch(paths)
-    assert sorted(p.name for p in paths.raw.iterdir()) == ["SP500.csv", "VIXCLS.csv"]
-    assert all(u.startswith("https://fred.stlouisfed.org/") for u in urls)
+    data.fetch(paths, first_year=2024, today=date(2025, 8, 1))
+    assert sorted(p.name for p in paths.raw.iterdir()) == [
+        "EIA930_BALANCE_2024_Jan_Jun.csv",
+        "EIA930_BALANCE_2024_Jul_Dec.csv",
+        "EIA930_BALANCE_2025_Jan_Jun.csv",
+        "EIA930_BALANCE_2025_Jul_Dec.csv",
+    ]
+    assert all(u.startswith("https://www.eia.gov/electricity/gridmonitor/sixMonthFiles/") for u in urls)
+    urls.clear()
+    data.fetch(paths, first_year=2024, today=date(2025, 8, 2))
+    assert [u.rsplit("/", 1)[1] for u in urls] == ["EIA930_BALANCE_2025_Jul_Dec.csv"]
 
 
-def test_load_keeps_days_both_series_have(lab: Paths) -> None:
+def test_load_keeps_one_region_one_row_per_hour(lab: Paths) -> None:
     with duckdb.connect(str(lab.warehouse), read_only=True) as con:
-        prices = con.execute("SELECT * FROM prices").df()
-    assert len(prices) == 799  # One holiday dropped.
-    assert prices.notna().all().all()
+        demand = con.execute("SELECT * FROM demand").df()
+    assert len(demand) == 11664
+    assert demand["utc_end"].is_unique
+    assert demand["demand"].between(30_000, 90_000).all()
 
 
-def tiny(tmp_path: Path, closes: list[float]) -> duckdb.DuckDBPyConnection:
-    tmp_path.mkdir(exist_ok=True)
-    dates = pd.bdate_range("2026-01-01", periods=len(closes)).strftime("%Y-%m-%d")
-    pd.DataFrame({"observation_date": dates, "SP500": closes}).to_csv(tmp_path / "SP500.csv", index=False)
-    pd.DataFrame({"observation_date": dates, "VIXCLS": 20.0}).to_csv(tmp_path / "VIXCLS.csv", index=False)
-    con = duckdb.connect()
-    data.load(con, tmp_path)
-    features.build(con)
-    return con
+def row(con: duckdb.DuckDBPyConnection, utc_end: str) -> pd.Series:
+    return con.execute("SELECT * FROM features WHERE utc_end = $t::TIMESTAMP", {"t": utc_end}).df().iloc[0]
 
 
-def test_volatility_is_annualized_from_daily_log_returns(tmp_path: Path) -> None:
-    # Alternating +1% and -1% moves: every daily log return has the same size.
-    closes = [100.0]
-    for i in range(40):
-        closes.append(closes[-1] * (1.01 if i % 2 == 0 else 1 / 1.01))
-    con = tiny(tmp_path, closes)
-    row = con.execute("SELECT * FROM features ORDER BY day LIMIT 1").df().iloc[0]
-    expected = 0.00995033 * TRADING_DAYS**0.5
-    assert row.rv_5d == pytest.approx(expected, rel=1e-4)
-    assert row.rv_21d == pytest.approx(expected, rel=1e-4)
-    assert row.vix == pytest.approx(0.20)
+def demand_at(con: duckdb.DuckDBPyConnection, utc_end: str) -> float:
+    found = con.execute("SELECT demand FROM demand WHERE utc_end = $t::TIMESTAMP", {"t": utc_end}).fetchone()
+    assert found is not None
+    return float(found[0])
 
 
-def test_labels_wait_for_the_next_five_days(tmp_path: Path) -> None:
-    con = tiny(tmp_path, [100 * 1.001**i for i in range(40)])
-    targets = con.execute(f"SELECT {TARGET} FROM features ORDER BY day").df()[TARGET]
-    assert targets.tail(HORIZON).isna().all()
-    assert targets.iloc[:-HORIZON].notna().all()
-
-
-def test_features_never_see_the_future(tmp_path: Path) -> None:
-    """A crash after day t changes t's label but none of t's features."""
-    calm = [100 * 1.001**i for i in range(60)]
-    crash = calm[:50] + [c * 0.8 for c in calm[50:]]
-    before, after = tiny(tmp_path / "calm", calm), tiny(tmp_path / "crash", crash)
-    query = "SELECT * FROM features WHERE date = (SELECT date FROM prices ORDER BY date LIMIT 1 OFFSET 47)"
-    a, b = before.execute(query).df(), after.execute(query).df()
-    pd.testing.assert_frame_equal(a.drop(columns=[TARGET]), b.drop(columns=[TARGET]))
-    assert b[TARGET].iloc[0] > a[TARGET].iloc[0]
-
-
-def test_quality_checks_pass_on_good_data_and_catch_short_history(lab: Paths, tmp_path: Path) -> None:
+def test_features_follow_local_time_and_use_lagged_demand(lab: Paths) -> None:
     with duckdb.connect(str(lab.warehouse), read_only=True) as con:
+        # The hour ending 18:00 UTC on Thursday 2024-07-04 is 12:00-13:00 in Texas (UTC-5 in summer).
+        r = row(con, "2024-07-04 18:00")
+        assert (r.date.date(), r.hour, r.dow, r.holiday) == (date(2024, 7, 4), 12, 4, 1)
+        assert r.lag_2d == demand_at(con, "2024-07-02 18:00")
+        assert r.lag_7d == r.naive_forecast == demand_at(con, "2024-06-27 18:00")
+        # D-2 is 2024-07-02 local: hours ending 06:00 UTC on the 2nd through 05:00 UTC on the 3rd.
+        day = con.execute(
+            "SELECT avg(demand), min(demand), max(demand) FROM demand "
+            "WHERE utc_end BETWEEN '2024-07-02 06:00' AND '2024-07-03 05:00'"
+        ).fetchone()
+        assert day is not None
+        assert (r.prev_mean, r.prev_min, r.prev_max) == pytest.approx(day)
+        # Winter is UTC-6; the spring-forward day has 23 hours.
+        assert row(con, "2025-01-15 18:00").hour == 11
+        assert con.execute("SELECT count(*) FROM features WHERE date = '2024-03-10'").fetchone() == (23,)
+
+
+def test_features_never_see_past_the_cutoff(lab: Paths) -> None:
+    """Changing demand from the morning of D-1 on changes none of D's features, only its label."""
+    with duckdb.connect(str(lab.warehouse)) as con:
+        query = "SELECT * FROM features WHERE date = '2024-08-15' ORDER BY utc_end"
+        before = con.execute(query).df()
+        # 2024-08-14 starts at 05:00 UTC in Texas; scramble everything from then on.
+        con.execute("UPDATE demand SET demand = demand * 1.5 + 1000 WHERE utc_end > '2024-08-14 05:00'")
+        features.build(con)
+        after = con.execute(query).df()
+    assert len(before) == 24
+    labels = ["demand", "operator_forecast"]
+    pd.testing.assert_frame_equal(before.drop(columns=labels), after.drop(columns=labels))
+    assert (after["demand"] > before["demand"]).all()
+
+
+def test_quality_checks_pass_on_real_data_and_catch_bad_data(lab: Paths) -> None:
+    with duckdb.connect(str(lab.warehouse)) as con:
         assert features.check(con) == []
-    short = tiny(tmp_path, [100 * 1.001**i for i in range(60)])
-    assert "fewer than a year of rows" in features.check(short)
+        con.execute("UPDATE demand SET demand = 999999 WHERE utc_end = '2024-07-04 18:00'")
+        con.execute("DELETE FROM demand WHERE utc_end BETWEEN '2024-09-01' AND '2024-09-02'")
+        assert features.check(con) == [
+            "implausible demand (under a third or over triple the median)",
+            "missing hours in the data",
+        ]
+        con.execute("DELETE FROM demand WHERE utc_end < '2024-06-01'")
+        assert "under a year of hours" in features.check(con)
+
+
+def test_labeled_holds_only_days_known_by_the_morning(lab: Paths) -> None:
+    with duckdb.connect(str(lab.warehouse), read_only=True) as con:
+        known = features.labeled(con, date(2024, 9, 1))
+        tomorrow = features.day(con, date(2024, 9, 2))
+    assert known["date"].max() == pd.Timestamp("2024-08-31")
+    assert len(tomorrow) == 24

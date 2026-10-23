@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-10-19
+updated_at: 2026-10-23
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -20,7 +20,7 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | [SPEC-2026-09-27-eval-benchmark-pages](SPEC-2026-09-27-eval-benchmark-pages.md) | SPEC-2026-09-26-vendor-neutral-ai-harness | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Blocked (needs an OPENROUTER_API_KEY for definition of done items 2, 3, and 5, and GitHub Pages enabled for publishing) |
 | [SPEC-2026-10-05-eval-hillclimbing](SPEC-2026-10-05-eval-hillclimbing.md) | None | 3 | Eval hill-climbing: held-out test cases, transcripts kept for every run, and a failures view, so prompts and harnesses can be tuned without overfitting | Medium | Open |
 | [SPEC-2026-10-03-stock-screener](../projects/stock-screener/specs/SPEC-2026-10-03-stock-screener.md) | SPEC-2026-09-26-make-setup | 3 | Stock screener: pulls the latest SEC EDGAR XBRL filings into 10+ years of split-adjusted per-share history (BVPS, EPS, FCF, dividends) and ratios, then filters, sorts, and ranks companies interactively by growth, consistency, and a composite score | Medium | Done |
-| [SPEC-2026-10-16-mle-lab](../projects/mle-lab/specs/SPEC-2026-10-16-mle-lab.md) | SPEC-2026-09-30-projects-scaffold | 4 | ML engineering lab: forecast S&P 500 volatility from real FRED data, with DuckDB features, MLflow tracking, registry, and serving, and a daily feedback loop that retrains behind an eval gate, replayable over years in minutes | Low | Done |
+| [SPEC-2026-10-16-mle-lab](../projects/mle-lab/specs/SPEC-2026-10-16-mle-lab.md) | SPEC-2026-09-30-projects-scaffold | 4 | ML engineering lab: forecast tomorrow's hourly ERCOT grid demand from real EIA-930 data against naive and the operator's forecast, with DuckDB features, MLflow tracking, registry, and serving, and a daily feedback loop that retrains behind an eval gate, replayable over years in minutes | Low | In progress (Claude) |
 | [SPEC-2026-09-30-og-trail-rebuild](../projects/og-trail/specs/SPEC-2026-09-30-og-trail-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | OG Trail rebuild: modern-life Oregon Trail engine, terminal and browser frontends, and agent players feeding the eval pages | Medium | Open |
 | [SPEC-2026-09-30-connect6-rebuild](../projects/connect6/specs/SPEC-2026-09-30-connect6-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | Connect6 rebuild: pure engine, web UI, MCTS and LLM players, and a tournament feeding the eval pages | Medium | Open |
 | [SPEC-2026-10-03-portfolio-kelly](../projects/stock-screener/specs/SPEC-2026-10-03-portfolio-kelly.md) | SPEC-2026-10-03-stock-screener | 4 | Portfolio and Kelly allocation: live prices and price ratios (now and over 10+ years), an interactive portfolio built from screen results, and fractional Kelly position sizing with constraints and a sensitivity view | High | Open |

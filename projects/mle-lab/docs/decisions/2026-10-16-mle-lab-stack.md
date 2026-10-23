@@ -85,3 +85,7 @@ EIA-930 CSVs --> DuckDB demand --SQL--> features per target hour (data through D
 `mle` CLI, the DuckDB tables `demand`, `features`, `forecasts`, and `monitoring`, and the MLflow registered model `grid-demand`.
 
 ## Key Results and retrospective feedback
+
+2026-10-23: A replay from 2024-01-01 to 2026-10-22 on the EIA-930 files fetched that day took 2 minutes 11 seconds and reached a MAPE of 5.90% against the seasonal naive forecast's 8.12% and ERCOT's 2.11%.
+The gate rejected the first four bootstraps (naive won over December's holidays and January's cold snap), then the loop retrained 80 times and promoted 29 versions.
+Naive still wins in some calm months (August 2026: 2.52% against the model's 3.56%), and the gap to ERCOT is the weather, the obvious next feature.

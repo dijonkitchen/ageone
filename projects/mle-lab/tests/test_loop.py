@@ -1,39 +1,37 @@
+from datetime import date
+
 import duckdb
 import mlflow
 
-from mle_lab import features, loop
-from mle_lab.config import EXPERIMENT, HORIZON, Paths
+from mle_lab import loop
+from mle_lab.config import EXPERIMENT, Paths
 
-START = "2022-01-03"
+START = date(2025, 2, 1)
 
 
-def test_replay_forecasts_daily_retrains_and_beats_the_baseline(lab: Paths) -> None:
-    steps = loop.replay(lab, START)
+def test_replay_forecasts_daily_retrains_beats_naive_and_never_trains_on_the_future(lab: Paths) -> None:
+    attempts, steps = loop.replay(lab, START)
+    assert attempts[-1].promoted
 
     with duckdb.connect(str(lab.warehouse), read_only=True) as con:
-        days = con.execute("SELECT count(*) FROM features WHERE date > $d::DATE", {"d": START}).fetchone()
-        summary = con.execute(loop.SUMMARY_SQL).df()
+        forecasts = con.execute("SELECT date, count(*) AS hours FROM forecasts GROUP BY date").df()
+        total = con.execute(loop.SUMMARY_SQL).df().iloc[-1]
         monitoring = con.execute("SELECT * FROM monitoring").df()
-    assert days is not None and len(steps) == days[0]
+    # Every morning through the one after the data's last day forecasts all of the next day.
+    assert steps[0].as_of == START and steps[-1].as_of == date(2025, 5, 1)
+    assert len(forecasts) == len(steps) and set(forecasts["hours"]) == {23, 24}  # 23 on the spring-forward day.
     assert monitoring["retrained"].sum() >= 2
-    assert summary["model_qlike"].mean() < summary["baseline_qlike"].mean()
+    assert total["model_mape"] < total["naive_mape"]
 
-
-def test_replay_never_trains_on_labels_from_the_future(lab: Paths) -> None:
-    loop.replay(lab, START)
     runs = mlflow.search_runs(experiment_names=[EXPERIMENT], output_format="list")
-    assert len(runs) >= 3
-    with duckdb.connect(str(lab.warehouse), read_only=True) as con:
-        for run in runs:
-            as_of = features.day_of(con, run.data.params["as_of"])
-            eval_end = features.day_of(con, run.data.params["eval_end"])
-            assert eval_end <= as_of - HORIZON
+    assert len(runs) == len(attempts) + monitoring["retrained"].sum()
+    for run in runs:
+        assert run.data.params["eval_end"] < run.data.params["as_of"]
 
 
-def test_step_forecasts_one_day(lab: Paths) -> None:
+def test_step_forecasts_tomorrow(lab: Paths) -> None:
     loop.bootstrap(lab, START)
-    with duckdb.connect(str(lab.warehouse), read_only=True) as con:
-        day = features.day_of(con, START) + 1
-    s = loop.step(lab, day)
-    assert 0 < s.forecast < 2
-    assert s.model_qlike is None  # No forecast has matured yet.
+    s = loop.step(lab, START)
+    assert s.target == date(2025, 2, 2)
+    assert s.hours == 24 and s.peak is not None and 30_000 < s.peak < 90_000
+    assert s.model_mape is None  # No forecasted day has its actuals yet.

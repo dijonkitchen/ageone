@@ -1,64 +1,75 @@
 """The daily feedback loop, and a replay of it over history.
 
-Each trading day, after the close:
+Each morning (`as_of`), when demand is known through the end of yesterday:
 
-1. Forecast the next five days' volatility with the champion, next to the baseline's forecast.
-2. Labels arrive for the forecasts made five trading days ago. Score the champion against the
-   baseline over the last MONITOR_DAYS forecasts whose labels are in.
-3. Retrain when the champion has fallen behind the baseline, or when its training is older than
-   RETRAIN_DAYS. Promote the challenger only through the gate in `model.promote`.
+1. Forecast every hour of tomorrow with the champion, next to the naive forecast.
+2. Score the champion against naive over the last MONITOR_DAYS forecasted days whose actuals are in.
+3. Retrain when the champion has fallen behind naive, or when its training is RETRAIN_DAYS old, at
+   most once every COOLDOWN_DAYS. Promote the challenger only through the gate in `model.promote`.
 
-Forecasts and monitoring go to DuckDB, one row a day; training runs and the registry go to MLflow.
-Replaying years of days makes the loop's feedback minutes instead of years.
+Forecasts go to DuckDB one row per hour, and monitoring one row per day; training runs and the
+registry go to MLflow. Replaying years of days makes the loop's feedback a minute instead of years.
 """
 
 from dataclasses import dataclass
+from datetime import date, timedelta
 
 import duckdb
 
 from mle_lab import features, model
-from mle_lab.config import CHAMPION, HORIZON, TARGET, Paths
+from mle_lab.config import CHAMPION, TARGET, Paths
 
-MONITOR_DAYS = 21
-RETRAIN_DAYS = 63
-COOLDOWN_DAYS = 21  # After a retrain attempt, wait before trying again.
+MONITOR_DAYS = 14
+RETRAIN_DAYS = 28
+COOLDOWN_DAYS = 7
 
 TABLES = """
 CREATE TABLE IF NOT EXISTS forecasts (
-    day BIGINT PRIMARY KEY, date DATE, model_version VARCHAR, forecast DOUBLE, baseline DOUBLE
+    utc_end TIMESTAMP PRIMARY KEY, date DATE, made_on DATE, model_version VARCHAR, forecast DOUBLE, naive DOUBLE
 );
 CREATE TABLE IF NOT EXISTS monitoring (
-    day BIGINT PRIMARY KEY, date DATE, model_version VARCHAR, labeled BIGINT,
-    model_qlike DOUBLE, baseline_qlike DOUBLE, alert VARCHAR, retrained BOOLEAN, promoted BOOLEAN
+    as_of DATE PRIMARY KEY, model_version VARCHAR, labeled_days BIGINT,
+    model_mape DOUBLE, naive_mape DOUBLE, alert VARCHAR, retrained BOOLEAN, promoted BOOLEAN
 );
+"""
+
+# Forecasted hours whose actuals are known on the morning of $as_of, over the last $days such days.
+SCORED_SQL = f"""
+SELECT avg(abs(f.forecast - x.{TARGET}) / x.{TARGET}) AS model_mape,
+       avg(abs(f.naive - x.{TARGET}) / x.{TARGET}) AS naive_mape,
+       count(DISTINCT f.date) AS days
+FROM forecasts f JOIN features x USING (utc_end)
+WHERE f.date BETWEEN $as_of - $days::INT AND $as_of - 1 AND x.{TARGET} IS NOT NULL
 """
 
 
 @dataclass
 class Step:
-    date: str
+    as_of: date
+    target: date
     model_version: str
-    forecast: float
-    model_qlike: float | None
-    baseline_qlike: float | None
+    hours: int
+    peak: float | None
+    model_mape: float | None
+    naive_mape: float | None
     alert: str | None
     decision: model.Decision | None
 
 
-def _last_attempt(con: duckdb.DuckDBPyConnection) -> int | None:
-    row = con.execute("SELECT max(day) FROM monitoring WHERE retrained").fetchone()
-    return None if row is None or row[0] is None else int(row[0])
+def _last_attempt(con: duckdb.DuckDBPyConnection) -> date | None:
+    row = con.execute("SELECT max(as_of) FROM monitoring WHERE retrained").fetchone()
+    return None if row is None else row[0]
 
 
-def step(paths: Paths, day: int) -> Step:
-    """Run one day of the loop for trading day number `day`."""
-    s, con = _step(paths, day, duckdb.connect(str(paths.warehouse)))
+def step(paths: Paths, as_of: date) -> Step:
+    """Run the loop for the morning of `as_of`."""
+    s, con = _step(paths, as_of, duckdb.connect(str(paths.warehouse)))
     con.close()
     return s
 
 
-def _step(paths: Paths, day: int, con: duckdb.DuckDBPyConnection) -> tuple[Step, duckdb.DuckDBPyConnection]:
-    """One day on an open connection, returning the connection to keep using.
+def _step(paths: Paths, as_of: date, con: duckdb.DuckDBPyConnection) -> tuple[Step, duckdb.DuckDBPyConnection]:
+    """One morning on an open connection, returning the connection to keep using.
 
     Training and promotion open the warehouse themselves, so the connection is closed around a
     retrain and a new one returned.
@@ -68,49 +79,49 @@ def _step(paths: Paths, day: int, con: duckdb.DuckDBPyConnection) -> tuple[Step,
         raise SystemExit("no champion: run `mle bootstrap` first")
     try:
         con.execute(TABLES)
-        today = features.on_day(con, day)
-        date = str(today["date"].iloc[0].date())
-        forecast = float(model.predict(champion, today)[0])
-        con.execute(
-            "INSERT OR REPLACE INTO forecasts VALUES ($day, $date::DATE, $v, $f, $b)",
-            {"day": day, "date": date, "v": champion, "f": forecast, "b": float(today["rv_5d"].iloc[0])},
-        )
-        # Forecasts whose labels have arrived by today's close.
-        matured = con.execute(
-            f"SELECT f.forecast, f.baseline, x.{TARGET} AS realized FROM forecasts f JOIN features x USING (day) "
-            "WHERE f.day <= $day - $h ORDER BY f.day DESC LIMIT $n",
-            {"day": day, "h": HORIZON, "n": MONITOR_DAYS},
-        ).df()
-        last_attempt = _last_attempt(con)
-        trained_day = features.day_of(con, model.trained_as_of(champion))
+        target = as_of + timedelta(days=1)
+        hours = features.day(con, target)
+        peak = None
+        if len(hours):
+            hours["forecast"] = model.predict(champion, hours)
+            hours["made_on"] = as_of
+            hours["model_version"] = champion
+            con.register("new_forecasts", hours)
+            con.execute(
+                "INSERT OR REPLACE INTO forecasts "
+                "SELECT utc_end, date, made_on, model_version, forecast, naive_forecast FROM new_forecasts"
+            )
+            con.unregister("new_forecasts")
+            peak = float(hours["forecast"].max())
 
-        model_q = base_q = None
+        scored = con.execute(SCORED_SQL, {"as_of": as_of, "days": MONITOR_DAYS}).fetchone()
+        assert scored is not None
+        model_m, naive_m, days = scored
         alert = None
-        if len(matured) == MONITOR_DAYS:
-            realized = matured["realized"].to_numpy()
-            model_q = model.qlike(realized, matured["forecast"].to_numpy())
-            base_q = model.qlike(realized, matured["baseline"].to_numpy())
-            if model_q > base_q:
-                alert = f"champion behind baseline over {MONITOR_DAYS} days: QLIKE {model_q:.3f} > {base_q:.3f}"
-        if alert is None and day - trained_day >= RETRAIN_DAYS:
-            alert = f"champion trained {day - trained_day} days ago"
-        cooling = last_attempt is not None and day - last_attempt < COOLDOWN_DAYS
+        if days < MONITOR_DAYS:
+            model_m = naive_m = None
+        elif model_m > naive_m:
+            alert = f"champion behind naive over {MONITOR_DAYS} days: MAPE {model_m:.2%} > {naive_m:.2%}"
+        age = model.age(champion, as_of).days
+        if alert is None and age >= RETRAIN_DAYS:
+            alert = f"champion trained {age} days ago"
+        last = _last_attempt(con)
+        cooling = last is not None and (as_of - last).days < COOLDOWN_DAYS
 
         decision = None
         if alert and not cooling:
             con.close()
-            model.train(paths, date)
-            decision = model.promote(paths, date)
+            model.train(paths, as_of)
+            decision = model.promote(paths, as_of)
             con = duckdb.connect(str(paths.warehouse))
         con.execute(
-            "INSERT OR REPLACE INTO monitoring VALUES ($day, $date::DATE, $v, $n, $mq, $bq, $alert, $r, $p)",
+            "INSERT OR REPLACE INTO monitoring VALUES ($as_of, $v, $n, $mm, $nm, $alert, $r, $p)",
             {
-                "day": day,
-                "date": date,
+                "as_of": as_of,
                 "v": champion,
-                "n": len(matured),
-                "mq": model_q,
-                "bq": base_q,
+                "n": days,
+                "mm": model_m,
+                "nm": naive_m,
                 "alert": alert,
                 "r": decision is not None,
                 "p": decision is not None and decision.promoted,
@@ -119,44 +130,60 @@ def _step(paths: Paths, day: int, con: duckdb.DuckDBPyConnection) -> tuple[Step,
     except BaseException:
         con.close()
         raise
-    return Step(date, champion, forecast, model_q, base_q, alert, decision), con
+    return Step(as_of, target, champion, len(hours), peak, model_m, naive_m, alert, decision), con
 
 
-def bootstrap(paths: Paths, as_of: str) -> model.Decision:
+def bootstrap(paths: Paths, as_of: date) -> model.Decision:
     """Train and promote the first champion as of `as_of`."""
     model.train(paths, as_of)
     return model.promote(paths, as_of)
 
 
-def replay(paths: Paths, start: str, end: str | None = None) -> list[Step]:
-    """Bootstrap a champion as of `start`, then run the loop for every trading day after it."""
+def last_morning(paths: Paths) -> date:
+    """The latest morning the data supports: the day after the last day with any demand."""
+    with duckdb.connect(str(paths.warehouse), read_only=True) as con:
+        row = con.execute(f"SELECT max(date) FROM features WHERE {TARGET} IS NOT NULL").fetchone()
+    assert row is not None and row[0] is not None, "no labeled features: run `mle build`"
+    return row[0] + timedelta(days=1)  # type: ignore[no-any-return]
+
+
+def replay(paths: Paths, start: date, end: date | None = None) -> tuple[list[model.Decision], list[Step]]:
+    """Bootstrap a champion on the morning of `start`, then run the loop every morning through `end`.
+
+    No model ships until one beats naive, so a rejected bootstrap is tried again COOLDOWN_DAYS later.
+    """
+    end = end or last_morning(paths)
     with duckdb.connect(str(paths.warehouse)) as con:
         con.execute("DROP TABLE IF EXISTS forecasts; DROP TABLE IF EXISTS monitoring")
-        first = features.day_of(con, start)
-        last = features.day_of(con, end) if end else features.day_of(con, "9999-12-31")
-    bootstrap(paths, start)
+    as_of = start
+    attempts = [bootstrap(paths, as_of)]
+    while not attempts[-1].promoted:
+        as_of += timedelta(days=COOLDOWN_DAYS)
+        if as_of > end:
+            return attempts, []
+        attempts.append(bootstrap(paths, as_of))
     steps = []
     con = duckdb.connect(str(paths.warehouse))
     try:
-        for day in range(first + 1, last + 1):
-            s, con = _step(paths, day, con)
+        while as_of <= end:
+            s, con = _step(paths, as_of, con)
             steps.append(s)
+            as_of += timedelta(days=1)
     finally:
         con.close()
-    return steps
+    return attempts, steps
 
 
 SUMMARY_SQL = f"""
 SELECT
-    year(f.date) AS year,
-    count(*) AS days,
-    round(avg(x.{TARGET}), 3) AS mean_realized,
-    round(sqrt(avg((f.forecast - x.{TARGET})^2)), 4) AS model_rmse,
-    round(sqrt(avg((f.baseline - x.{TARGET})^2)), 4) AS baseline_rmse,
-    round(avg(power(x.{TARGET} / f.forecast, 2) - ln(power(x.{TARGET} / f.forecast, 2)) - 1), 3) AS model_qlike,
-    round(avg(power(x.{TARGET} / f.baseline, 2) - ln(power(x.{TARGET} / f.baseline, 2)) - 1), 3) AS baseline_qlike,
+    strftime(f.date, '%Y-%m') AS month,
+    count(DISTINCT f.date) AS days,
+    round(avg(x.{TARGET})) AS mean_mw,
+    round(100 * avg(abs(f.forecast - x.{TARGET}) / x.{TARGET}), 2) AS model_mape,
+    round(100 * avg(abs(f.naive - x.{TARGET}) / x.{TARGET}), 2) AS naive_mape,
+    round(100 * avg(abs(x.operator_forecast - x.{TARGET}) / x.{TARGET}), 2) AS operator_mape,
     count(DISTINCT f.model_version) AS versions
-FROM forecasts f JOIN features x USING (day)
+FROM forecasts f JOIN features x USING (utc_end)
 WHERE x.{TARGET} IS NOT NULL
-GROUP BY ALL ORDER BY year
+GROUP BY ROLLUP (month) ORDER BY month NULLS LAST
 """

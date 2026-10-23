@@ -1,38 +1,56 @@
-"""Fetch daily series from FRED as CSV, and load them into DuckDB."""
+"""Download EIA-930 balance files, and load one region's hourly demand into DuckDB."""
 
+import urllib.error
 import urllib.request
+from datetime import date
 from pathlib import Path
 
 import duckdb
 
-from mle_lab.config import FRED_CSV, SERIES, Paths
+from mle_lab.config import EIA_URL, FIRST_YEAR, REGION, Paths
+
+USER_AGENT = "ageone-mle-lab (https://github.com/dijonkitchen/ageone)"
 
 
-def fetch(paths: Paths) -> None:
-    """Download each series' full history to data/raw/<id>.csv (no API key needed)."""
+def fetch(paths: Paths, first_year: int = FIRST_YEAR, today: date | None = None) -> list[Path]:
+    """Download each half-year file from `first_year` on. Past halves never change, so they are
+    downloaded once; the current half is downloaded again every time, since EIA updates it daily."""
+    today = today or date.today()
     paths.raw.mkdir(parents=True, exist_ok=True)
-    for series_id in SERIES.values():
-        out = paths.raw / f"{series_id}.csv"
-        tmp = out.with_suffix(".part")
-        with urllib.request.urlopen(FRED_CSV.format(series_id), timeout=60) as response:
-            tmp.write_bytes(response.read())
-        tmp.replace(out)  # Never leave a half-written file where `load` would read it.
+    fetched = []
+    for year in range(first_year, today.year + 1):
+        for half, starts in (("Jan_Jun", 1), ("Jul_Dec", 7)):
+            if (year, starts) > (today.year, today.month):
+                continue
+            current = (year, starts) == (today.year, 1 if today.month < 7 else 7)
+            out = paths.raw / f"EIA930_BALANCE_{year}_{half}.csv"
+            if out.exists() and not current:
+                continue
+            request = urllib.request.Request(EIA_URL.format(year=year, half=half), headers={"User-Agent": USER_AGENT})
+            tmp = out.with_suffix(".part")
+            with urllib.request.urlopen(request, timeout=300) as response:
+                tmp.write_bytes(response.read())
+            tmp.replace(out)  # Never leave a half-written file where `load` would read it.
+            fetched.append(out)
+    return fetched
 
 
-def load(con: duckdb.DuckDBPyConnection, raw: Path) -> int:
-    """Rebuild the `prices` table from the CSVs: one row per day both series have a value."""
-    selects = [
-        f"SELECT observation_date::DATE AS date, TRY_CAST({sid} AS DOUBLE) AS {name} "
-        f"FROM read_csv('{raw / f'{sid}.csv'}', all_varchar = true)"
-        for name, sid in SERIES.items()
-    ]
-    # FRED marks holidays and gaps as empty or "."; TRY_CAST makes those NULL, and the join drops them.
-    names = list(SERIES)
-    joined = f"({selects[0]}) a JOIN ({selects[1]}) b USING (date)"
+def load(con: duckdb.DuckDBPyConnection, raw: Path, region: str = REGION) -> int:
+    """Rebuild the `demand` table for `region`: one row per hour, keyed by its UTC end."""
     con.execute(
-        f"CREATE OR REPLACE TABLE prices AS SELECT date, {', '.join(names)} FROM {joined} "
-        f"WHERE {' AND '.join(f'{n} IS NOT NULL' for n in names)} ORDER BY date"
+        """
+        CREATE OR REPLACE TABLE demand AS
+        SELECT DISTINCT ON (utc_end)
+            strptime("UTC Time at End of Hour", '%m/%d/%Y %I:%M:%S %p') AS utc_end,
+            -- EIA's adjusted demand fills reporting gaps; numbers may carry thousands separators.
+            TRY_CAST(replace("Demand (MW) (Adjusted)", ',', '') AS DOUBLE) AS demand,
+            TRY_CAST(replace("Demand Forecast (MW)", ',', '') AS DOUBLE) AS operator_forecast
+        FROM read_csv($glob, all_varchar = true, union_by_name = true)
+        WHERE "Balancing Authority" = $region
+        ORDER BY utc_end
+        """,
+        {"glob": str(raw / "EIA930_BALANCE_*.csv*"), "region": region},
     )
-    row = con.execute("SELECT count(*) FROM prices").fetchone()
+    row = con.execute("SELECT count(*) FROM demand").fetchone()
     assert row is not None
     return int(row[0])
