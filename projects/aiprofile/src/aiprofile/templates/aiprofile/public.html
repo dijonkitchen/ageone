@@ -1,0 +1,12 @@
+{% extends "aiprofile/base.html" %}
+{% block title %}{{ profile.user.username }}{% endblock %}
+{% block body %}
+<h1>{{ profile.user.username }}</h1>
+<ul>
+{% for claim in claims %}
+  <li>{{ claim.text }}
+    <small>Evidence: {% for e in claim.evidence.all %}<a href="{{ e.url }}">{{ e.source }}: {{ e.key }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</small></li>
+{% empty %}<li>Nothing accepted yet.</li>
+{% endfor %}
+</ul>
+{% endblock %}
