@@ -1,0 +1,15 @@
+{
+	"name": "anatomy-viewer",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"@types/bun": "^1.4.2",
+		"typescript": "^7.0.2"
+	},
+	"scripts": {
+		"build": "bun build.ts",
+		"serve": "bun build.ts && bun serve.ts",
+		"verify": "bun scripts/verify.ts"
+	}
+}
