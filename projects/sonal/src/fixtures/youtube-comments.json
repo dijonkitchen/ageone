@@ -1,0 +1,32 @@
+{
+	"kind": "youtube#commentThreadListResponse",
+	"nextPageToken": "PAGE2",
+	"items": [
+		{
+			"id": "Ug1",
+			"snippet": {
+				"topLevelComment": {
+					"snippet": {
+						"authorDisplayName": "Ana",
+						"textOriginal": "Great editing, loved the pacing.",
+						"textDisplay": "Great editing, loved the pacing.",
+						"likeCount": 12
+					}
+				}
+			}
+		},
+		{
+			"id": "Ug2",
+			"snippet": {
+				"topLevelComment": {
+					"snippet": {
+						"authorDisplayName": "Bo",
+						"textOriginal": "The audio was terrible.",
+						"textDisplay": "The audio was terrible.",
+						"likeCount": 3
+					}
+				}
+			}
+		}
+	]
+}
