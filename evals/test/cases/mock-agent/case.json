@@ -1,5 +1,6 @@
 {
   "id": "mock-agent",
+  "split": "train",
   "title": "Mock model makes one bash tool call",
   "prompt": "MOCK-BASH: echo ok > out.txt",
   "timeoutSec": 60,

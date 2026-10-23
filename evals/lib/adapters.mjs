@@ -1,8 +1,11 @@
 // One adapter per harness. Each runs one case in its sandbox and returns the same fields:
-//   { status, served_model, tokens_in, tokens_out, cache_read, cost_usd, turns, stop_reason, output, error }
+//   { status, served_model, tokens_in, tokens_out, cache_read, cost_usd, turns, stop_reason, output, error,
+//     transcript, transcript_ext }
+// transcript is the run's full record (pi session, Claude Code output, or the direct request and response),
+// which the runner saves outside the results lines.
 // status is "ok" when the run finished and can be graded, else one of
 // "infra_error", "timeout", "truncated", "refused", "model_mismatch", which never count as model failures.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { WEB_SEARCH_PATH, ensureTool, openRouterRouting, piAgentModels } from "../../harness/config.mjs";
 import { runProcess, scriptEnv } from "./sandbox.mjs";
@@ -32,7 +35,7 @@ export function sameModel(requested, served) {
 }
 
 function empty() {
-  return { status: "ok", served_model: null, tokens_in: 0, tokens_out: 0, cache_read: 0, cost_usd: 0, turns: 0, stop_reason: null, output: "", error: null };
+  return { status: "ok", served_model: null, tokens_in: 0, tokens_out: 0, cache_read: 0, cost_usd: 0, turns: 0, stop_reason: null, output: "", error: null, transcript: "", transcript_ext: "txt" };
 }
 
 const pi = {
@@ -54,8 +57,8 @@ const pi = {
       if (process.env.HTTPS_PROXY) web.ssrf = { trustEnvProxy: true };
       writeFileSync(join(agentDir, "web-search.json"), JSON.stringify(web, null, 2));
     }
-    const args = ["--mode", "json", "--print", "--approve", "--model", model.full,
-      "--session-dir", join(runDir, "sessions", `${caseDef.id}-${box.rep}`)];
+    const sessionDir = join(runDir, "sessions", `${model.full.replace(/[^a-zA-Z0-9.-]+/g, "_")}-${caseDef.id}-${box.rep}`);
+    const args = ["--mode", "json", "--print", "--approve", "--model", model.full, "--session-dir", sessionDir];
     if (caseDef.mode === "direct") args.push("--no-tools", "--no-context-files", "--no-extensions", "--no-skills");
     args.push("--", caseDef.prompt);
     const env = cleanEnv(join(runDir, "home"), { PI_CODING_AGENT_DIR: agentDir, PI_SKIP_VERSION_CHECK: "1", PI_TELEMETRY: "0" });
@@ -83,6 +86,10 @@ const pi = {
         }
       },
     });
+    // The pi session file is the transcript; fall back to the JSON event stream if pi wrote none.
+    const sessions = existsSync(sessionDir) ? readdirSync(sessionDir).filter((f) => f.endsWith(".jsonl")).sort() : [];
+    r.transcript = sessions.length ? sessions.map((f) => readFileSync(join(sessionDir, f), "utf8")).join("") : proc.stdout;
+    r.transcript_ext = "jsonl";
     const m = lastAssistant;
     r.output = (m?.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join("");
     r.stop_reason = proc.killedFor ?? m?.stopReason ?? null;
@@ -115,7 +122,7 @@ const claudeCode = {
       "--max-turns", String(caseDef.maxTurns), "--dangerously-skip-permissions"];
     if (caseDef.mode === "direct") args.push("--tools", "");
     const proc = await runProcess(bin, args, { cwd: box.work, env: cleanEnv(home, extra), timeoutMs });
-    const r = empty();
+    const r = { ...empty(), transcript: proc.stdout + (proc.stderr ? `\n${proc.stderr}` : ""), transcript_ext: "json" };
     let out;
     try { out = JSON.parse(proc.stdout.trim().split("\n").pop()); } catch { out = null; }
     if (proc.killedFor === "timeout") return { ...r, status: "timeout", stop_reason: "timeout" };
@@ -143,7 +150,7 @@ const direct = {
   name: "direct",
   version: () => "1",
   async run({ caseDef, model, config, timeoutMs }) {
-    const r = { ...empty(), turns: 1 };
+    const r = { ...empty(), turns: 1, transcript_ext: "json" };
     if (caseDef.mode !== "direct") return { ...r, status: "skip" };
     const base = process.env.EVALS_DIRECT_BASE_URL ?? {
       openrouter: "https://openrouter.ai/api/v1",
@@ -154,6 +161,7 @@ const direct = {
     const body = { model: model.id, messages: [{ role: "user", content: caseDef.prompt }] };
     if (model.provider === "openrouter") Object.assign(body, { provider: openRouterRouting(config, model), usage: { include: true } });
     let res, json;
+    const record = (response) => JSON.stringify({ request: body, response }, null, 2);
     try {
       res = await fetch(`${base}/chat/completions`, {
         method: "POST",
@@ -163,8 +171,9 @@ const direct = {
       });
       json = await res.json();
     } catch (err) {
-      return { ...r, status: err.name === "TimeoutError" ? "timeout" : "infra_error", error: String(err) };
+      return { ...r, status: err.name === "TimeoutError" ? "timeout" : "infra_error", error: String(err), transcript: record({ error: String(err) }) };
     }
+    r.transcript = record(json);
     if (!res.ok || json.error) return { ...r, status: "infra_error", error: JSON.stringify(json.error ?? json).slice(0, 2000) };
     const choice = json.choices?.[0];
     r.output = choice?.message?.content ?? "";
@@ -188,8 +197,9 @@ const reference = {
   version: () => "1",
   async run({ caseDef, box, timeoutMs }) {
     const proc = await runProcess("bash", [join(caseDef.dir, "reference.sh")], { cwd: box.work, env: scriptEnv(caseDef), timeoutMs });
-    if (proc.code !== 0) return { ...empty(), status: "infra_error", error: proc.stderr.slice(-2000) };
-    return { ...empty(), served_model: "reference", output: proc.stdout };
+    const transcript = proc.stdout + proc.stderr;
+    if (proc.code !== 0) return { ...empty(), status: "infra_error", error: proc.stderr.slice(-2000), transcript };
+    return { ...empty(), served_model: "reference", output: proc.stdout, transcript };
   },
 };
 

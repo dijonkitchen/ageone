@@ -1,12 +1,36 @@
 #!/usr/bin/env node
-// Summarize committed results: evals/report [results files...] (default: every evals/results/*.jsonl).
+// Summarize committed results: evals/report [--failures] [--split train|test] [results files...]
+// (default: every evals/results/*.jsonl). --failures lists failed runs by case and harness with transcript paths.
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
+import { parseArgs } from "node:util";
 import { ROOT } from "../harness/config.mjs";
-import { readRecords, summarize, table } from "./lib/results.mjs";
+import { failures, failuresText, readRecords, summarize, table } from "./lib/results.mjs";
+import { SPLITS, loadCases } from "./lib/sandbox.mjs";
+
+const { values: opt, positionals } = parseArgs({
+  allowPositionals: true,
+  options: {
+    failures: { type: "boolean", default: false },
+    split: { type: "string" },
+    help: { type: "boolean", short: "h", default: false },
+  },
+});
+if (opt.help) {
+  console.log("usage: evals/report [--failures] [--split train|test] [results files...]");
+  process.exit(0);
+}
+if (opt.split && !SPLITS.includes(opt.split)) throw new Error(`--split must be ${SPLITS.join(" or ")}`);
 
 const dir = join(ROOT, "evals", "results");
-const files = process.argv.length > 2 ? process.argv.slice(2) : readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f));
-const ok = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
-const infra = readRecords(files.filter((f) => f.endsWith(".infra.jsonl")));
-console.log(table(summarize(ok, infra)));
+const files = positionals.length ? positionals.map((f) => resolve(f)) : readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f));
+// Records from before splits existed take their case's current split; transcript paths become repo-relative.
+const splits = new Map(loadCases(join(ROOT, "evals", "cases")).map((c) => [c.id, c.split]));
+const load = (fs) => fs.flatMap((f) => readRecords([f]).map((r) => ({
+  ...r,
+  split: r.split ?? splits.get(r.case) ?? "train",
+  transcript: r.transcript ? relative(process.cwd(), join(dirname(f), r.transcript)) : null,
+}))).filter((r) => !opt.split || r.split === opt.split);
+const ok = load(files.filter((f) => !f.endsWith(".infra.jsonl")));
+const infra = load(files.filter((f) => f.endsWith(".infra.jsonl")));
+console.log(opt.failures ? failuresText(failures(ok)) : table(summarize(ok, infra)));

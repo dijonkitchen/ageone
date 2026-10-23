@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Offline test of the eval runner: the pi and direct adapters against a local mock model,
-// checking that each run is graded and records the metrics. No API keys needed.
-import { spawn } from "node:child_process";
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+// checking that each run is graded, records the metrics and its split, saves a transcript, and that
+// evals/report shows train and test apart and lists failures with their transcripts. No API keys needed.
+import { execFileSync, spawn } from "node:child_process";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,15 +27,24 @@ try {
     const code = await new Promise((resolve) => child.on("close", resolve));
     if (code !== 0) throw new Error(`evals/run --harness ${harness} exited ${code}`);
   }
-  const files = readdirSync(results).map((f) => join(results, f));
+  const files = readdirSync(results).filter((f) => f.endsWith(".jsonl")).map((f) => join(results, f));
   const infra = files.filter((f) => f.endsWith(".infra.jsonl"));
   if (infra.length) { failed++; console.error(`infra failures:\n${readRecords(infra).map((r) => `${r.harness} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
   const records = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
-  const want = [["pi", "mock-agent", 2], ["pi", "mock-direct", 1], ["direct", "mock-direct", 1]];
-  for (const [harness, id, turns] of want) {
+  const want = [
+    ["pi", "mock-agent", 2, "train", true, "MOCK-BASH"], ["pi", "mock-direct", 1, "test", true, "MOCK-REPLY: 42"],
+    ["direct", "mock-direct", 1, "test", true, "MOCK-REPLY: 42"], ["pi", "mock-fail", 1, "train", false, "MOCK-REPLY: 41"],
+    ["direct", "mock-fail", 1, "train", false, "MOCK-REPLY: 41"],
+  ];
+  for (const [harness, id, turns, split, pass, said] of want) {
     const r = records.find((x) => x.harness === harness && x.case === id);
+    const transcript = r?.transcript && join(results, r.transcript);
     const problems = !r ? ["no record"] : [
-      !r.pass && `not passed (${r.grader_note})`,
+      r.pass !== pass && (pass ? `not passed (${r.grader_note})` : "passed, want a failure"),
+      r.split !== split && `split ${r.split}, want ${split}`,
+      !transcript && "no transcript path",
+      transcript && !existsSync(transcript) && `transcript ${r.transcript} missing`,
+      transcript && existsSync(transcript) && !readFileSync(transcript, "utf8").includes(said) && `transcript lacks the prompt "${said}"`,
       r.turns !== turns && `turns ${r.turns}, want ${turns}`,
       !(r.tokens_in > 0 && r.tokens_out > 0) && "no tokens",
       !(r.cost_usd > 0) && "no cost",
@@ -44,6 +54,26 @@ try {
     ].filter(Boolean);
     console.log(`${problems.length ? "FAIL" : "ok"}: ${harness} ${id}${problems.length ? " " + problems.join(", ") : ""}`);
     failed += problems.length ? 1 : 0;
+  }
+
+  // evals/report: train and test pass rates apart, and failures by case and harness with transcript paths.
+  const report = (...args) => execFileSync(join(here, "..", "report"), [...args, ...files], { encoding: "utf8", cwd: tmp });
+  const checks = [];
+  const rows = report().split("\n").filter((l) => /^\| (pi|direct) /.test(l)).map((l) => l.split("|").map((c) => c.trim()));
+  const row = (h) => rows.find((c) => c[1] === h) ?? [];
+  // Columns: harness, model, variant, pass rate, train, test, ...
+  checks.push(["report train/test for pi", row("pi")[5] === "50%" && row("pi")[6] === "100%", row("pi").join("|")]);
+  checks.push(["report train/test for direct", row("direct")[5] === "0%" && row("direct")[6] === "100%", row("direct").join("|")]);
+  const fails = report("--failures");
+  const listed = (h) => fails.includes(`mock-fail (train) ${h} mock/scripted: 1 of 1 failed`);
+  const paths = [...fails.matchAll(/^  #\d+ \S+ (\S+)$/gm)].map((m) => m[1]);
+  checks.push(["failures list mock-fail for pi and direct", listed("pi") && listed("direct"), fails]);
+  checks.push(["failures list only failed cases", !/mock-agent|mock-direct/.test(fails), fails]);
+  checks.push(["failures link existing transcripts", paths.length === 2 && paths.every((p) => existsSync(join(tmp, p))), paths.join(" ")]);
+  checks.push(["failures --split test has none", report("--failures", "--split", "test").trim() === "No failures.", ""]);
+  for (const [name, good, detail] of checks) {
+    console.log(`${good ? "ok" : "FAIL"}: ${name}${good ? "" : "\n" + detail}`);
+    failed += good ? 0 : 1;
   }
 } finally {
   server.close();

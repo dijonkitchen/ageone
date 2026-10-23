@@ -1,5 +1,6 @@
 {
   "id": "web-latest-version",
+  "split": "train",
   "title": "Search the web, read a page, and cite it",
   "source": "SPEC-2026-09-26-vendor-neutral-ai-harness definition of done, item 3",
   "needs": ["web"],

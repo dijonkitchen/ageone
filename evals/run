@@ -4,11 +4,11 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { ROOT, loadConfig, resolveModel } from "../harness/config.mjs";
 import { ADAPTERS } from "./lib/adapters.mjs";
-import { append, resultsFile, summarize, table } from "./lib/results.mjs";
+import { append, resultsFile, summarize, table, transcriptsDir } from "./lib/results.mjs";
 import { loadCases, makeSandbox, repoCommit, scriptEnv } from "./lib/sandbox.mjs";
 
 const USAGE = `usage: evals/run [options]
@@ -18,7 +18,7 @@ const USAGE = `usage: evals/run [options]
   --case <ids>        comma-separated case IDs (default: every case the harness can run)
   --reps <n>          repetitions per case and model (default: 3)
   --cases <dir>       case folder (default: evals/cases)
-  --results <dir>     results folder (default: evals/results)
+  --results <dir>     results folder (default: evals/results); transcripts go in its git-ignored transcripts/
   --experiment <id>   label records with an experiment and --variant, for SPEC-2026-09-27-eval-benchmark-pages pages
   --variant <id>
   --keep              keep sandboxes for inspection
@@ -87,7 +87,8 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
   const adapter = ADAPTERS[harness];
   if (!adapter) throw new Error(`unknown harness: ${harness}`);
   checkKeys(harness, models);
-  const date = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const date = now.toISOString().slice(0, 10);
   const { commit, dirty } = repoCommit();
   const runDir = mkdtempSync(join(tmpdir(), "ageone-evals-"));
   mkdirSync(join(runDir, "home"));
@@ -96,6 +97,7 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
   for (const modelArg of models) {
     const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", role: null } : resolveModel(config, modelArg);
     const file = resultsDir && resultsFile(resultsDir, date, harness, model.full, opt.variant);
+    const transcripts = resultsDir && transcriptsDir(resultsDir, now, harness, model.full, opt.variant);
     for (const caseDef of runnable) {
       for (let rep = 1; rep <= reps; rep++) {
         const box = { ...makeSandbox(runDir, caseDef, rep), rep };
@@ -116,12 +118,21 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
             grader_note = `${err.stdout ?? ""}${err.stderr ?? ""}`.trim().slice(-300) || String(err).slice(0, 300);
           }
         }
-        const { output, ...metrics } = r;
+        const { output, transcript, transcript_ext, ...metrics } = r;
+        let transcriptPath = null;
+        if (transcripts) {
+          mkdirSync(transcripts, { recursive: true });
+          const path = join(transcripts, `${caseDef.id}-${rep}.${transcript_ext ?? "txt"}`);
+          writeFileSync(path, transcript ?? "");
+          // Relative to the results folder, so committed lines don't hold a machine's absolute paths.
+          transcriptPath = relative(resultsDir, path);
+        }
         const record = {
           date, commit, dirty,
           experiment: opt.experiment ?? null, variant: opt.variant ?? null,
-          case: caseDef.id, harness, harness_version: adapter.version(config), model: model.full, role: model.role, rep,
+          case: caseDef.id, split: caseDef.split, harness, harness_version: adapter.version(config), model: model.full, role: model.role, rep,
           ...metrics, pass, score: pass === null ? null : pass ? 1 : 0, wall_ms, grader_note,
+          transcript: transcriptPath,
         };
         (r.status === "ok" ? all.ok : all.infra).push(record);
         if (resultsDir) append(file, record);

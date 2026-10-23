@@ -11,3 +11,6 @@ devenv.local.yaml
 
 # Built eval and benchmark pages (site/build)
 _site/
+
+# Eval transcripts stay local (evals/results/ and experiments/*/results/); only results lines are committed
+results/transcripts/
