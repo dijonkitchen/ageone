@@ -1,0 +1,56 @@
+:root {
+	color-scheme: light dark;
+	--gap: 0.75rem;
+}
+body {
+	font:
+		16px / 1.5 system-ui,
+		sans-serif;
+	max-width: 42rem;
+	margin: 0 auto;
+	padding: 0 1rem 3rem;
+}
+header {
+	display: flex;
+	align-items: baseline;
+	gap: 1rem;
+}
+header p {
+	margin: 0;
+	font-size: 0.85rem;
+	opacity: 0.7;
+}
+label {
+	display: block;
+	margin-top: var(--gap);
+	font-weight: 600;
+}
+input,
+select,
+textarea {
+	width: 100%;
+	box-sizing: border-box;
+	font: inherit;
+	padding: 0.4rem;
+}
+button {
+	font: inherit;
+	padding: 0.4rem 0.9rem;
+	margin-top: var(--gap);
+}
+pre {
+	white-space: pre-wrap;
+	overflow-x: auto;
+}
+#notes {
+	list-style: none;
+	padding: 0;
+}
+#notes li {
+	padding: 0.3rem 0;
+}
+#notes button {
+	all: unset;
+	cursor: pointer;
+	text-decoration: underline;
+}

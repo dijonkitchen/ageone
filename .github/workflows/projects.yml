@@ -48,6 +48,11 @@ jobs:
       - name: make check
         if: matrix.project != '_template'
         run: devenv shell -- make -C projects/${{ matrix.project }} check
+      - name: End-to-end tests (needle)
+        if: matrix.project == 'needle'
+        run: |
+          devenv shell -- bash -c 'cd projects/needle && bun install --frozen-lockfile && bunx playwright-core install --with-deps chromium'
+          devenv shell -- make -C projects/needle e2e
       - name: New projects from the template pass make check
         if: matrix.project == '_template'
         run: |
