@@ -6,13 +6,15 @@
 
 2026-10-19: Amended by Claude, at JC's request, before acceptance: the lab forecasts S&P 500 volatility from real FRED data instead of churn on generated data, for a simpler case with faster feedback.
 
+2026-10-23: Amended by Claude, at JC's request, before acceptance: the lab forecasts electricity demand from EIA-930 instead, because finance data is hard to get and to judge; the grid operator's own forecast is a professional bar to measure against.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
 
 #### Functional
 
-A stack for [the spec](../../specs/SPEC-2026-10-16-mle-lab.md) that covers every stage of an ML system (data, features, training, tracking, registry, serving, monitoring, and a retraining loop) on real data, with tools common in industry, so what's learned here carries over.
+A stack for [the spec](../../specs/SPEC-2026-10-16-mle-lab.md) that covers every stage of an ML system (data, features, training, tracking, registry, serving, monitoring, and a retraining loop) on real data with a clear sense of what good looks like, with tools common in industry, so what's learned here carries over.
 
 #### Non-functional
 
@@ -32,7 +34,7 @@ Each tool can later be swapped for its hosted counterpart (a remote MLflow serve
 #### Functional
 
 A feature store, orchestrator, or monitoring service before the plain loop is understood.
-Chasing forecast accuracy with bigger models before the loop around a simple one works.
+Chasing the operator's accuracy with weather data before the loop around a simple model works.
 
 #### Non-functional
 
@@ -41,47 +43,43 @@ Chasing forecast accuracy with bigger models before the loop around a simple one
 Started from the python project template (see [Project template](../../../../docs/decisions/2026-10-04-project-template.md)).
 Python is the ecosystem for ML, which [Languages for Agentic Work](../../../../docs/decisions/2026-10-08-languages-for-agentic-work.md) keeps.
 
-- **Data: FRED CSV downloads** (`fred.stlouisfed.org/graph/fredgraph.csv?id=...`) for `SP500` (the last ten years, daily) and `VIXCLS` (since 1990): free, no key, and reachable from the cloud environment, unlike Stooq, which reset the connection.
-- **DuckDB 1.5** for data and features: SQL window functions compute realized volatility and the delayed label, and one file holds prices, features, forecasts, and monitoring.
+- **Data: EIA-930 six-month balance files** (`eia.gov/electricity/gridmonitor/sixMonthFiles/EIA930_BALANCE_<year>_<Jan_Jun|Jul_Dec>.csv`): hourly demand, the operator's day-ahead demand forecast, and generation for every U.S. balancing authority, with the same columns since at least 2019, no key, and updated daily (the file fetched on 2026-10-23 held the day before).
+  U.S. government publications are public domain ([EIA reuse terms](https://www.eia.gov/about/copyrights_reuse.php)); cite "Source: U.S. Energy Information Administration".
+- **DuckDB 1.5** for data and features: it reads the CSVs directly, and SQL builds the lagged features from data known by each cutoff; one file holds demand, features, forecasts, and monitoring.
 - **MLflow 3.17** for tracking, the registry, and serving.
   Its default tracking URI is `sqlite:///mlflow.db` in the working directory (checked in `mlflow/store/tracking/__init__.py` of the installed version), so the registry works with no server.
   Models move by aliases (`champion`, `challenger`), which replaced stages.
-- **scikit-learn 1.9** for the HAR model, as one pipeline (log transform, linear regression, exp back), so serving runs exactly what training did.
+- **scikit-learn 1.9** for the model: a histogram gradient boosted regressor, which learns the daily, weekly, and seasonal shape from calendar and lag features without tuning.
 
 ### High-level C4(context/container/component/code) diagram
 
 ```
-FRED CSV --> DuckDB prices --SQL--> features (rv_1d, rv_5d, rv_21d, vix; label 5 days later)
+EIA-930 CSVs --> DuckDB demand --SQL--> features per target hour (data through D-2)
                                          |
-                    train on labels known by as-of --> MLflow run + version (challenger)
+              train on days labeled by as-of --> MLflow run + version (challenger)
                                          |
-                    gate on newest labeled quarter: beat baseline and champion
+              gate on newest 4 labeled weeks: beat naive and champion (operator reported)
                                          v
-     champion alias --> daily forecast (DuckDB) / mlflow models serve
+   champion alias --> daily 24-hour forecast (DuckDB) / mlflow models serve
                                          |
-     labels arrive --> 21-day QLIKE vs baseline --behind or stale--> retrain
+   actuals arrive --> 14-day MAPE vs naive --behind or stale--> retrain
 ```
 
 ### Choices and Tradeoffs/Risks
 
-- Volatility instead of returns: next-day returns are close to unpredictable, so a model's feedback would be noise; volatility clusters, so a simple model clearly beats a naive one and changes show up in the numbers.
-- HAR over a tree or neural model: the textbook volatility model, a few coefficients you can read in MLflow, and it trains in milliseconds, so the replay can retrain dozens of times.
-- QLIKE as the gate's loss: it is robust to noise in realized volatility as a proxy (Patton 2011), and it punishes forecasting calm before a storm more than the reverse.
-  RMSE is logged too; in 2020's crash the model's RMSE was worse than the baseline's while its QLIKE was better.
-- FRED's S&P 500 series is copyrighted by S&P Dow Jones Indices, and its notes forbid reproduction without permission, so data is fetched at run time and never committed; tests use generated GARCH data in FRED's format.
-  The VIX series is CBOE's and needs citation.
-- MLflow saves scikit-learn models with skops, which refuses types it can't vet; training names `numpy.log` and `numpy.exp` as trusted, which is safe only because we built the pipeline ourselves.
-- MLflow infers a model's pip requirements by importing everything in a subprocess, which took seconds per model; training names them instead, which cut a replay from 7 minutes to under 2.
+- Electricity demand over finance: demand is driven by visible cycles (hour, weekday, season, holidays, heat), so a simple model clearly beats a naive one, and the operator's forecast shows what a professional achieves; S&P 500 volatility was forecastable but hard to judge, and FRED's S&P 500 series may not be redistributed.
+- Cutoff at the end of D-2 for a forecast of D: the operator publishes its day-ahead forecast on the morning of D-1, so our features use no newer data than theirs; they also have weather forecasts, which we don't yet, so trailing them is expected at first.
+- Seasonal naive as the gate and the operator as the stretch bar: a model must clearly add something to ship, and beating professionals is a goal to work toward, not a release condition.
+- MAPE as the headline metric: easy to read as "percent off"; demand never nears zero, so MAPE's weakness there doesn't bite. RMSE in megawatts is logged too.
+- MLflow saves scikit-learn models with skops, which refuses types it can't vet; training names the gradient boosted tree's predictor as trusted, which is safe only because we trained it ourselves.
+- MLflow infers a model's pip requirements by importing everything in a subprocess, which takes seconds per model; training names them instead, so a replay can retrain dozens of times quickly.
 - `mlflow models serve` starts `uvicorn` from `PATH`, so `mle serve` puts the project's environment first.
-- Daily forecasts and monitoring go to DuckDB rather than MLflow: thousands of one-row runs would bury the training runs that matter.
+- Daily forecasts and monitoring go to DuckDB rather than MLflow: hundreds of tiny runs would bury the training runs that matter.
 
 ### Dependencies
 
 ### Interfaces
 
-`mle` CLI, the DuckDB tables `prices`, `features`, `forecasts`, and `monitoring`, and the MLflow registered model `sp500-vol`.
+`mle` CLI, the DuckDB tables `demand`, `features`, `forecasts`, and `monitoring`, and the MLflow registered model `grid-demand`.
 
 ## Key Results and retrospective feedback
-
-First replay, 2019-01-02 to 2026-10-15 on FRED data fetched 2026-10-19: QLIKE beat the baseline's in every year (for example 0.734 against 1.385 in 2020 and 0.256 against 0.767 in 2026), with 54 retrains and 29 promotions.
-The champion's coefficients put most weight on the VIX.
