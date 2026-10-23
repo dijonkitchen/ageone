@@ -1,4 +1,4 @@
-"""Command line: refresh data, run saved screens, look at a company."""
+"""Command line: refresh data, run saved screens, look at a company, price it, and allocate a portfolio."""
 
 from __future__ import annotations
 
@@ -7,11 +7,12 @@ import gzip
 import json
 import subprocess
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
 
-from . import DISCLAIMER, config, pipeline, store
+from . import DISCLAIMER, config, pipeline, prices, store
 from .company import company_report, find_company
 from .screen import Screen, all_columns, describe
 
@@ -45,6 +46,18 @@ def _write(frame: pd.DataFrame, fmt: str, out: str | None, extra: dict | None = 
         sys.stdout.write(text)
 
 
+def price_cache(args: argparse.Namespace, cfg: config.Config | None = None) -> prices.PriceCache:
+    """The price cache, fed by recorded files with --prices-dir (offline) or by the configured provider."""
+    cfg = cfg or config.load(args.config)
+    provider = prices.RecordedProvider(args.prices_dir) if args.prices_dir else prices.from_config(cfg.prices)
+    path = args.prices_db or (Path(args.db).with_suffix(".prices.duckdb") if args.db else cfg.prices_database)
+    return prices.PriceCache(path, provider)
+
+
+def _tickers(values: list[str]) -> list[str]:
+    return [t.strip().upper() for v in values for t in v.split(",") if t.strip()]
+
+
 def cmd_refresh(args: argparse.Namespace) -> None:
     cfg = config.load(args.config)
     from .sec import SecClient
@@ -67,8 +80,109 @@ def cmd_screen(args: argparse.Namespace) -> None:
     screen = Screen.load(args.file)
     if args.limit is not None:
         screen.limit = args.limit
-    con, _ = _connect(args)
-    _write(screen.run(con), args.format, args.out, {"screen": screen.to_dict()})
+    con, cfg = _connect(args)
+    quotes = None
+    if args.quotes:
+        cache = price_cache(args, cfg)
+        quotes = cache.quotes()
+        cache.close()
+    _write(screen.run(con, quotes), args.format, args.out, {"screen": screen.to_dict()})
+
+
+def cmd_quotes(args: argparse.Namespace) -> None:
+    cache = price_cache(args)
+    quotes = cache.refresh_quotes(_tickers(args.tickers))
+    cache.close()
+    quotes["delay"] = ["last close" if c else ("real time" if r else "delayed") for c, r in zip(quotes["last_close"], quotes["realtime"])]
+    _write(quotes.drop(columns=["realtime", "last_close"]), args.format, None)
+
+
+def cmd_prices(args: argparse.Namespace) -> None:
+    cache = price_cache(args)
+    end = prices.today()
+    history = cache.history(_tickers(args.tickers), end - timedelta(days=round(365.25 * args.years)), end)
+    cache.close()
+    for ticker, group in history.groupby("ticker"):
+        print(f"{ticker}: {len(group)} daily closes, {group['date'].min():%Y-%m-%d} to {group['date'].max():%Y-%m-%d}")
+
+
+def cmd_ratios(args: argparse.Namespace) -> None:
+    from .valuation import historical_ratios, live_ratios, ratio_ranges
+
+    con, cfg = _connect(args)
+    cik = find_company(con, args.ticker)
+    ticker = con.execute("select upper(ticker) from companies where cik = ?", [cik]).fetchone()[0]
+    cache = price_cache(args, cfg)
+    quotes = cache.refresh_quotes([ticker])
+    end = prices.today()
+    history = cache.history([ticker], end - timedelta(days=round(365.25 * args.years)), end)
+    cache.close()
+    live = live_ratios(con, quotes)
+    current = live.iloc[0].to_dict() if len(live) else {}
+    historical = historical_ratios(con, cik, history)
+    ranges = ratio_ranges(historical, current)
+    if args.format == "json":
+        print(json.dumps({"disclaimer": DISCLAIMER, "live": current, "historical": json.loads(historical.to_json(orient="records")),
+                          "ranges": json.loads(ranges.to_json(orient="records"))}, indent=2, default=str))
+        return
+    with pd.option_context("display.max_rows", None, "display.max_columns", None, "display.width", 200,
+                           "display.float_format", "{:,.4g}".format):
+        if current.get("price_flag"):
+            print(f"Live ratios not computed: {current['price_flag']}")
+        print(pd.Series({k: v for k, v in current.items() if k.startswith("live.")}).to_string(), "\n")
+        print(historical.to_string(index=False), "\n")
+        print(ranges.to_string(index=False), "\n")
+    print(DISCLAIMER)
+
+
+def cmd_portfolio(args: argparse.Namespace) -> None:
+    from . import portfolio as pf
+
+    book = pf.Portfolio.load(args.file)
+    if args.value is not None:
+        book.value = args.value
+    con, cfg = _connect(args)
+    cache = price_cache(args, cfg)
+    quotes = cache.refresh_quotes(book.tickers())
+    start, end = pf.history_window(book.settings)
+    history = cache.history(book.tickers(), start, end)
+    cache.close()
+    result = pf.view(con, book, quotes, history)
+    for problem in result.problems:
+        print(problem, file=sys.stderr)
+    with pd.option_context("display.max_rows", None, "display.max_columns", None, "display.width", 200,
+                           "display.float_format", "{:,.4g}".format):
+        print(result.rows[["ticker", "live.price", "live.pe", "live.pb", "live.fcf_yield", "method", "mu"]].to_string(index=False), "\n")
+        if result.allocation:
+            a = result.allocation
+            print(a.holdings[["ticker", "mu", "price", "weight", "dollars", "shares", "held", "trade", "weight_if_lower"]].to_string(index=False))
+            print(f"\ncash left {a.cash:,.2f} of {book.value:,.2f}; covariance from {result.days} days, shrinkage {result.shrinkage:.2f}")
+            for label, stats in ((f"{book.settings.fraction:g} Kelly", a.chosen), ("full Kelly", a.full)):
+                print(f"{label}: expected return {stats['expected_return']:.2%}, volatility {stats['volatility']:.2%}, "
+                      f"growth {stats['growth']:.2%}")
+    print(f"\n{pf.PORTFOLIO_DISCLAIMER}")
+    if not result.allocation:
+        raise SystemExit(1)
+
+
+def cmd_record_prices(args: argparse.Namespace) -> None:
+    """Save quotes and daily history from the configured provider as files RecordedProvider (--prices-dir) reads."""
+    cfg = config.load(args.config)
+    provider = prices.from_config(cfg.prices)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    tickers = _tickers(args.tickers)
+    end = prices.today()
+    history = provider.history(tickers, end - timedelta(days=round(365.25 * args.years)), end)
+    for ticker, group in history.groupby("ticker"):
+        group.assign(date=group["date"].dt.strftime("%Y-%m-%d"))[["date", "close"]].to_csv(out / f"{ticker}.prices.csv", index=False)
+    quotes = provider.quote(tickers)
+    path = out / "quotes.csv"
+    if path.exists():
+        old = pd.read_csv(path)
+        quotes = pd.concat([old[~old["ticker"].isin(quotes["ticker"])], quotes], ignore_index=True).sort_values("ticker")
+    quotes.to_csv(path, index=False)
+    print(f"wrote {len(history)} closes and {len(quotes)} quotes to {out}", file=sys.stderr)
 
 
 def cmd_company(args: argparse.Namespace) -> None:
@@ -136,6 +250,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="screener", description=__doc__, epilog=DISCLAIMER)
     parser.add_argument("--config", type=Path, help="config file (default: config.toml, then ~/.config/ageone/stock-screener.toml)")
     parser.add_argument("--db", help="database file (default from config)")
+    parser.add_argument("--prices-db", help="price cache file (default: next to the database, ending .prices.duckdb)")
+    parser.add_argument("--prices-dir", help="read quotes and history from recorded files here instead of the provider")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("refresh", help="load what changed at the SEC since the last run (everything, the first time)")
@@ -155,7 +271,35 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--format", choices=["table", "csv", "json"], default="table")
     p.add_argument("--out", help="write to a file instead of stdout")
     p.add_argument("--limit", type=int, help="override the screen's row limit")
+    p.add_argument("--quotes", action="store_true", help="fill live.* columns from the last cached quotes (see 'quotes')")
     p.set_defaults(func=cmd_screen)
+
+    p = sub.add_parser("quotes", help="fetch and cache live quotes, with their time, source, and delay")
+    p.add_argument("tickers", nargs="+")
+    p.add_argument("--format", choices=["table", "csv", "json"], default="table")
+    p.set_defaults(func=cmd_quotes)
+
+    p = sub.add_parser("prices", help="fetch and cache daily price history")
+    p.add_argument("tickers", nargs="+")
+    p.add_argument("--years", type=float, default=15)
+    p.set_defaults(func=cmd_prices)
+
+    p = sub.add_parser("ratios", help="a company's live price ratios and historical ratios at each 10-K filing date")
+    p.add_argument("ticker", help="ticker or CIK")
+    p.add_argument("--years", type=float, default=15, help="years of price history to use")
+    p.add_argument("--format", choices=["table", "json"], default="table")
+    p.set_defaults(func=cmd_ratios)
+
+    p = sub.add_parser("portfolio", help="allocate a portfolio file by fractional Kelly")
+    p.add_argument("file", type=Path)
+    p.add_argument("--value", type=float, help="portfolio value (default: the file's)")
+    p.set_defaults(func=cmd_portfolio)
+
+    p = sub.add_parser("record-prices", help="save quotes and daily history for offline tests (--prices-dir)")
+    p.add_argument("tickers", nargs="+")
+    p.add_argument("--years", type=float, default=15)
+    p.add_argument("--out", default=str(Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "prices"))
+    p.set_defaults(func=cmd_record_prices)
 
     p = sub.add_parser("company", help="a company's yearly series, filings, splits, and gaps")
     p.add_argument("ticker", help="ticker or CIK")

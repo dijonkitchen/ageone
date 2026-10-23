@@ -43,7 +43,7 @@ def build(start_equity: float = 1_000.0e6, growth: float = 0.10, shares_now: flo
             "revenue": revenue, "cost": cost, "gross": revenue - cost, "operating": operating, "interest": interest,
             "pretax": pretax, "tax": tax, "net": net, "dividends": dividends, "equity": equity_end, "assets": assets,
             "liabilities": assets - equity_end, "current_assets": 0.4 * assets, "current_liabilities": 0.25 * assets,
-            "debt": 0.3 * equity_end, "goodwill": 0.1 * assets, "ocf": net + 0.1 * revenue, "capex": 0.05 * revenue,
+            "debt": 0.3 * equity_end, "goodwill": 0.1 * assets, "cash": 0.05 * assets, "ocf": net + 0.1 * revenue, "capex": 0.05 * revenue,
             "shares": shares, "diluted_shares": shares * 1.01,
         }
         equity = equity_end
@@ -99,6 +99,7 @@ def _facts(truth: dict[int, dict[str, float]]) -> dict[str, Any]:
                 ("Assets", t["assets"]), ("AssetsCurrent", t["current_assets"]), ("Liabilities", t["liabilities"]),
                 ("LiabilitiesCurrent", t["current_liabilities"]), ("StockholdersEquity", t["equity"]),
                 ("LiabilitiesAndStockholdersEquity", t["assets"]), ("LongTermDebt", t["debt"]), ("Goodwill", t["goodwill"]),
+                ("CashAndCashEquivalentsAtCarryingValue", t["cash"]),
             ):
                 add(gaap, concept, "USD", {**instant, "val": round(value)})
             add(gaap, "CommonStockSharesOutstanding", "shares", {**instant, "val": round(t["shares"] / basis)})
@@ -108,3 +109,21 @@ def _facts(truth: dict[int, dict[str, float]]) -> dict[str, Any]:
             add(gaap, "StockholdersEquityNoteStockSplitConversionRatio1", "pure",
                 {"end": f"{filing_year}-06-30", "val": SPLITS[filing_year], **meta})
     return {"cik": 999999, "entityName": "Example Compounding Corp", "facts": {"dei": dei, "us-gaap": gaap}}
+
+
+def prices(seed: int, start: str = "2012-01-02", end: str = "2025-06-30", first: float = 20.0, drift: float = 0.10,
+           volatility: float = 0.25, common: float = 0.0, common_seed: int = 0):
+    """Daily closes on weekdays (date, close): a random walk in log price, the same every run.
+
+    `common` mixes in a shared market path, so two companies' returns correlate.
+    """
+    import numpy as np
+    import pandas as pd
+
+    dates = pd.bdate_range(start, end)
+    own = np.random.default_rng(seed).standard_normal(len(dates))
+    market = np.random.default_rng(common_seed).standard_normal(len(dates))
+    shocks = np.sqrt(1 - common**2) * own + common * market
+    daily = volatility / np.sqrt(252)
+    logs = np.log(first) + np.cumsum((drift - volatility**2 / 2) / 252 + daily * shocks)
+    return pd.DataFrame({"date": dates.strftime("%Y-%m-%d"), "close": np.exp(logs).round(4)})

@@ -6,7 +6,8 @@ The root [`AGENTS.md`](../../AGENTS.md) applies here too; this file adds only wh
 ## Read first
 
 - [Spec](specs/SPEC-2026-10-03-stock-screener.md): what to build and the definition of done.
-- [Stack decision](docs/decisions/2026-10-03-stock-screener-stack.md): Python with uv, OpenBB's SEC provider, DuckDB, pandas, and Streamlit.
+- [Portfolio spec](specs/SPEC-2026-10-03-portfolio-kelly.md): live prices, price ratios, and fractional Kelly allocation.
+- [Stack decision](docs/decisions/2026-10-03-stock-screener-stack.md): Python with uv, OpenBB's SEC and price providers, DuckDB, pandas, and Streamlit.
 - [README](README.md): commands and how the pipeline fits together.
 
 ## Commands
@@ -20,6 +21,7 @@ Run from this folder, inside the root `make shell` environment.
 
 ## Rules
 
-- Never commit `config.toml` or `screener.duckdb`.
+- Never commit `config.toml` (it holds the SEC contact and price provider keys), `screener.duckdb`, or `screener.prices.duckdb`.
+- Price provider keys stay in the Python process: never pass them to the page or into a portfolio or screen file.
 - The SEC rejects some User-Agent strings (anything with a github.com address); use a `Name contact@domain` form.
 - After an OpenBB upgrade, rerun the spot check, then regenerate fixtures with `uv run python tests/record_standardized.py`.

@@ -6,3 +6,4 @@
 - `../synthetic.py` builds a made-up company with 14 years, two splits (one tagged, one only visible in share counts), and a restatement, with the true values to compare against.
 
 Record more real companies with `screener record-fixture TICKER` (needs SEC access and a configured User-Agent).
+- `prices/BLK.prices.csv` and `prices/quotes.csv`: BlackRock's daily closes (split-adjusted, 2011 to 2026) and a quote, recorded from OpenBB's yfinance provider with `screener record-prices BLK`; `../synthetic.py` makes daily closes for the made-up companies.

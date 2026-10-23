@@ -7,3 +7,15 @@ user_agent = "Your Name you@example.com"
 
 # At most 10 (the SEC's limit); the default leaves headroom.
 requests_per_second = 8
+
+# Live prices (SPEC-2026-10-03-portfolio-kelly) come through OpenBB: any installed provider
+# extension works. yfinance needs no key; for a paid one, install its extension (uv add openbb-fmp)
+# and put its keys under [prices.credentials]. Keys stay in the local Python process.
+[prices]
+provider = "yfinance"
+realtime = false          # true only if your plan's quotes are real time
+refresh_seconds = 60      # how often the page refreshes quotes
+min_refresh_seconds = 15  # the provider's rate limit allows no faster
+
+# [prices.credentials]
+# fmp_api_key = "..."

@@ -17,8 +17,8 @@
 # for the metric to mean anything (no ROE on negative equity); otherwise the
 # year is missing.
 #
-# Price inputs (SPEC-2026-10-03-portfolio-kelly) will add names such as price; nothing here assumes
-# there are none.
+# Live and historical price ratios (SPEC-2026-10-03-portfolio-kelly, valuation.py) divide a price by
+# the per-share metrics here, and use the valuation group for market cap and enterprise value.
 
 [splits]
 flow_shares = "diluted_shares_reported"
@@ -60,6 +60,9 @@ from = ["total_interest_expense", "interest_expense"]
 
 [inputs.total_debt]
 sum = ["short_term_debt", "current_portion_of_long_term_debt", "long_term_debt"]
+
+[inputs.cash]
+from = ["cash_and_equivalents"]
 
 [inputs.tax_rate]
 formula = "income_tax_expense / total_pretax_income"
@@ -176,3 +179,30 @@ group = "balance_sheet"
 formula = "total_operating_income / interest"
 requires_positive = ["interest"]
 description = "Operating income divided by interest expense."
+
+# Valuation inputs: what the price ratios need besides the per-share series above.
+
+[metrics.shares]
+label = "Shares outstanding"
+group = "valuation"
+formula = "year_end_shares"
+description = "Common shares outstanding at fiscal year end, split-adjusted; market cap is price times this."
+
+[metrics.debt_ps]
+label = "Debt per share"
+group = "valuation"
+formula = "total_debt / year_end_shares"
+higher_is_better = false
+description = "Short-term debt, current portion of long-term debt, and long-term debt, divided by split-adjusted year-end shares."
+
+[metrics.cash_ps]
+label = "Cash per share"
+group = "valuation"
+formula = "cash / year_end_shares"
+description = "Cash and cash equivalents at fiscal year end divided by split-adjusted year-end shares."
+
+[metrics.ebit_ps]
+label = "Operating income per share"
+group = "valuation"
+formula = "total_operating_income / year_end_shares"
+description = "Operating income (EBIT) divided by split-adjusted year-end shares."

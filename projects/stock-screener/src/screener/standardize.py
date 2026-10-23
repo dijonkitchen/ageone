@@ -150,9 +150,11 @@ def _filings(facts: dict[str, Any], year_ends: dict[int, str], pit_mode: bool) -
         # The same filing rule as the values: the latest filing reporting that year end
         # (whose restated values win), or the first one in point-in-time mode.
         fact = _pick(found, pit_mode)
+        # When the year's numbers first became public, for pricing them (SPEC-2026-10-03-portfolio-kelly).
+        first = min(f.get("filed") or "9999" for f in found)
         out.append({"fiscal_year": fiscal_year, "period_ending": year_end, "accession": fact.get("accn"),
-                    "form": fact.get("form"), "filed": fact.get("filed")})
-    return pd.DataFrame(out, columns=["fiscal_year", "period_ending", "accession", "form", "filed"])
+                    "form": fact.get("form"), "filed": fact.get("filed"), "first_filed": first if first != "9999" else None})
+    return pd.DataFrame(out, columns=["fiscal_year", "period_ending", "accession", "form", "filed", "first_filed"])
 
 
 def standardize(facts_json: dict[str, Any], pit_mode: bool = False) -> Standardized:

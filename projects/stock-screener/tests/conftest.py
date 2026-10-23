@@ -1,5 +1,6 @@
 import gzip
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -50,3 +51,20 @@ def con(db_path):
     con = store.connect(db_path, read_only=True)
     yield con
     con.close()
+
+
+PRICES = FIXTURES / "prices"
+
+
+@pytest.fixture(scope="session")
+def prices_dir(tmp_path_factory):
+    """Recorded BlackRock prices plus synthetic ones for the made-up companies, as RecordedProvider reads them."""
+    out = tmp_path_factory.mktemp("prices")
+    shutil.copy(PRICES / "BLK.prices.csv", out)
+    for i, (ticker, drift, volatility) in enumerate((("FAST", 0.15, 0.30), ("SLOW", 0.06, 0.15), ("DEBT", -0.05, 0.50))):
+        synthetic.prices(i + 1, drift=drift, volatility=volatility, common=0.5).to_csv(out / f"{ticker}.prices.csv", index=False)
+    quotes = (PRICES / "quotes.csv").read_text().splitlines()
+    stamp = "2025-06-30 20:00:00"
+    quotes += [f"{t},{p},USD,{stamp},recorded,False,True" for t, p in (("FAST", 50.0), ("SLOW", 20.0), ("DEBT", 5.0))]
+    (out / "quotes.csv").write_text("\n".join(quotes) + "\n")
+    return out
