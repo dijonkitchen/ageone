@@ -68,6 +68,8 @@ EIA-930 CSVs --> DuckDB demand --SQL--> features per target hour (data through D
 ### Choices and Tradeoffs/Risks
 
 - Electricity demand over finance: demand is driven by visible cycles (hour, weekday, season, holidays, heat), so a simple model clearly beats a naive one, and the operator's forecast shows what a professional achieves; S&P 500 volatility was forecastable but hard to judge, and FRED's S&P 500 series may not be redistributed.
+- ERCOT (Texas) as the default region, not California: in EIA-930, CAISO's published forecast has drifted to 7–9% MAPE since 2024, worse than the seasonal naive forecast (about 6% in 2025), so it is no bar to aim for; ERCOT's stays at 2.2–2.8% against naive's 8.7%, as do PJM, MISO, and NYISO's (2.4–3.5%), measured on the downloaded 2022–2026 files on 2026-10-23.
+  Any region is one setting away.
 - Cutoff at the end of D-2 for a forecast of D: the operator publishes its day-ahead forecast on the morning of D-1, so our features use no newer data than theirs; they also have weather forecasts, which we don't yet, so trailing them is expected at first.
 - Seasonal naive as the gate and the operator as the stretch bar: a model must clearly add something to ship, and beating professionals is a goal to work toward, not a release condition.
 - MAPE as the headline metric: easy to read as "percent off"; demand never nears zero, so MAPE's weakness there doesn't bite. RMSE in megawatts is logged too.
