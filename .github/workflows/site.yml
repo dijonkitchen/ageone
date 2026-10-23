@@ -1,4 +1,4 @@
-# Build the eval and benchmark pages from committed results on every pull request; publish them from main.
+# Build the eval and benchmark pages from committed results, and the fite game, on every pull request; publish them from main.
 # Publishing needs GitHub Pages set to "GitHub Actions" in the repository's settings (once).
 # See specs/SPEC-2026-09-27-eval-benchmark-pages.md.
 name: Site
@@ -20,6 +20,10 @@ jobs:
         with:
           node-version: 22
       - run: site/build
+      # fite, the Shell Shock fighting game (projects/fite), is published at <pages>/fite/.
+      - uses: oven-sh/setup-bun@v2
+      - name: Build fite into the site
+        run: cd projects/fite && bun install --frozen-lockfile && bun build.ts ../../_site/fite
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
