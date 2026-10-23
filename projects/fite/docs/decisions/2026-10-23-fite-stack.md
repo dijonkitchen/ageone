@@ -42,7 +42,6 @@ A game engine or physics library; an image editor pipeline; music.
 Started from the bun project template (see [Project template](../../../../docs/decisions/2026-10-04-project-template.md)).
 The old repo, [dijonkitchen/Fite](https://github.com/dijonkitchen/Fite), was plain JavaScript scripts on a canvas with no build, run from `file://`.
 That no longer holds: the spec needs a headless harness and tests in CI, which want modules, and the [languages decision](../../../../docs/decisions/2026-10-08-languages-for-agentic-work.md) keeps TypeScript for browser code, so the rebuild is TypeScript modules tested and bundled by Bun into one script, still with no runtime dependencies and still a canvas.
-
 - **Simulation** (`src/sim.ts`): a pure, deterministic, fixed-step model of two fighters, projectiles, and a best-of-three match with a 60-second clock.
   Inputs are bitmasks of held buttons, so people, the CPU, and tests all drive it the same way, and the same inputs always give the same match.
   Per-fighter frame data (startup, active, recovery, damage, stun, reach) comes from one base move set tuned per fighter in `src/fighters.ts`.

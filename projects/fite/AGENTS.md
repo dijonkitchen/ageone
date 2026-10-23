@@ -11,7 +11,6 @@ The root [`AGENTS.md`](../../AGENTS.md) applies here too; this file adds only wh
 ## Commands
 
 Run from this folder, inside the root `make shell` environment.
-
 - `make check`: lint, format check, typecheck, and tests; CI runs it whenever this folder changes.
 - `make fix`: apply lint and format fixes.
 - `bun run build`: build the game into `dist/` (the Site workflow publishes it at `fite/` on Pages); serve `dist/` with any static server to play.
