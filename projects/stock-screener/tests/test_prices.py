@@ -16,6 +16,36 @@ def test_market_hours():
     assert not prices.market_open(datetime(2026, 10, 24, 15, 0, tzinfo=UTC))  # Saturday
 
 
+def test_last_close_time():
+    assert prices.last_close_time(datetime(2026, 10, 24, 5, 4, tzinfo=UTC)) == pd.Timestamp("2026-10-23 20:00")  # Saturday: Friday's close
+    assert prices.last_close_time(datetime(2026, 10, 19, 15, 0, tzinfo=UTC)) == pd.Timestamp("2026-10-16 20:00")  # Monday open: Friday's
+    assert prices.last_close_time(datetime(2026, 10, 20, 21, 0, tzinfo=UTC)) == pd.Timestamp("2026-10-20 20:00")  # Tuesday 17:00: today's
+    assert prices.last_close_time(datetime(2026, 12, 1, 22, 0, tzinfo=UTC)) == pd.Timestamp("2026-12-01 21:00")  # standard time: 21:00 UTC
+
+
+def test_quote_timestamps():
+    class Fetcher:
+        query_params_type = EquityQuoteQueryParams
+
+        @staticmethod
+        async def fetch_data(params, credentials=None):
+            return items
+
+    adapter = prices.OpenBBProvider.__new__(prices.OpenBBProvider)
+    adapter._provider = Item(fetcher_dict={"Quote": Fetcher})
+    adapter.name, adapter.credentials, adapter.realtime = "openbb/fake", {}, False
+    adapter.clock = lambda: datetime(2026, 10, 20, 15, 0, tzinfo=UTC)  # Tuesday 11:00 New York, market open
+    items = [
+        Item(symbol="a", last_price=10.0, prev_close=9.0, last_timestamp=None, currency="USD"),
+        Item(symbol="b", last_price=10.0, prev_close=9.0, last_timestamp=datetime(2026, 10, 20, 10, 59, tzinfo=prices.EASTERN), currency="USD"),
+        Item(symbol="c", last_price=None, prev_close=9.0, last_timestamp=None, currency="USD"),
+    ]
+    stamps = adapter.quote(["A", "B", "C"]).set_index("ticker")["timestamp"]
+    assert stamps["A"] == pd.Timestamp("2026-10-20 15:00")  # live with no quote time: when fetched
+    assert stamps["B"] == pd.Timestamp("2026-10-20 14:59")  # a zoned quote time, converted to UTC
+    assert stamps["C"] == pd.Timestamp("2026-10-19 20:00")  # previous close: Monday's close
+
+
 def test_recorded_provider(prices_dir):
     provider = prices.RecordedProvider(prices_dir)
     quotes = provider.quote(["fast", "BLK", "NOPE"])
@@ -91,7 +121,7 @@ def test_openbb_adapter_uses_the_providers_standard_fetchers():
     quote = adapter.quote(["KO"]).iloc[0]
     assert (quote["ticker"], quote["price"], quote["source"]) == ("KO", 61.5, "openbb/fake")
     assert quote["last_close"] and not quote["realtime"]
-    assert quote["timestamp"] == pd.Timestamp("2026-10-24 15:00")
+    assert quote["timestamp"] == pd.Timestamp("2026-10-23 20:00")  # Friday's 16:00 New York close, not the fetch time
     history = adapter.history(["KO"], date(2024, 1, 1), date(2024, 1, 5))
     assert history["close"].tolist() == [60.0, 60.5]
     assert seen[0] == ({"symbol": "KO"}, {"fake_api_key": "k"})

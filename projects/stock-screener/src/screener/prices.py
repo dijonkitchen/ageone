@@ -42,6 +42,20 @@ def market_open(now: datetime) -> bool:
     return local.weekday() < 5 and time(9, 30) <= local.time() < time(16, 0)
 
 
+def last_close_time(now: datetime) -> datetime:
+    """When the last regular session before now closed, 16:00 Eastern on a weekday, as naive UTC (holidays not counted)."""
+    local = now.replace(tzinfo=UTC).astimezone(EASTERN) if now.tzinfo is None else now.astimezone(EASTERN)
+    day = local.date() if local.time() >= time(16, 0) else local.date() - timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= timedelta(days=1)
+    return datetime.combine(day, time(16, 0), EASTERN).astimezone(UTC).replace(tzinfo=None)
+
+
+def _utc(stamp) -> pd.Timestamp:
+    stamp = pd.Timestamp(stamp)
+    return stamp.tz_convert(UTC).tz_localize(None) if stamp.tzinfo is not None else stamp
+
+
 def _now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
@@ -93,11 +107,13 @@ class OpenBBProvider:
         closed = not market_open(now)
         rows = []
         for item in self._fetch("equity_quote", {"symbol": ",".join(tickers)}):
-            price = item.last_price if item.last_price is not None else item.prev_close
-            stamp = getattr(item, "last_timestamp", None)
+            live = item.last_price is not None
+            price = item.last_price if live else item.prev_close
+            # Without a quote time, a closing price is stamped with its close, never with when we fetched it.
+            stamp = getattr(item, "last_timestamp", None) if live else None
             rows.append({
                 "ticker": item.symbol.upper(), "price": price, "currency": getattr(item, "currency", None),
-                "timestamp": pd.Timestamp(stamp).tz_localize(None) if stamp else now, "source": self.name,
+                "timestamp": _utc(stamp) if stamp else (now if live and not closed else last_close_time(now)), "source": self.name,
                 "realtime": self.realtime and not closed, "last_close": closed,
             })
         return pd.DataFrame(rows, columns=QUOTE_COLUMNS)
