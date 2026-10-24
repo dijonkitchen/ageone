@@ -1,0 +1,171 @@
+:root {
+	--cell: 30px;
+	--board-bg: #dcb35c;
+	--line: #6b4f1d;
+	--bg: #faf7f0;
+	--fg: #1f2733;
+	--muted: #5b6470;
+	--accent: #2f6fed;
+	color-scheme: light;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family:
+		system-ui,
+		-apple-system,
+		Segoe UI,
+		Roboto,
+		sans-serif;
+	background: var(--bg);
+	color: var(--fg);
+	line-height: 1.5;
+}
+
+#app {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 1.5rem 1rem 3rem;
+}
+
+.app-header h1 {
+	margin: 0 0 0.25rem;
+	font-size: 1.8rem;
+}
+
+.subtitle {
+	margin: 0 0 1.25rem;
+	color: var(--muted);
+}
+
+.controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: end;
+	margin-bottom: 1rem;
+}
+
+.control {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.85rem;
+	color: var(--muted);
+	gap: 0.25rem;
+}
+
+.control select {
+	font-size: 0.95rem;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid #c9cdd4;
+	border-radius: 6px;
+	background: #fff;
+}
+
+#new-game {
+	margin-left: auto;
+	padding: 0.5rem 1rem;
+	font-size: 0.95rem;
+	border: 0;
+	border-radius: 6px;
+	background: var(--accent);
+	color: #fff;
+	cursor: pointer;
+}
+
+#new-game:hover {
+	filter: brightness(1.05);
+}
+
+.status {
+	font-weight: 600;
+	min-height: 1.5rem;
+	margin: 0 0 0.75rem;
+}
+
+.status.over {
+	color: var(--accent);
+	font-size: 1.1rem;
+}
+
+.board {
+	display: grid;
+	grid-template-columns: repeat(var(--size, 19), var(--cell));
+	grid-template-rows: repeat(var(--size, 19), var(--cell));
+	width: max-content;
+	max-width: 100%;
+	overflow: auto;
+	background: var(--board-bg);
+	border: 3px solid var(--line);
+	border-radius: 4px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.board.busy {
+	pointer-events: none;
+}
+
+.cell {
+	width: var(--cell);
+	height: var(--cell);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	/* Grid lines drawn as a cross centred in each cell. */
+	background:
+		linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat,
+		linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat;
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+}
+
+.cell:disabled {
+	cursor: default;
+}
+
+.cell:not(:disabled):hover {
+	background-color: rgba(255, 255, 255, 0.25);
+}
+
+.stone {
+	width: 78%;
+	height: 78%;
+	border-radius: 50%;
+	display: block;
+}
+
+.stone.black {
+	background: radial-gradient(circle at 32% 30%, #4a4a4a, #050505 70%);
+}
+
+.stone.white {
+	background: radial-gradient(circle at 32% 30%, #ffffff, #c4c4c4 75%);
+	border: 1px solid #8a8a8a;
+}
+
+.stone.pending {
+	opacity: 0.45;
+}
+
+.stone.win {
+	box-shadow:
+		0 0 0 2px var(--accent),
+		0 0 8px 2px var(--accent);
+}
+
+.app-footer {
+	margin-top: 1.5rem;
+	font-size: 0.8rem;
+	color: var(--muted);
+}
+
+.app-footer code {
+	background: #eee;
+	padding: 0.1rem 0.3rem;
+	border-radius: 4px;
+}
