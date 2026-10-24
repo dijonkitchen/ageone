@@ -22,6 +22,8 @@
 
 2026-10-03: Amended by Claude, at JC's request: specs are named by date and slug instead of a sequential number, so parallel work can't collide on the next number.
 
+2026-10-08: Amended by Claude, at JC's request: add a `Dropped (<reason>)` status for specs a decision ruled out, so they stay listed instead of being deleted.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -95,8 +97,9 @@ Pull request titles needed it first, since squash merges carry them onto `main`.
 - Priority: integer, `1` is the highest.
 - Dependency: a spec ID, or `None`.
 - Difficulty: `Low`, `Medium`, or `High`.
-- Status: `Open`, `In progress (<owner>)`, `Blocked (<reason>)`, or `Done`.
+- Status: `Open`, `In progress (<owner>)`, `Blocked (<reason>)`, `Dropped (<reason>)`, or `Done`.
   The owner is a person's handle or an agent session, and claims the spec so others pick a different one.
+  A dropped spec stays in the table and the repo, with the reason linking the decision record that ruled it out.
 
 ### Decision records
 
