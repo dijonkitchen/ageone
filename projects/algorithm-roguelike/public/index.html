@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="A roguelike where learning an algorithm or data structure unlocks it in the game, so the dungeon grows with you.">
+<title>Algorithm Roguelike</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+<h1>Algorithm Roguelike</h1>
+<p id="status" aria-live="off"></p>
+<div class="size">
+<button type="button" id="smaller" aria-label="Smaller text">A−</button>
+<button type="button" id="bigger" aria-label="Bigger text">A+</button>
+</div>
+</header>
+<main>
+<section class="play" aria-label="Dungeon">
+<pre id="map" role="img" aria-label="The dungeon map"></pre>
+<ol id="log" aria-live="polite" aria-label="Messages"></ol>
+</section>
+<aside>
+<section aria-labelledby="pack-h">
+<h2 id="pack-h">Pack</h2>
+<ol id="pack"></ol>
+<p id="pack-note" class="hint"></p>
+</section>
+<section aria-labelledby="keys-h">
+<h2 id="keys-h">Keys</h2>
+<dl id="keys"></dl>
+</section>
+<section class="buttons">
+<button type="button" id="open-codex">Codex (c)</button>
+<button type="button" id="open-sandbox">Sandbox (x)</button>
+<button type="button" id="open-run">New run (N)</button>
+</section>
+</aside>
+</main>
+
+<dialog id="codex" aria-labelledby="codex-h">
+<h2 id="codex-h">Codex</h2>
+<p class="hint">Concepts unlock in order: each needs the ones it builds on. Learned concepts stay learned across runs.</p>
+<div id="codex-body"></div>
+<button type="button" class="close">Close (Esc)</button>
+</dialog>
+
+<dialog id="lesson" aria-labelledby="lesson-h">
+<h2 id="lesson-h">Lesson</h2>
+<div id="lesson-body"></div>
+<button type="button" class="close">Close (Esc)</button>
+</dialog>
+
+<dialog id="sandbox" aria-labelledby="sandbox-h">
+<h2 id="sandbox-h">Sandbox</h2>
+<p class="hint">Run a learned algorithm on this floor from where you stand, step by step.</p>
+<label>Algorithm <select id="sandbox-pick"></select></label>
+<div id="sandbox-body"></div>
+<button type="button" class="close">Close (Esc)</button>
+</dialog>
+
+<dialog id="run" aria-labelledby="run-h">
+<h2 id="run-h">New run</h2>
+<p class="hint">Items and depth start over; what you learned stays.</p>
+<div id="run-body"></div>
+<button type="button" class="close">Close (Esc)</button>
+</dialog>
+<script type="module" src="app.js"></script>
+</body>
+</html>
