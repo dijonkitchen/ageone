@@ -40,3 +40,30 @@ def test_spot_check(db_path, tmp_path, capsys):
         main(["--db", str(db_path), "spot-check", str(path)])
     except SystemExit as exit:
         assert exit.code == 0, capsys.readouterr().out
+
+
+def test_quotes_ratios_portfolio_and_live_screen(db_path, prices_dir, tmp_path, capsys):
+    from test_portfolio import FILE
+
+    common = ["--db", str(db_path), "--prices-db", str(tmp_path / "p.duckdb"), "--prices-dir", str(prices_dir)]
+    main([*common, "quotes", "FAST,SLOW", "BLK", "--format", "json"])
+    rows = json.loads(capsys.readouterr().out)["rows"]
+    assert {r["ticker"]: r["delay"] for r in rows} == {"BLK": "last close", "FAST": "last close", "SLOW": "last close"}
+    assert all(r["source"] and r["timestamp"] for r in rows)
+
+    main([*common, "ratios", "FAST", "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["live"]["live.fiscal_year"] == 2024
+    assert {r["ratio"] for r in payload["ranges"]} == {"P/E", "P/B", "P/FCF", "Dividend yield"}
+
+    path = tmp_path / "s.toml"
+    path.write_text('window = "10"\n[[filters]]\ncolumn = "live.pb"\nop = "<="\nvalue = 8.0\n')
+    main([*common, "screen", str(path), "--quotes", "--format", "json"])
+    assert [r["ticker"] for r in json.loads(capsys.readouterr().out)["rows"]] == ["BLK", "FAST"]
+
+    book = tmp_path / "p.toml"
+    book.write_text(FILE)
+    main([*common, "portfolio", str(book), "--value", "50000"])
+    captured = capsys.readouterr()
+    out = captured.out
+    assert "cash left" in out, captured.err and "full Kelly" in out and "not investment advice" in out.replace("\n", " ").lower()

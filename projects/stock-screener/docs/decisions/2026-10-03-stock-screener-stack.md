@@ -10,6 +10,8 @@
 
 2026-10-03: Amended by Claude, at JC's request: the latest 10-K's value wins for a restated year, even past OpenBB's 450-day window.
 
+2026-10-23: Amended by Claude, implementing [SPEC-2026-10-03-portfolio-kelly](../../specs/SPEC-2026-10-03-portfolio-kelly.md): record the price provider interface, the OpenBB adapter and its pinned yfinance default, the separate price cache file, and the Kelly solver and shrinkage as our own short functions instead of SciPy and scikit-learn.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -68,6 +70,16 @@ A distributed or hosted data stack (warehouses, queues, cloud databases) for dat
   Raw Company Facts responses are not kept; `rebuild` recomputes metrics from `line_items`.
 - **Gap-filling tag mapping**: [`gap_fill.toml`](../../src/screener/data/gap_fill.toml) maps each missing line item to an ordered list of XBRL concepts (year-end shares outstanding, interest expense, dividends declared per share, and split ratios).
 - **Metric definitions**: [`metrics.toml`](../../src/screener/data/metrics.toml), formulas over line items and named inputs.
+- **Price provider interface**: [`prices.py`](../../src/screener/prices.py) defines `PriceProvider` with `quote(tickers)` (ticker, price, currency, timestamp, source, real time or delayed, last close) and `history(tickers, start, end)` (daily closes adjusted for splits, not dividends, to match split-adjusted per-share values).
+  `RecordedProvider` reads the same tables from files, for tests and offline use (`--prices-dir`); a direct adapter for one provider would be a third class with the same two methods.
+- **OpenBB adapter**: `OpenBBProvider` loads any installed OpenBB provider extension by name and calls its fetchers for OpenBB's standard `EquityQuote` and `EquityHistorical` models directly, with keys from `config.toml` (`[prices.credentials]`), so no OpenBB account, settings file, or `obb` build is involved and keys stay in the Python process.
+  The default is `openbb-yfinance==2.0.0` (no key, delayed quotes), pinned in `pyproject.toml`; a paid provider is `uv add openbb-<provider>` plus its key, with no code change.
+  The standard quote model carries no delay, so `realtime` is a config setting, and outside US market hours a quote is labelled the last close.
+- **Price cache**: daily history and the last quote per ticker live in a second DuckDB file next to the screener's (`screener.prices.duckdb`), not in it as first planned, so the page can write quotes while the screener database stays read only and `refresh` can run beside it.
+  History is fetched once per ticker and range, and the recent end is refetched after 12 hours.
+- **Live and historical ratios**: [`valuation.py`](../../src/screener/valuation.py) joins quotes with the latest fiscal year's per-share metrics in SQL, so live ratios are ordinary screen columns (`live.pe`, `live.pb`, ...).
+  Historical ratios price each fiscal year at the close on the date its numbers first became public: `filings.first_filed`, the earliest annual filing reporting that year end, added for this (older databases fill it on `refresh --full`).
+- **Kelly solver**: [`kelly.py`](../../src/screener/kelly.py) solves the long-only, budget- and weight-capped problem by accelerated projected gradient with an exact projection onto that set, and Ledoit–Wolf shrinkage toward a scaled identity is a short function, so neither SciPy nor scikit-learn is a direct dependency; both are a few dozen lines with closed-form tests.
 
 ### High-level C4(context/container/component/code) diagram
 
@@ -98,11 +110,11 @@ If the UI outgrows it, a later decision record can move the front end to TypeScr
 
 ### Dependencies
 
-DuckDB, pandas, NumPy, SciPy, OpenBB (its SEC provider and a price provider extension), and Streamlit, all pinned in the devenv environment.
+DuckDB, pandas, NumPy, OpenBB (its SEC provider and the yfinance price provider extension), and Streamlit, locked in `uv.lock` and run in the devenv environment.
 
 ### Interfaces
 
-- Price provider: `quote(tickers) -> table` and `history(tickers, start, end) -> table` with ticker, timestamp, price, currency, source, and delay.
+- Price provider: `quote(tickers) -> table` and `history(tickers, start, end) -> table` with ticker, timestamp, price, currency, source, and delay (`prices.QUOTE_COLUMNS` and `prices.HISTORY_COLUMNS`).
 - Screen file and portfolio file: plain text, defined in SPEC-2026-10-03-stock-screener and SPEC-2026-10-03-portfolio-kelly.
 
 ## Key Results and retrospective feedback

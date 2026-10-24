@@ -14,6 +14,7 @@ dependencies = [
     "requests>=2.32",
     "streamlit>=1.40",
     "tomli-w>=1.0",
+    "openbb-yfinance==2.0.0",
 ]
 
 [project.scripts]

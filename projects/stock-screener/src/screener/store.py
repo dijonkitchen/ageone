@@ -34,6 +34,8 @@ create table if not exists line_items (
 );
 create table if not exists split_facts (cik bigint, "end" varchar, ratio double, accession varchar, filed varchar, concept varchar);
 create table if not exists filings (cik bigint, fiscal_year integer, period_ending varchar, accession varchar, form varchar, filed varchar);
+-- Added with prices: the first annual filing reporting each year (NULL until 'screener refresh --full').
+alter table filings add column if not exists first_filed varchar;
 create table if not exists splits (cik bigint, fiscal_year integer, ratio double, source varchar, series varchar);
 create table if not exists metric_values (cik bigint, fiscal_year integer, metric varchar, value double);
 create table if not exists stats (cik bigint, "window" varchar, metric varchar, stat varchar, value double);

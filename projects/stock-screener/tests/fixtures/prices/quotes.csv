@@ -1,0 +1,2 @@
+ticker,price,currency,timestamp,source,realtime,last_close
+BLK,1137.29,USD,2026-10-23 05:28:17.693864,openbb/yfinance,False,True

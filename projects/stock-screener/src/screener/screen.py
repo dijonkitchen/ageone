@@ -12,6 +12,7 @@ import pandas as pd
 import tomli_w
 
 from .metrics import GROWTH_GROUP, WINDOWS, definitions
+from .valuation import LIVE, LIVE_COLUMNS, QUOTES_VIEW, live_sql, register_quotes
 
 BASE_STATS = ("latest", "avg", "median", "years")
 GROWTH_STATS = ("cagr", "cagr_undefined", "years_grew", "growth_streak", "growth_std", "r2")
@@ -33,16 +34,24 @@ def metric_columns() -> list[str]:
     return out
 
 
+def rankable_columns() -> list[str]:
+    """Columns a composite score can rank by: metric stats and live price ratios."""
+    return [*metric_columns(), *LIVE_COLUMNS]
+
+
 def all_columns() -> list[str]:
-    return [*COMPANY_COLUMNS, *metric_columns(), "score", "score_coverage"]
+    return [*COMPANY_COLUMNS, *rankable_columns(), "price_flag", "score", "score_coverage"]
 
 
 def describe(column: str) -> str:
     """Human label and definition for a column, as shown in the UI and exports."""
     metric, _, stat = column.partition(".")
+    if metric == "live" and stat in LIVE:
+        return f"{LIVE[stat].label} (live): {LIVE[stat].description}"
     spec = definitions().metrics.get(metric)
     if not spec:
-        return {"score": "Composite score: weighted average of percentile ranks (0 to 100) among companies left after filtering.",
+        return {"price_flag": "Why live price ratios are left empty: filings and price in different currencies, or depositary receipts.",
+                "score": "Composite score: weighted average of percentile ranks (0 to 100) among companies left after filtering.",
                 "score_coverage": "Share of composite weight with data for this company.",
                 "years_of_data": "Fiscal years with at least one metric."}.get(column, column)
     return f"{spec.label}, {STAT_LABELS.get(stat, stat)}: {spec.description}"
@@ -136,12 +145,12 @@ class Screen:
         if self.window not in WINDOWS:
             raise ValueError(f"window must be one of {', '.join(WINDOWS)}, got {self.window!r}")
         for f in self.filters:
-            if f.column not in known or f.column in ("score", "score_coverage"):
+            if f.column not in known or f.column in ("score", "score_coverage", "price_flag"):
                 raise ValueError(f"unknown filter column {f.column!r}")
             if f.op not in OPS:
                 raise ValueError(f"unknown operator {f.op!r}; use one of {' '.join(OPS)}")
         for w in self.score:
-            if w.column not in metric_columns():
+            if w.column not in rankable_columns():
                 raise ValueError(f"unknown score column {w.column!r}")
         for column in [*self.columns, self.sort_by]:
             if column not in known:
@@ -153,6 +162,8 @@ class Screen:
         if weight.higher_is_better is not None:
             return weight.higher_is_better
         metric, _, stat = weight.column.partition(".")
+        if metric == "live":
+            return LIVE[stat].higher_is_better
         if stat in ("growth_std", "cagr_undefined"):
             return False
         return definitions().metrics[metric].higher_is_better
@@ -163,6 +174,8 @@ class Screen:
         ]
         lead = ["ticker", "name", "exchange", "currency", "last_fiscal_year", "years_of_data"]
         tail = ["score", "score_coverage"] if self.score else []
+        if any(c.startswith("live.") for c in [*chosen, self.sort_by]):
+            tail = ["price_flag", *tail]
         return list(dict.fromkeys([*lead, *chosen, *tail, *([self.sort_by] if self.sort_by not in (*lead, "cik") else [])]))
 
     def sql(self) -> tuple[str, list[Any]]:
@@ -209,7 +222,7 @@ class Screen:
         select = ", ".join(f'"{c}"' for c in self.output_columns())
         order = "desc" if self.descending else "asc"
         query = f"""
-with wide as (
+with {live_sql()}, wide as (
   select cik,
     {pivots}
   from stats where "window" = ?
@@ -218,8 +231,8 @@ with wide as (
   select cik, count(distinct fiscal_year) as years_of_data from metric_values group by cik
 ), base as (
   select c.cik, c.ticker, c.name, c.exchange, c.sic, c.currency, c.last_fiscal_year,
-         coalesce(y.years_of_data, 0) as years_of_data, w.* exclude (cik)
-  from companies c join wide w using (cik) left join years y using (cik)
+         coalesce(y.years_of_data, 0) as years_of_data, w.* exclude (cik), live.* exclude (cik)
+  from companies c join wide w using (cik) left join years y using (cik) left join live using (cik)
 ), filtered as (
   select * from base where {' and '.join(where)}
 ), ranked as (
@@ -232,6 +245,11 @@ order by "{self.sort_by}" {order} nulls last, ticker, cik"""
             params.append(int(self.limit))
         return query, params
 
-    def run(self, con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    def run(self, con: duckdb.DuckDBPyConnection, quotes: pd.DataFrame | None = None) -> pd.DataFrame:
+        """Run the screen; live.* columns come from `quotes` (ticker, price, currency) and are empty without them."""
         query, params = self.sql()
-        return con.execute(query, params).fetchdf()
+        register_quotes(con, quotes)
+        try:
+            return con.execute(query, params).fetchdf()
+        finally:
+            con.unregister(QUOTES_VIEW)
