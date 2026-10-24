@@ -1,5 +1,6 @@
 {
   "id": "write-csv-from-json",
+  "split": "train",
   "mode": "direct",
   "title": "Write CSV from JSON, quoting a value that holds a comma",
   "source": "SPEC-2026-09-27-eval-benchmark-pages output-format experiment (writing)",

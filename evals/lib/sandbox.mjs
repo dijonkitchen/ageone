@@ -17,6 +17,9 @@ export function repoCommit() {
   return { commit, dirty };
 }
 
+// Tune on train cases only; test cases hold out whole kinds of task (docs/decisions/2026-10-05-eval-hillclimbing.md).
+export const SPLITS = ["train", "test"];
+
 export function loadCases(casesDir) {
   return readdirSync(casesDir, { withFileTypes: true })
     .filter((d) => d.isDirectory() && existsSync(join(casesDir, d.name, "case.json")))
@@ -24,7 +27,8 @@ export function loadCases(casesDir) {
       const dir = join(casesDir, d.name);
       const def = JSON.parse(readFileSync(join(dir, "case.json"), "utf8"));
       if (def.id !== d.name) throw new Error(`${dir}: id ${def.id} does not match its folder`);
-      return { mode: "agent", timeoutSec: 600, maxTurns: 40, needs: [], ...def, dir };
+      if (def.split !== undefined && !SPLITS.includes(def.split)) throw new Error(`${dir}: split must be ${SPLITS.join(" or ")}, not ${def.split}`);
+      return { mode: "agent", split: "train", timeoutSec: 600, maxTurns: 40, needs: [], ...def, dir };
     })
     .sort((a, b) => a.id.localeCompare(b.id));
 }

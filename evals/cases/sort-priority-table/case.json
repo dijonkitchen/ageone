@@ -1,5 +1,6 @@
 {
   "id": "sort-priority-table",
+  "split": "test",
   "title": "Re-sort the priority table by priority, then difficulty",
   "source": "Conventions decision record, Priorities section",
   "prompt": "The priority table in specs/PRIORITIES.md is out of order. Fix it.",

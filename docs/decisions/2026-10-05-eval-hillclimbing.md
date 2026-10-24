@@ -4,6 +4,8 @@
 
 2026-10-05: Proposed by Claude, at JC's request, after comparing the `/claude-api hillclimb` skill and fastai's practices with [`evals/`](../../evals/README.md)
 
+2026-10-23: Amended by Claude, implementing [SPEC-2026-10-05-eval-hillclimbing](../../specs/SPEC-2026-10-05-eval-hillclimbing.md): the held-out kind is spec and priority-table editing; transcripts go to `results/transcripts/<start time>-<harness>-<model>/`, with paths relative to the results folder; `evals/report --split` filters either view.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -65,5 +67,6 @@ The runner and cases from [SPEC-2026-09-26-vendor-neutral-ai-harness](../../spec
 - `case.json`: optional `split` (`train` or `test`).
 - `evals/run`: writes transcripts for every run.
 - `evals/report --failures`: failures grouped by case and harness, with transcript paths, and train and test pass rates shown apart.
+- `evals/report --split train|test`: limits the summary or the failures to one split.
 
 ## Key Results and retrospective feedback
