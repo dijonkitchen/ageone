@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+# Everything `mle` writes: fetched EIA data, the DuckDB warehouse, and the MLflow store.
+/data/
+mlflow.db
+mlruns/
