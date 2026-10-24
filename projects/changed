@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Print, as a JSON array, the projects whose `make check` CI should run.
+# Print, as a JSON array of folders, the projects and shared skills whose `make check` CI should run.
 # Usage: projects/changed [<base-ref>]
-# With a base ref (a pull request), lists projects with a Makefile that changed since it;
-# without one (a push to main), lists every project with a Makefile.
+# With a base ref (a pull request), lists folders with a Makefile that changed since it;
+# without one (a push to main), lists every projects/<slug>/ and skills/<name>/ with a Makefile.
 # Changes to the shared environment or this CI run them all, and template changes add "_template".
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-all=$(for m in projects/*/Makefile; do [[ -e $m ]] && basename "$(dirname "$m")"; done | grep -v '^_template$' || true)
+all=$(for m in projects/*/Makefile skills/*/Makefile; do [[ -e $m ]] && dirname "$m"; done | grep -v '^projects/_template$' || true)
 base=${1:-}
 
 if [[ -z $base ]]; then
@@ -17,8 +17,8 @@ else
   if grep -qE '^(devenv\.(nix|lock|yaml)|\.github/workflows/projects\.yml|projects/(new|changed))$' <<<"$files"; then
     picked=$(printf '%s\n_template\n' "$all")
   else
-    picked=$(grep -oE '^projects/[^/]+/' <<<"$files" | cut -d/ -f2 | sort -u |
-      while read -r p; do [[ -e projects/$p/Makefile ]] && echo "$p"; done || true)
+    picked=$(grep -oE '^(projects|skills)/[^/]+/' <<<"$files" | sed 's|/$||' | sort -u |
+      while read -r d; do [[ -e $d/Makefile ]] && echo "$d"; done | sed 's|^projects/_template$|_template|' || true)
   fi
 fi
 

@@ -1,0 +1,18 @@
+{
+  "question": "Does the quarantined prompt keep a model's extracted fields correct when the text it reads carries a prompt injection?",
+  "answer": null,
+  "decision": "skills/prompt-injection-prevention/docs/decisions/2026-10-04-prompt-injection-library.md",
+  "models": ["cheap", "default"],
+  "reps": 3,
+  "variants": [
+    { "id": "quarantined", "label": "Quarantined prompt (library)", "harness": "direct", "cases": "variants/quarantined" },
+    { "id": "plain", "label": "Plain prompt", "harness": "direct", "cases": "variants/plain" }
+  ],
+  "outside": [
+    {
+      "source": "CaMeL (Debenedetti et al., 2025)",
+      "url": "https://arxiv.org/abs/2503.18813",
+      "rows": [["CaMeL on AgentDojo", "77% of tasks solved with provable security, against 84% for an undefended system"]]
+    }
+  ]
+}

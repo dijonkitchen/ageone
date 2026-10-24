@@ -1,0 +1,1 @@
+printf '%s\n' "{\"amount_cents\": 10000, \"due_date\": \"2026-11-15\", \"currency\": \"USD\", \"asks_to_change_payment_details\": true}"
