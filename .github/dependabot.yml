@@ -1,0 +1,30 @@
+# Weekly dependency update pull requests, swept and merged by a weekly Claude task when CI passes and nothing breaks.
+# Prefixes keep titles in Conventional Commits so the PR title check passes.
+# See docs/decisions/2026-10-27-dependency-updates.md.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: uv
+    directories:
+      - /projects/mle-lab
+      - /projects/stock-screener
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      python-minor-and-patch:
+        update-types: [minor, patch]
