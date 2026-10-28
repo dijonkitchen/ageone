@@ -126,11 +126,11 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
         (r.status === "ok" ? all.ok : all.infra).push(record);
         if (resultsDir) append(file, record);
         if (!quiet) console.error(`${harness} ${model.full} ${caseDef.id} #${rep}: ${r.status === "ok" ? (pass ? "pass" : "FAIL") : r.status}${r.error ? " " + String(r.error).slice(0, 200) : ""}`);
-        if (!opt.keep) rmSync(box.dir, { recursive: true, force: true });
+        if (!opt.keep) rmSync(box.dir, { recursive: true, force: true, maxRetries: 3 });
       }
     }
   }
-  if (!opt.keep) rmSync(runDir, { recursive: true, force: true });
+  if (!opt.keep) rmSync(runDir, { recursive: true, force: true, maxRetries: 3 });
   else console.error(`sandboxes kept in ${runDir}`);
   return all;
 }

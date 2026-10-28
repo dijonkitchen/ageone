@@ -6,6 +6,9 @@ import { join } from "node:path";
 import { ROOT } from "../../harness/config.mjs";
 
 const GIT_ID = ["-c", "user.name=evals", "-c", "user.email=evals@localhost", "-c", "commit.gpgsign=false"];
+// Newer Git runs auto maintenance detached after a commit; it can still be writing into
+// .git when the sandbox is removed, so sandbox repos turn it off for every Git command run in them.
+const NO_AUTO_MAINTENANCE = [["maintenance.auto", "false"], ["gc.auto", "0"]];
 
 export function git(cwd, ...args) {
   return execFileSync("git", [...GIT_ID, ...args], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -43,6 +46,7 @@ export function makeSandbox(runDir, caseDef, rep) {
     execFileSync("tar", ["-x", "-f", "-"], { cwd: work, input: tar });
   }
   git(work, "init", "-q", "-b", "main");
+  for (const [key, value] of NO_AUTO_MAINTENANCE) git(work, "config", key, value);
   git(work, "add", "-A");
   git(work, "commit", "-q", "--allow-empty", "-m", "base");
   if (existsSync(join(caseDef.dir, "setup.sh"))) {
