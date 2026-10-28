@@ -56,17 +56,43 @@ function date(value: string | undefined): string | null {
 	return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 }
 
-/** Plain text of a title that may hold (escaped) markup. */
+// HTML element names, so tags like <a class="u-url p-name"> come out of titles but text like
+// "AT&T <news>" stays.
+const HTML_TAG = new RegExp(
+	`<!--[\\s\\S]*?-->|</?(?:${[
+		"a abbr acronym address area article aside audio b bdi bdo big blink blockquote body br",
+		"button canvas caption center cite code col colgroup data datalist dd del details dfn",
+		"dialog dir div dl dt em embed fieldset figcaption figure font footer form frame frameset",
+		"h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe img input ins kbd label legend li",
+		"link main map mark marquee menu meta meter nav nobr noscript object ol optgroup option",
+		"output p param picture pre progress q rp rt ruby s samp script section select slot small",
+		"source span strike strong style sub summary sup svg table tbody td template textarea",
+		"tfoot th thead time title tr track tt u ul var video wbr",
+	]
+		.join(" ")
+		.replace(/ /g, "|")})(?=[\\s/>])[^>]*>`,
+	"gi",
+);
+
+/**
+ * Plain text of a title that may hold markup, escaped once or more: decode and strip every HTML tag
+ * until nothing changes.
+ */
 function plain(text: string): string {
-	return clean(decodeEntities(text.replace(/<[^>]*>/g, "")));
+	let current = text;
+	for (let i = 0; i < 4; i++) {
+		const next = decodeEntities(current.replace(HTML_TAG, " "));
+		if (next === current) break;
+		current = next;
+	}
+	return clean(current.replace(HTML_TAG, " "));
 }
 
 function atomTitle(node: XmlElement | undefined): string {
 	if (!node) return "";
-	const type = node.attrs.type ?? "text";
-	return type === "html" || type === "text/html"
-		? plain(textOf(node))
-		: clean(textOf(node));
+	if (node.attrs.type === "xhtml") return clean(textOf(node));
+	// Feeds often put HTML in type="text" titles, so they get the same treatment.
+	return plain(textOf(node));
 }
 
 const escapeHtml = (text: string) => escapeText(text).replace(/\n/g, "<br>");

@@ -102,6 +102,36 @@ describe("real samples of each format", () => {
 });
 
 describe("edge cases", () => {
+	test("titles drop every HTML tag, even escaped twice or in Atom text", () => {
+		const rss = parseFeed(
+			`<rss version="2.0"><channel><title>&lt;span class="p-name"&gt;Notes&lt;/span&gt;</title>
+				<item><title>&lt;a class="u-url p-name" href="/notes/wonder/"&gt;wonder&lt;/a&gt;</title></item>
+				<item><title>&amp;lt;em&amp;gt;Twice&amp;lt;/em&amp;gt; escaped&lt;br/&gt;title</title></item>
+				<item><title><![CDATA[<time class="dt-published">May 1</time> <strong>note</strong>]]></title></item>
+				<item><title>Use &lt;news&gt; and 1 &lt; 2 &amp; AT&amp;T</title></item>
+			</channel></rss>`,
+			"https://example.org/feed.xml",
+		);
+		expect(rss.title).toBe("Notes");
+		expect(rss.items.map((item) => item.title)).toEqual([
+			"wonder",
+			"Twice escaped title",
+			"May 1 note",
+			"Use <news> and 1 < 2 & AT&T",
+		]);
+		const atom = parseFeed(
+			`<feed xmlns="http://www.w3.org/2005/Atom"><title>Blog</title>
+				<entry><id>urn:1</id><title type="text">&lt;a class="u-url p-name" href="/notes/wonder/"&gt;wonder&lt;/a&gt;</title></entry>
+				<entry><id>urn:2</id><title type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">An <b>xhtml</b> title</div></title></entry>
+			</feed>`,
+			"https://example.org/feed.atom",
+		);
+		expect(atom.items.map((item) => item.title)).toEqual([
+			"wonder",
+			"An xhtml title",
+		]);
+	});
+
 	test("Atom text, xhtml, relative links, and xml:base", () => {
 		const feed = parseFeed(
 			`<feed xmlns="http://www.w3.org/2005/Atom" xml:base="https://example.org/blog/">
