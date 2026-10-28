@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <generator uri="https://blog.rust-lang.org/" version="0.1.0">Rust Blog</generator>
+    <link href="https://blog.rust-lang.org/feed.xml" rel="self" type="application/atom+xml" />
+    <link href="https://blog.rust-lang.org/" rel="alternate" type="text/html" />
+    <id>https://blog.rust-lang.org/</id>
+    <title>Rust Blog</title>
+    <subtitle>Empowering everyone to build reliable and efficient software.</subtitle>
+    <author>
+        <name>Maintained by the Rust Teams.</name>
+        <uri>https://github.com/rust-lang/blog.rust-lang.org/</uri>
+    </author>
+    <updated>2026-10-21T12:23:56+00:00</updated>
+
+    
+    <entry>
+        <title>Announcing rustup 1.29.2</title>
+        <link rel="alternate" href="https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/" type="text/html" title="Announcing rustup 1.29.2" />
+        <published>2026-10-20T00:00:00+00:00</published>
+        <updated>2026-10-20T00:00:00+00:00</updated>
+        <id>https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/</id>
+        <content type="html" xml:base="https://blog.rust-lang.org/2026/10/20/Rustup-1.29.2/">&lt;p&gt;The rustup team is happy to announce the release of rustup version 1.29.2.&lt;/p&gt;
+&lt;p&gt;&lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://rustup.rs&quot;&gt;Rustup&lt;/a&gt; is the recommended tool to install &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://www.rust-lang.org&quot;&gt;Rust&lt;/a&gt;, a
+programming language that empowers everyone to build reliable and efficient
+software.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;what-s-new-in-rustup-1-29-2&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#what-s-new-in-rustup-1-29-2&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+What&#x27;s new in rustup 1.29.2&lt;/h2&gt;
+&lt;p&gt;This is a small release which only updates the rustls-webpki and
+webpki-root-certs dependencies to address the problematic eMudhra
+intermediate certificates issue described in &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://www.cve.org/CVERecord?id&#x3D;CVE-2026-111943&quot;&gt;CVE-2026-111943&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;See also &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://rustsec.org/advisories/RUSTSEC-2026-0382.html&quot;&gt;RUSTSEC-2026-0382&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Further details are available in the &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rustup/blob/stable/CHANGELOG.md&quot;&gt;changelog&lt;/a&gt;!&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;how-to-update&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#how-to-update&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+How to update&lt;/h2&gt;
+&lt;p&gt;If you have a previous version of rustup installed, getting the new one is as easy as stopping
+any programs which may be using rustup (e.g. closing your IDE) and running:&lt;/p&gt;
+&lt;pre class&#x3D;&quot;giallo z-l-code z-d-code&quot; &gt;&lt;code data-lang&#x3D;&quot;plain&quot;&gt;&lt;span class&#x3D;&quot;giallo-l&quot;&gt;&lt;span&gt;$ rustup self update&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Rustup will also automatically update itself at the end of a normal toolchain update:&lt;/p&gt;
+&lt;pre class&#x3D;&quot;giallo z-l-code z-d-code&quot; &gt;&lt;code data-lang&#x3D;&quot;plain&quot;&gt;&lt;span class&#x3D;&quot;giallo-l&quot;&gt;&lt;span&gt;$ rustup update&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you don&#x27;t have it already, you can &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://rustup.rs&quot;&gt;get rustup&lt;/a&gt; from the appropriate page on our website.&lt;/p&gt;
+&lt;p&gt;Rustup&#x27;s documentation is also available in &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://rust-lang.github.io/rustup/&quot;&gt;the rustup book&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;caveats&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#caveats&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+Caveats&lt;/h2&gt;
+&lt;p&gt;Rustup releases can come with problems not caused by rustup itself but just due to having a new release.&lt;/p&gt;
+&lt;p&gt;In particular, anti-malware scanners might block rustup or stop it from creating or copying
+files, especially when installing &lt;code&gt;rust-docs&lt;/code&gt; which contains many small files.&lt;/p&gt;
+&lt;p&gt;Issues like this should be automatically resolved in a few weeks when the anti-malware scanners are updated
+to be aware of the new rustup release.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;thanks&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#thanks&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+Thanks&lt;/h2&gt;
+&lt;p&gt;Thanks again to all the &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rustup/blob/stable/CHANGELOG.md#detailed-changes&quot;&gt;contributors&lt;/a&gt; who made this rustup release possible!&lt;/p&gt;
+</content>
+
+        <author>
+            <name>The Rustup Team</name>
+        </author>
+    </entry>
+    <entry>
+        <title>Announcing Rust 1.99.1</title>
+        <link rel="alternate" href="https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/" type="text/html" title="Announcing Rust 1.99.1" />
+        <published>2026-10-15T00:00:00+00:00</published>
+        <updated>2026-10-15T00:00:00+00:00</updated>
+        <id>https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/</id>
+        <content type="html" xml:base="https://blog.rust-lang.org/2026/10/15/Rust-1.99.1/">&lt;p&gt;The Rust team has published a new point release of Rust, 1.99.1. Rust is a programming language that is empowering everyone to build reliable and efficient software.&lt;/p&gt;
+&lt;p&gt;If you have a previous version of Rust installed via rustup, getting Rust 1.99.1 is as easy as:&lt;/p&gt;
+&lt;pre class&#x3D;&quot;giallo z-l-code z-d-code&quot; &gt;&lt;code data-lang&#x3D;&quot;plain&quot;&gt;&lt;span class&#x3D;&quot;giallo-l&quot;&gt;&lt;span&gt;rustup update stable&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you don&#x27;t have it already, you can &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://www.rust-lang.org/install.html&quot;&gt;get &lt;code&gt;rustup&lt;/code&gt;&lt;/a&gt; from the appropriate page on our website.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;what-s-in-1-99-1&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#what-s-in-1-99-1&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+What&#x27;s in 1.99.1&lt;/h2&gt;
+&lt;p&gt;Rust 1.99.1 fixes the following regressions from prior releases:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rust/issues/163614&quot;&gt;Missing symbol &lt;code&gt;wcslen&lt;/code&gt;&lt;/a&gt;: Some Rust targets were getting link errors for missing &lt;code&gt;wcslen&lt;/code&gt;, and that function is now present in Rust&#x27;s compiler-builtins library as a fallback.&lt;/p&gt;
+&lt;p&gt;The LLVM &lt;code&gt;loop-idiom-wcslen&lt;/code&gt; pass may introduce calls to &lt;code&gt;wcslen&lt;/code&gt; as an optimization, and some Rust targets did not have that function readily available in &lt;code&gt;libc&lt;/code&gt; or elsewhere. The UEFI targets in particular were broken for any project using &lt;code&gt;std&lt;/code&gt;, as some of these calls were introduced in the precompiled standard library, but the issue was also reproducible for similar user code patterns.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rust/issues/163911&quot;&gt;Miscompilation of FFI &lt;code&gt;bool&lt;/code&gt; return values on x86_64&lt;/a&gt;: Rust functions returning &lt;code&gt;bool&lt;/code&gt; through FFI could leave bits 1-7 of the return register unspecified, causing callers to observe raw values other than &lt;code&gt;0&lt;/code&gt; or &lt;code&gt;1&lt;/code&gt;. This return type is now marked for zero-extension again, as required by the ABI.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rust/issues/163947&quot;&gt;&lt;code&gt;rust-lld&lt;/code&gt; failed to load &lt;code&gt;libLLVM&lt;/code&gt; on macOS&lt;/a&gt;: This linker could fail to run if the compiler was invoked without the &lt;code&gt;rustup&lt;/code&gt; proxy, as there was no direct setting for the appropriate library search path. Now &lt;code&gt;rust-lld&lt;/code&gt; is built with an &lt;code&gt;rpath&lt;/code&gt; entry for the directory containing &lt;code&gt;libLLVM.dylib&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you&#x27;d like to help us out by testing future releases, you might consider using the beta (&lt;code&gt;rustup default beta&lt;/code&gt;) and nightly (&lt;code&gt;rustup default nightly&lt;/code&gt;) channels locally and in your CI. Please &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://github.com/rust-lang/rust/issues/new/choose&quot;&gt;report&lt;/a&gt; any bugs you might come across!&lt;/p&gt;
+&lt;h3 id&#x3D;&quot;contributors-to-1-99-1&quot;&gt;&lt;a class&#x3D;&quot;anchor&quot; href&#x3D;&quot;#contributors-to-1-99-1&quot; aria-hidden&#x3D;&quot;true&quot;&gt;&lt;/a&gt;
+Contributors to 1.99.1&lt;/h3&gt;
+&lt;p&gt;Many people came together to create Rust 1.99.1. We couldn&#x27;t have done it without all of you. &lt;a rel&#x3D;&quot;external&quot; href&#x3D;&quot;https://thanks.rust-lang.org/rust/1.99.1/&quot;&gt;Thanks!&lt;/a&gt;&lt;/p&gt;
+</content>
+
+        <author>
+            <name>The Rust Release Team</name>
+        </author>
+    </entry>
+    
+</feed>
