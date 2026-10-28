@@ -3,7 +3,7 @@ name = "mle-lab"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "duckdb>=1.5",
+    "duckdb>=2.0.0",
     "mlflow>=3.17",
     "pandas>=3.0",
     "scikit-learn>=1.9",
