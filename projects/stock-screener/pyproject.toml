@@ -9,10 +9,10 @@ dependencies = [
     "openbb-sec==2.0.0",
     "openbb-core==2.0.1",
     "duckdb>=1.1",
-    "pandas>=2.2",
+    "pandas>=3.1.0",
     "numpy>=1.26",
     "requests>=2.32",
-    "streamlit>=1.40",
+    "streamlit>=1.66.1",
     "tomli-w>=1.0",
 ]
 
@@ -20,7 +20,7 @@ dependencies = [
 screener = "screener.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.16"]
+dev = ["pytest>=8", "ruff>=0.17.2"]
 
 [build-system]
 requires = ["hatchling"]
