@@ -1,0 +1,2485 @@
+{
+	"about": "Structures of the anatomy viewer, keyed by Foundational Model of Anatomy (FMA) ids. Drawings live in src/drawings.ts and refer to structures by name; this file is the single source of names, descriptions, relations, and the skeleton's segments.",
+	"sources": [
+		{
+			"id": "fma",
+			"name": "Foundational Model of Anatomy (FMA) 5.1, via the EBI Ontology Lookup Service",
+			"url": "https://www.ebi.ac.uk/ols4/ontologies/fma",
+			"license": "CC BY 3.0",
+			"use": "Ids, names, synonyms, and Latin names (where FMA has one); bone joints checked against FMA's definitions where it gives them, by scripts/verify.ts."
+		},
+		{
+			"id": "ta",
+			"name": "Terminologia Anatomica (FIPAT)",
+			"url": "https://ifaa.net/committees/anatomical-terminology-fipat/terminologia/",
+			"license": "terms used as names",
+			"use": "Latin names FMA lacks, marked latinSource TA."
+		},
+		{
+			"id": "wikipedia",
+			"name": "Wikipedia muscle infoboxes",
+			"url": "https://en.wikipedia.org/",
+			"license": "CC BY-SA 4.0",
+			"use": "Each muscle's nerve checked against its infobox by scripts/verify.ts; origins and insertions were read from them by hand. No text copied."
+		},
+		{
+			"id": "aaos",
+			"name": "AAOS normal joint ranges of motion, as tabulated by Hendriks et al., PRS Global Open 2020 (supplement)",
+			"url": "https://cdn-links.lww.com/permalink/prsgo/b/prsgo_8_6_2020_04_17_hendriks_gox-d-20-00155r2_sdc1.pdf",
+			"license": "facts",
+			"use": "Ranges of motion of the limbs and neck; segments marked approximate split or estimate a range."
+		},
+		{
+			"id": "drawings",
+			"name": "Drawings made for this project in code (src/drawings.ts)",
+			"url": "",
+			"license": "same as this repository",
+			"use": "Every shape in every view."
+		}
+	],
+	"layers": [
+		{
+			"id": "skeleton",
+			"name": "Skeleton"
+		},
+		{
+			"id": "ligaments",
+			"name": "Ligaments",
+			"planned": true
+		},
+		{
+			"id": "muscles",
+			"name": "Muscles"
+		},
+		{
+			"id": "organs",
+			"name": "Organs"
+		},
+		{
+			"id": "vessels",
+			"name": "Blood vessels",
+			"planned": true
+		},
+		{
+			"id": "nerves",
+			"name": "Nerves",
+			"planned": true
+		},
+		{
+			"id": "lymphatics",
+			"name": "Lymphatics",
+			"planned": true
+		},
+		{
+			"id": "skin",
+			"name": "Skin"
+		}
+	],
+	"segments": [
+		{
+			"id": "pelvis",
+			"name": "Pelvis",
+			"parent": null,
+			"pivot": {
+				"front": [0, 85],
+				"side": [-1, 85]
+			},
+			"motion": [],
+			"bones": ["FMA:16586", "FMA:16587", "FMA:16202", "FMA:20229"]
+		},
+		{
+			"id": "lumbar-spine",
+			"name": "Lumbar spine",
+			"parent": "pelvis",
+			"joint": "Lumbosacral joint (L5-S1) and the lumbar spine",
+			"pivot": {
+				"front": [0, 79],
+				"side": [-3, 79]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -15,
+					"max": 50,
+					"negative": "extension",
+					"positive": "flexion"
+				},
+				{
+					"view": "front",
+					"min": -20,
+					"max": 20,
+					"negative": "lateral flexion to the right",
+					"positive": "lateral flexion to the left"
+				},
+				{
+					"view": null,
+					"min": -5,
+					"max": 5,
+					"negative": "rotation to the right",
+					"positive": "rotation to the left"
+				}
+			],
+			"approximate": true,
+			"bones": ["FMA:13072", "FMA:13073", "FMA:13074", "FMA:13075", "FMA:13076"]
+		},
+		{
+			"id": "thorax",
+			"name": "Thorax",
+			"parent": "lumbar-spine",
+			"joint": "Thoracolumbar junction (T12-L1) and the thoracic spine",
+			"pivot": {
+				"front": [0, 58],
+				"side": [-5, 58]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -10,
+					"max": 30,
+					"negative": "extension",
+					"positive": "flexion"
+				},
+				{
+					"view": "front",
+					"min": -15,
+					"max": 15,
+					"negative": "lateral flexion to the right",
+					"positive": "lateral flexion to the left"
+				},
+				{
+					"view": null,
+					"min": -40,
+					"max": 40,
+					"negative": "rotation to the right",
+					"positive": "rotation to the left"
+				}
+			],
+			"approximate": true,
+			"bones": [
+				"FMA:9165",
+				"FMA:9187",
+				"FMA:9209",
+				"FMA:9248",
+				"FMA:9922",
+				"FMA:9945",
+				"FMA:9968",
+				"FMA:9991",
+				"FMA:10014",
+				"FMA:10037",
+				"FMA:10059",
+				"FMA:10081",
+				"FMA:7857",
+				"FMA:7987",
+				"FMA:7882",
+				"FMA:8012",
+				"FMA:7909",
+				"FMA:8039",
+				"FMA:7957",
+				"FMA:8148",
+				"FMA:8066",
+				"FMA:8093",
+				"FMA:8175",
+				"FMA:8202",
+				"FMA:8229",
+				"FMA:8256",
+				"FMA:8283",
+				"FMA:8310",
+				"FMA:8364",
+				"FMA:8391",
+				"FMA:8445",
+				"FMA:8472",
+				"FMA:8531",
+				"FMA:8532",
+				"FMA:8533",
+				"FMA:8534",
+				"FMA:7485"
+			]
+		},
+		{
+			"id": "neck",
+			"name": "Neck",
+			"parent": "thorax",
+			"joint": "Cervicothoracic junction (C7-T1) and the cervical spine",
+			"pivot": {
+				"front": [0, 28],
+				"side": [-4, 28]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -45,
+					"max": 45,
+					"negative": "extension",
+					"positive": "flexion"
+				},
+				{
+					"view": "front",
+					"min": -45,
+					"max": 45,
+					"negative": "lateral flexion to the right",
+					"positive": "lateral flexion to the left"
+				},
+				{
+					"view": null,
+					"min": -60,
+					"max": 60,
+					"negative": "rotation to the right",
+					"positive": "rotation to the left"
+				}
+			],
+			"bones": [
+				"FMA:12519",
+				"FMA:12520",
+				"FMA:12521",
+				"FMA:12522",
+				"FMA:12523",
+				"FMA:12524",
+				"FMA:12525",
+				"FMA:52749"
+			]
+		},
+		{
+			"id": "head",
+			"name": "Head",
+			"parent": "neck",
+			"joint": "Atlanto-occipital joint",
+			"pivot": {
+				"front": [0, 19.5],
+				"side": [-1, 19.5]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -15,
+					"max": 15,
+					"negative": "extension",
+					"positive": "flexion"
+				},
+				{
+					"view": "front",
+					"min": -5,
+					"max": 5,
+					"negative": "lateral flexion to the right",
+					"positive": "lateral flexion to the left"
+				}
+			],
+			"approximate": true,
+			"bones": [
+				"FMA:52734",
+				"FMA:52735",
+				"FMA:52736",
+				"FMA:52740",
+				"FMA:52748",
+				"FMA:9710",
+				"FMA:52788",
+				"FMA:52789",
+				"FMA:52738",
+				"FMA:52739",
+				"FMA:53647",
+				"FMA:53648",
+				"FMA:53649",
+				"FMA:53650",
+				"FMA:52892",
+				"FMA:52893",
+				"FMA:53645",
+				"FMA:53646",
+				"FMA:53655",
+				"FMA:53656",
+				"FMA:54737",
+				"FMA:54738",
+				"FMA:270181",
+				"FMA:270185"
+			]
+		},
+		{
+			"id": "shoulder-girdle-right",
+			"name": "Right shoulder girdle",
+			"parent": "thorax",
+			"joint": "Right sternoclavicular joint",
+			"pivot": {
+				"front": [-2, 28.5],
+				"side": [5, 29]
+			},
+			"motion": [
+				{
+					"view": "front",
+					"min": -10,
+					"max": 45,
+					"negative": "depression",
+					"positive": "elevation"
+				}
+			],
+			"approximate": true,
+			"bones": ["FMA:13322", "FMA:13395"]
+		},
+		{
+			"id": "upper-arm-right",
+			"name": "Right upper arm",
+			"parent": "shoulder-girdle-right",
+			"joint": "Right shoulder joint",
+			"pivot": {
+				"front": [-17, 32.5],
+				"side": [-1.5, 32.5]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -180,
+					"max": 60,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -30,
+					"max": 180,
+					"negative": "adduction",
+					"positive": "abduction"
+				},
+				{
+					"view": null,
+					"min": -70,
+					"max": 90,
+					"negative": "internal rotation",
+					"positive": "external rotation"
+				}
+			],
+			"bones": ["FMA:23130"]
+		},
+		{
+			"id": "forearm-right",
+			"name": "Right forearm",
+			"parent": "upper-arm-right",
+			"joint": "Right elbow joint",
+			"pivot": {
+				"front": [-20.5, 60],
+				"side": [-3, 60]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -150,
+					"max": 0,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": null,
+					"min": -80,
+					"max": 80,
+					"negative": "pronation",
+					"positive": "supination"
+				}
+			],
+			"bones": ["FMA:23464", "FMA:23467"]
+		},
+		{
+			"id": "hand-right",
+			"name": "Right hand",
+			"parent": "forearm-right",
+			"joint": "Right wrist joint",
+			"pivot": {
+				"front": [-24, 85],
+				"side": [0, 85]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -80,
+					"max": 70,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -30,
+					"max": 20,
+					"negative": "ulnar deviation",
+					"positive": "radial deviation"
+				}
+			],
+			"bones": ["FMA:71894", "FMA:71896", "FMA:71898"]
+		},
+		{
+			"id": "thigh-right",
+			"name": "Right thigh",
+			"parent": "pelvis",
+			"joint": "Right hip joint",
+			"pivot": {
+				"front": [-9, 89],
+				"side": [1, 89]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -120,
+					"max": 30,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -30,
+					"max": 45,
+					"negative": "adduction",
+					"positive": "abduction"
+				},
+				{
+					"view": null,
+					"min": -45,
+					"max": 45,
+					"negative": "internal rotation",
+					"positive": "external rotation"
+				}
+			],
+			"bones": ["FMA:24474"]
+		},
+		{
+			"id": "leg-right",
+			"name": "Right leg",
+			"parent": "thigh-right",
+			"joint": "Right knee joint",
+			"pivot": {
+				"front": [-8.5, 130],
+				"side": [2, 130]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": 0,
+					"max": 135,
+					"negative": "extension",
+					"positive": "flexion"
+				}
+			],
+			"bones": ["FMA:24477", "FMA:24480", "FMA:24486"]
+		},
+		{
+			"id": "foot-right",
+			"name": "Right foot",
+			"parent": "leg-right",
+			"joint": "Right ankle joint",
+			"pivot": {
+				"front": [-7.5, 167],
+				"side": [-1, 167]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -20,
+					"max": 50,
+					"negative": "dorsiflexion",
+					"positive": "plantarflexion"
+				},
+				{
+					"view": null,
+					"min": -15,
+					"max": 35,
+					"negative": "eversion",
+					"positive": "inversion"
+				}
+			],
+			"bones": ["FMA:78508", "FMA:78510", "FMA:231317"]
+		},
+		{
+			"id": "shoulder-girdle-left",
+			"name": "Left shoulder girdle",
+			"parent": "thorax",
+			"joint": "Left sternoclavicular joint",
+			"pivot": {
+				"front": [2, 28.5],
+				"side": [5, 29]
+			},
+			"motion": [
+				{
+					"view": "front",
+					"min": -45,
+					"max": 10,
+					"negative": "elevation",
+					"positive": "depression"
+				}
+			],
+			"approximate": true,
+			"bones": ["FMA:13323", "FMA:13396"]
+		},
+		{
+			"id": "upper-arm-left",
+			"name": "Left upper arm",
+			"parent": "shoulder-girdle-left",
+			"joint": "Left shoulder joint",
+			"pivot": {
+				"front": [17, 32.5],
+				"side": [-1.5, 32.5]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -180,
+					"max": 60,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -180,
+					"max": 30,
+					"negative": "abduction",
+					"positive": "adduction"
+				},
+				{
+					"view": null,
+					"min": -70,
+					"max": 90,
+					"negative": "internal rotation",
+					"positive": "external rotation"
+				}
+			],
+			"bones": ["FMA:23131"]
+		},
+		{
+			"id": "forearm-left",
+			"name": "Left forearm",
+			"parent": "upper-arm-left",
+			"joint": "Left elbow joint",
+			"pivot": {
+				"front": [20.5, 60],
+				"side": [-3, 60]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -150,
+					"max": 0,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": null,
+					"min": -80,
+					"max": 80,
+					"negative": "pronation",
+					"positive": "supination"
+				}
+			],
+			"bones": ["FMA:23465", "FMA:23468"]
+		},
+		{
+			"id": "hand-left",
+			"name": "Left hand",
+			"parent": "forearm-left",
+			"joint": "Left wrist joint",
+			"pivot": {
+				"front": [24, 85],
+				"side": [0, 85]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -80,
+					"max": 70,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -20,
+					"max": 30,
+					"negative": "radial deviation",
+					"positive": "ulnar deviation"
+				}
+			],
+			"bones": ["FMA:71895", "FMA:71897", "FMA:71899"]
+		},
+		{
+			"id": "thigh-left",
+			"name": "Left thigh",
+			"parent": "pelvis",
+			"joint": "Left hip joint",
+			"pivot": {
+				"front": [9, 89],
+				"side": [1, 89]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -120,
+					"max": 30,
+					"negative": "flexion",
+					"positive": "extension"
+				},
+				{
+					"view": "front",
+					"min": -45,
+					"max": 30,
+					"negative": "abduction",
+					"positive": "adduction"
+				},
+				{
+					"view": null,
+					"min": -45,
+					"max": 45,
+					"negative": "internal rotation",
+					"positive": "external rotation"
+				}
+			],
+			"bones": ["FMA:24475"]
+		},
+		{
+			"id": "leg-left",
+			"name": "Left leg",
+			"parent": "thigh-left",
+			"joint": "Left knee joint",
+			"pivot": {
+				"front": [8.5, 130],
+				"side": [2, 130]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": 0,
+					"max": 135,
+					"negative": "extension",
+					"positive": "flexion"
+				}
+			],
+			"bones": ["FMA:24478", "FMA:24481", "FMA:24487"]
+		},
+		{
+			"id": "foot-left",
+			"name": "Left foot",
+			"parent": "leg-left",
+			"joint": "Left ankle joint",
+			"pivot": {
+				"front": [7.5, 167],
+				"side": [-1, 167]
+			},
+			"motion": [
+				{
+					"view": "side",
+					"min": -20,
+					"max": 50,
+					"negative": "dorsiflexion",
+					"positive": "plantarflexion"
+				},
+				{
+					"view": null,
+					"min": -15,
+					"max": 35,
+					"negative": "eversion",
+					"positive": "inversion"
+				}
+			],
+			"bones": ["FMA:78509", "FMA:78511", "FMA:231319"]
+		}
+	],
+	"structures": [
+		{
+			"id": "FMA:52734",
+			"name": "Frontal bone",
+			"latin": "Os frontale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 1,
+			"description": "The bone of the forehead and the roofs of the eye sockets. It forms the front of the cranium and protects the frontal lobes of the brain.",
+			"joints": [
+				"FMA:9613",
+				"FMA:52736",
+				"FMA:52740",
+				"FMA:52745",
+				"FMA:9711",
+				"FMA:52747",
+				"FMA:52741"
+			]
+		},
+		{
+			"id": "FMA:9613",
+			"name": "Parietal bone",
+			"latin": "Os parietale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:52788",
+				"left": "FMA:52789"
+			},
+			"description": "One of a pair of curved plates that form the top and sides of the cranium, meeting each other along the sagittal suture at the midline.",
+			"joints": ["FMA:52734", "FMA:52735", "FMA:52737", "FMA:52736", "FMA:9613"]
+		},
+		{
+			"id": "FMA:52737",
+			"name": "Temporal bone",
+			"latin": "Os temporale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:52738",
+				"left": "FMA:52739"
+			},
+			"description": "A bone at each side and base of the skull, around the ear. It houses the middle and inner ear and forms the socket of the jaw joint.",
+			"joints": ["FMA:9613", "FMA:52735", "FMA:52736", "FMA:52747", "FMA:52748"]
+		},
+		{
+			"id": "FMA:52735",
+			"name": "Occipital bone",
+			"latin": "Os occipitale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 1,
+			"description": "The bone at the back and base of the skull. The spinal cord passes through its large opening, the foramen magnum, and its condyles rest on the atlas.",
+			"joints": ["FMA:9613", "FMA:52737", "FMA:52736", "FMA:12519"]
+		},
+		{
+			"id": "FMA:52736",
+			"name": "Sphenoid bone",
+			"latin": "Os sphenoidale",
+			"synonyms": ["Sphenoid", "Sphenoidal bone"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "A butterfly-shaped bone in the middle of the skull base. Only its greater wings show on the outside, at the temples.",
+			"joints": [
+				"FMA:52734",
+				"FMA:9613",
+				"FMA:52737",
+				"FMA:52735",
+				"FMA:52740",
+				"FMA:9710",
+				"FMA:52747",
+				"FMA:52746"
+			]
+		},
+		{
+			"id": "FMA:52740",
+			"name": "Ethmoid",
+			"latin": "Os ethmoidale",
+			"synonyms": ["Ethmoid bone", "Ethmoidal bone"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "A light, spongy bone between the eye sockets that forms the roof and upper walls of the nasal cavity.",
+			"joints": [
+				"FMA:52734",
+				"FMA:52736",
+				"FMA:52745",
+				"FMA:9711",
+				"FMA:52741",
+				"FMA:52746",
+				"FMA:54736",
+				"FMA:9710"
+			],
+			"notDrawn": "hidden inside the skull"
+		},
+		{
+			"id": "FMA:52745",
+			"name": "Nasal bone",
+			"latin": "Os nasale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:53647",
+				"left": "FMA:53648"
+			},
+			"description": "One of two small oblong bones that together form the bridge of the nose.",
+			"joints": ["FMA:52734", "FMA:52740", "FMA:9711", "FMA:52745"]
+		},
+		{
+			"id": "FMA:9711",
+			"name": "Maxilla",
+			"latin": "Maxilla",
+			"synonyms": ["Upper jaw bone"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:53649",
+				"left": "FMA:53650"
+			},
+			"description": "The upper jaw bone, one on each side, joined at the midline. It holds the upper teeth and forms the floor of the eye socket and much of the hard palate.",
+			"joints": [
+				"FMA:52734",
+				"FMA:52740",
+				"FMA:52745",
+				"FMA:52747",
+				"FMA:52741",
+				"FMA:54736",
+				"FMA:52746",
+				"FMA:9710",
+				"FMA:9711"
+			],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:52747",
+			"name": "Zygomatic bone",
+			"latin": "Os zygomaticum",
+			"synonyms": ["Cheek bone", "Malar bone", "Orbital bone"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:52892",
+				"left": "FMA:52893"
+			},
+			"description": "The cheekbone. It forms the prominence of the cheek and part of the outer wall of the eye socket, and with the temporal bone makes the zygomatic arch.",
+			"joints": ["FMA:52734", "FMA:52736", "FMA:52737", "FMA:9711"]
+		},
+		{
+			"id": "FMA:52748",
+			"name": "Mandible",
+			"latin": "Mandibula",
+			"synonyms": ["Lower jaw bone", "Mandibulla"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "The lower jaw, the largest and strongest bone of the face and the only movable bone of the skull. It holds the lower teeth.",
+			"joints": ["FMA:52737"]
+		},
+		{
+			"id": "FMA:52741",
+			"name": "Lacrimal bone",
+			"latin": "Os lacrimale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:53645",
+				"left": "FMA:53646"
+			},
+			"description": "The smallest bone of the face, in the inner wall of each eye socket, with a groove for the tear sac.",
+			"joints": ["FMA:52734", "FMA:52740", "FMA:9711", "FMA:54736"],
+			"notDrawn": "too small to pick"
+		},
+		{
+			"id": "FMA:52746",
+			"name": "Palatine bone",
+			"latin": "Os palatinum",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:53655",
+				"left": "FMA:53656"
+			},
+			"description": "An L-shaped bone at the back of the nasal cavity that forms the back of the hard palate.",
+			"joints": [
+				"FMA:9711",
+				"FMA:52736",
+				"FMA:52740",
+				"FMA:9710",
+				"FMA:54736",
+				"FMA:52746"
+			],
+			"notDrawn": "hidden inside the skull"
+		},
+		{
+			"id": "FMA:54736",
+			"name": "Inferior nasal concha",
+			"latin": "Concha nasalis inferior",
+			"synonyms": ["Inferior nasal turbinate", "Inferior turbinate"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:54737",
+				"left": "FMA:54738"
+			},
+			"description": "A thin, curled bone on each side wall of the nasal cavity that directs and warms inhaled air.",
+			"joints": ["FMA:9711", "FMA:52740", "FMA:52741", "FMA:52746"],
+			"notDrawn": "hidden inside the nose"
+		},
+		{
+			"id": "FMA:9710",
+			"name": "Vomer",
+			"latin": "Vomer",
+			"synonyms": ["Vomer bone"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "A thin, flat bone that forms the lower back part of the nasal septum.",
+			"joints": ["FMA:52736", "FMA:52740", "FMA:9711", "FMA:52746"],
+			"notDrawn": "hidden inside the nose",
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:52750",
+			"name": "Auditory ossicle",
+			"latin": "Ossicula auditus",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 6,
+			"sides": {
+				"right": "FMA:270181",
+				"left": "FMA:270185"
+			},
+			"description": "The malleus, incus, and stapes in each middle ear, the smallest bones in the body. They carry sound vibrations from the eardrum to the inner ear. The stapes is held in the oval window of the temporal bone.",
+			"joints": ["FMA:52737"],
+			"notDrawn": "too small to pick; inside the temporal bone",
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:52749",
+			"name": "Hyoid bone",
+			"latin": "Os hyoideum",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 1,
+			"description": "A U-shaped bone in the front of the neck, below the jaw, that touches no other bone. It anchors the tongue and the muscles of swallowing.",
+			"joints": []
+		},
+		{
+			"id": "FMA:12519",
+			"name": "Atlas",
+			"latin": "Atlas [C I]",
+			"synonyms": ["Atlas (CI)", "C1 vertebra", "First cervical vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C1 of the neck. Called the atlas, it has no body and carries the skull.",
+			"joints": ["FMA:52735", "FMA:12520"]
+		},
+		{
+			"id": "FMA:12520",
+			"name": "Axis",
+			"latin": "Axis [C II]",
+			"synonyms": ["Axis (CII)", "C2 vertebra", "Second cervical vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C2 of the neck. Called the axis, its tooth-like dens lets the atlas and head turn.",
+			"joints": ["FMA:12519", "FMA:12521"]
+		},
+		{
+			"id": "FMA:12521",
+			"name": "Third cervical vertebra",
+			"latin": "Vertebra cervicalis III",
+			"synonyms": ["C3 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C3 of the neck.",
+			"joints": ["FMA:12520", "FMA:12522"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:12522",
+			"name": "Fourth cervical vertebra",
+			"latin": "Vertebra cervicalis IV",
+			"synonyms": ["C4 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C4 of the neck.",
+			"joints": ["FMA:12521", "FMA:12523"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:12523",
+			"name": "Fifth cervical vertebra",
+			"latin": "Vertebra cervicalis V",
+			"synonyms": ["C5 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C5 of the neck.",
+			"joints": ["FMA:12522", "FMA:12524"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:12524",
+			"name": "Sixth cervical vertebra",
+			"latin": "Vertebra cervicalis VI",
+			"synonyms": ["C6 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C6 of the neck.",
+			"joints": ["FMA:12523", "FMA:12525"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:12525",
+			"name": "Seventh cervical vertebra",
+			"latin": "Vertebra prominens [C VII]",
+			"synonyms": [
+				"C7 vertebra",
+				"Prominent vertebra",
+				"Vertebra prominens (CVII)"
+			],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra C7 of the neck. Its long spinous process is the bump at the base of the neck.",
+			"joints": ["FMA:12524", "FMA:9165"]
+		},
+		{
+			"id": "FMA:9165",
+			"name": "First thoracic vertebra",
+			"latin": "Vertebra thoracica I",
+			"synonyms": ["First dorsal vertebra", "T1 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T1 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:12525", "FMA:9187", "FMA:7597"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9187",
+			"name": "Second thoracic vertebra",
+			"latin": "Vertebra thoracica II",
+			"synonyms": ["Second dorsal vertebra", "T2 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T2 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9165", "FMA:9209", "FMA:7620", "FMA:7597"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9209",
+			"name": "Third thoracic vertebra",
+			"latin": "Vertebra thoracica III",
+			"synonyms": ["T3 vertebra", "Third dorsal vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T3 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9187", "FMA:9248", "FMA:7638", "FMA:7620"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9248",
+			"name": "Fourth thoracic vertebra",
+			"latin": "Vertebra thoracica IV",
+			"synonyms": ["Fourth dorsal vertebra", "T4 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T4 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9209", "FMA:9922", "FMA:7749", "FMA:7638"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9922",
+			"name": "Fifth thoracic vertebra",
+			"latin": "Vertebra thoracica V",
+			"synonyms": ["Fifth dorsal vertebra", "T5 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T5 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9248", "FMA:9945", "FMA:7776", "FMA:7749"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9945",
+			"name": "Sixth thoracic vertebra",
+			"latin": "Vertebra thoracica VI",
+			"synonyms": ["Sixth dorsal vertebra", "T6 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T6 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9922", "FMA:9968", "FMA:8147", "FMA:7776"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9968",
+			"name": "Seventh thoracic vertebra",
+			"latin": "Vertebra thoracica VII",
+			"synonyms": ["Seventh dorsal vertebra", "T7 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T7 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9945", "FMA:9991", "FMA:7830", "FMA:8147"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9991",
+			"name": "Eighth thoracic vertebra",
+			"latin": "Vertebra thoracica VIII",
+			"synonyms": ["Eighth dorsal vertebra", "T8 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T8 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9968", "FMA:10014", "FMA:8120", "FMA:7830"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:10014",
+			"name": "Ninth thoracic vertebra",
+			"latin": "Vertebra thoracica IX",
+			"synonyms": ["Ninth dorsal vertebra", "T9 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T9 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:9991", "FMA:10037", "FMA:8337", "FMA:8120"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:10037",
+			"name": "Tenth thoracic vertebra",
+			"latin": "Vertebra thoracica X",
+			"synonyms": ["T10 vertebra", "Tenth dorsal vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T10 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:10014", "FMA:10059", "FMA:8418", "FMA:8337"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:10059",
+			"name": "Eleventh thoracic vertebra",
+			"latin": "Vertebra thoracica XI",
+			"synonyms": ["Eleventh dorsal vertebra", "T11 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T11 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:10037", "FMA:10081", "FMA:8499", "FMA:8418"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:10081",
+			"name": "Twelfth thoracic vertebra",
+			"latin": "Vertebra thoracica XII",
+			"synonyms": ["T12 vertebra", "Twelfth dorsal vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra T12 of the upper back, which carries facets for the ribs.",
+			"joints": ["FMA:10059", "FMA:13072", "FMA:8515", "FMA:8499"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13072",
+			"name": "First lumbar vertebra",
+			"latin": "Vertebra lumbalis I",
+			"synonyms": ["L1 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra L1 of the lower back, among the largest vertebrae because it carries the weight of the upper body.",
+			"joints": ["FMA:10081", "FMA:13073"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13073",
+			"name": "Second lumbar vertebra",
+			"latin": "Vertebra lumbalis II",
+			"synonyms": ["L2 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra L2 of the lower back, among the largest vertebrae because it carries the weight of the upper body.",
+			"joints": ["FMA:13072", "FMA:13074"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13074",
+			"name": "Third lumbar vertebra",
+			"latin": "Vertebra lumbalis III",
+			"synonyms": ["L3 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra L3 of the lower back, among the largest vertebrae because it carries the weight of the upper body.",
+			"joints": ["FMA:13073", "FMA:13075"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13075",
+			"name": "Fourth lumbar vertebra",
+			"latin": "Vertebra lumbalis IV",
+			"synonyms": ["L4 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra L4 of the lower back, among the largest vertebrae because it carries the weight of the upper body.",
+			"joints": ["FMA:13074", "FMA:13076"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13076",
+			"name": "Fifth lumbar vertebra",
+			"latin": "Vertebra lumbalis V",
+			"synonyms": ["L5 vertebra"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "Vertebra L5 of the lower back, among the largest vertebrae because it carries the weight of the upper body.",
+			"joints": ["FMA:13075", "FMA:16202"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:16202",
+			"name": "Sacrum",
+			"latin": "Os sacrum [vertebrae sacrales I - V]",
+			"synonyms": ["Sacral bone", "Sacrum [sacral vertebrae I - V]"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "A triangular bone of five fused vertebrae at the base of the spine, wedged between the hip bones to form the back of the pelvis.",
+			"joints": ["FMA:13076", "FMA:20229", "FMA:16585"]
+		},
+		{
+			"id": "FMA:20229",
+			"name": "Coccyx",
+			"latin": "Coccyx [vertebrae coccygeae I-IV]",
+			"synonyms": ["Coccyx [coccygeal vertebrae I-IV]", "Tailbone"],
+			"system": "skeleton",
+			"count": 1,
+			"description": "The tailbone: three to five small fused vertebrae at the bottom of the spine.",
+			"joints": ["FMA:16202"]
+		},
+		{
+			"id": "FMA:7485",
+			"name": "Sternum",
+			"latin": "Sternum",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 1,
+			"description": "The breastbone: a flat bone in the middle of the chest made of the manubrium, body, and xiphoid process. The clavicles and the costal cartilages of the upper seven ribs join it.",
+			"joints": [
+				"FMA:13321",
+				"FMA:7597",
+				"FMA:7620",
+				"FMA:7638",
+				"FMA:7749",
+				"FMA:7776",
+				"FMA:8147",
+				"FMA:7830"
+			],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7597",
+			"name": "First rib",
+			"latin": "Costa prima [I]",
+			"synonyms": ["Costa prima (I)"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:7857",
+				"left": "FMA:7987"
+			},
+			"description": "Rib 1, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9165", "FMA:7485"]
+		},
+		{
+			"id": "FMA:7620",
+			"name": "Second rib",
+			"latin": "Costa secunda [II]",
+			"synonyms": ["Costa secunda (II)"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:7882",
+				"left": "FMA:8012"
+			},
+			"description": "Rib 2, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9187", "FMA:9165", "FMA:7485"]
+		},
+		{
+			"id": "FMA:7638",
+			"name": "Third rib",
+			"latin": "Costa III",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:7909",
+				"left": "FMA:8039"
+			},
+			"description": "Rib 3, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9209", "FMA:9187", "FMA:7485"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7749",
+			"name": "Fourth rib",
+			"latin": "Costa IV",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:7957",
+				"left": "FMA:8148"
+			},
+			"description": "Rib 4, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9248", "FMA:9209", "FMA:7485"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7776",
+			"name": "Fifth rib",
+			"latin": "Costa V",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8066",
+				"left": "FMA:8093"
+			},
+			"description": "Rib 5, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9922", "FMA:9248", "FMA:7485"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8147",
+			"name": "Sixth rib",
+			"latin": "Costa VI",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8175",
+				"left": "FMA:8202"
+			},
+			"description": "Rib 6, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9945", "FMA:9922", "FMA:7485"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7830",
+			"name": "Seventh rib",
+			"latin": "Costa VII",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8229",
+				"left": "FMA:8256"
+			},
+			"description": "Rib 7, a true rib, joined to the sternum by its own cartilage.",
+			"joints": ["FMA:9968", "FMA:9945", "FMA:7485"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8120",
+			"name": "Eighth rib",
+			"latin": "Costa VIII",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8283",
+				"left": "FMA:8310"
+			},
+			"description": "Rib 8, a false rib, joined to the cartilage above.",
+			"joints": ["FMA:9991", "FMA:9968"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8337",
+			"name": "Ninth rib",
+			"latin": "Costa IX",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8364",
+				"left": "FMA:8391"
+			},
+			"description": "Rib 9, a false rib, joined to the cartilage above.",
+			"joints": ["FMA:10014", "FMA:9991"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8418",
+			"name": "Tenth rib",
+			"latin": "Costa X",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8445",
+				"left": "FMA:8472"
+			},
+			"description": "Rib 10, a false rib, joined to the cartilage above.",
+			"joints": ["FMA:10037", "FMA:10014"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8499",
+			"name": "Eleventh rib",
+			"latin": "Costa XI",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8531",
+				"left": "FMA:8532"
+			},
+			"description": "Rib 11, a floating rib, with a free front end.",
+			"joints": ["FMA:10059", "FMA:10037"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:8515",
+			"name": "Twelfth rib",
+			"latin": "Costa XII",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:8533",
+				"left": "FMA:8534"
+			},
+			"description": "Rib 12, a floating rib, with a free front end.",
+			"joints": ["FMA:10081", "FMA:10059"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13321",
+			"name": "Clavicle",
+			"latin": "Clavicula",
+			"synonyms": ["Collar bone"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13322",
+				"left": "FMA:13323"
+			},
+			"description": "The collarbone: an S-shaped strut between the sternum and the shoulder blade that holds the arm away from the body.",
+			"joints": ["FMA:7485", "FMA:13394"]
+		},
+		{
+			"id": "FMA:13394",
+			"name": "Scapula",
+			"latin": "Scapula",
+			"synonyms": ["Shoulder blade"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13395",
+				"left": "FMA:13396"
+			},
+			"description": "The shoulder blade: a flat triangular bone on the upper back. Its shallow glenoid cavity forms the socket of the shoulder joint.",
+			"joints": ["FMA:13321", "FMA:13303"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:13303",
+			"name": "Humerus",
+			"latin": "Humerus",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:23130",
+				"left": "FMA:23131"
+			},
+			"description": "The bone of the upper arm, from the shoulder to the elbow.",
+			"joints": ["FMA:13394", "FMA:23463", "FMA:23466"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:23463",
+			"name": "Radius",
+			"latin": "Radius",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:23464",
+				"left": "FMA:23465"
+			},
+			"description": "The forearm bone on the thumb side. It turns around the ulna to turn the palm up or down.",
+			"joints": ["FMA:13303", "FMA:23466", "FMA:23889"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:23466",
+			"name": "Ulna",
+			"latin": "Ulna",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:23467",
+				"left": "FMA:23468"
+			},
+			"description": "The forearm bone on the little-finger side. Its olecranon is the point of the elbow.",
+			"joints": ["FMA:13303", "FMA:23463"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:23889",
+			"name": "Carpal bone",
+			"latin": "Os carpi",
+			"synonyms": ["Bone of carpus"],
+			"system": "skeleton",
+			"count": 16,
+			"sides": {
+				"right": "FMA:71894",
+				"left": "FMA:71895"
+			},
+			"description": "The eight small bones of each wrist, in two rows: scaphoid, lunate, triquetrum, and pisiform; trapezium, trapezoid, capitate, and hamate. Drawn as one group per wrist.",
+			"joints": ["FMA:23463", "FMA:9612"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:9612",
+			"name": "Metacarpal bone",
+			"latin": "Os metacarpale",
+			"synonyms": ["Metacarpal"],
+			"system": "skeleton",
+			"count": 10,
+			"sides": {
+				"right": "FMA:71896",
+				"left": "FMA:71897"
+			},
+			"description": "The five long bones of each palm, between the wrist and the fingers. Drawn as one group per hand.",
+			"joints": ["FMA:23889", "FMA:23914"]
+		},
+		{
+			"id": "FMA:23914",
+			"name": "Phalanx of finger",
+			"latin": "Phalanx digiti manus",
+			"synonyms": ["Bone of finger", "Hand phalanx", "Phalanx of hand"],
+			"system": "skeleton",
+			"count": 28,
+			"sides": {
+				"right": "FMA:71898",
+				"left": "FMA:71899"
+			},
+			"description": "The fourteen finger bones of each hand: two in the thumb and three in each finger. Drawn as one group per hand.",
+			"joints": ["FMA:9612"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:16585",
+			"name": "Hip bone",
+			"latin": "Os coxae",
+			"synonyms": [
+				"Bone of pelvic girdle",
+				"Coxal bone",
+				"Hipbone",
+				"Innominate bone",
+				"Pelvic bone"
+			],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:16586",
+				"left": "FMA:16587"
+			},
+			"description": "The large flat bone of each side of the pelvis, made of the fused ilium, ischium, and pubis. Its acetabulum is the socket of the hip joint.",
+			"joints": ["FMA:16202", "FMA:9611", "FMA:16585"]
+		},
+		{
+			"id": "FMA:9611",
+			"name": "Femur",
+			"latin": "Os femoris",
+			"synonyms": ["Thigh bone"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:24474",
+				"left": "FMA:24475"
+			},
+			"description": "The thigh bone, the longest and strongest bone in the body, from the hip to the knee.",
+			"joints": ["FMA:16585", "FMA:24485", "FMA:24476"]
+		},
+		{
+			"id": "FMA:24485",
+			"name": "Patella",
+			"latin": "Patella",
+			"synonyms": ["Knee bone"],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:24486",
+				"left": "FMA:24487"
+			},
+			"description": "The kneecap: a flat, triangular bone in the tendon of the quadriceps that protects the front of the knee and improves the muscle's leverage.",
+			"joints": ["FMA:9611"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:24476",
+			"name": "Tibia",
+			"latin": "Tibia",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:24477",
+				"left": "FMA:24478"
+			},
+			"description": "The shinbone: the larger, weight-bearing bone of the lower leg. Its lower end is the inner ankle bone.",
+			"joints": ["FMA:9611", "FMA:24479", "FMA:24491"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:24479",
+			"name": "Fibula",
+			"latin": "Fibula",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 2,
+			"sides": {
+				"right": "FMA:24480",
+				"left": "FMA:24481"
+			},
+			"description": "The slender outer bone of the lower leg. It carries little weight; its lower end is the outer ankle bone.",
+			"joints": ["FMA:24476", "FMA:24491"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:24491",
+			"name": "Tarsal bone",
+			"latin": "Os tarsi",
+			"synonyms": ["Ankle bone", "Bone of ankle", "Bone of tarsus"],
+			"system": "skeleton",
+			"count": 14,
+			"sides": {
+				"right": "FMA:78508",
+				"left": "FMA:78509"
+			},
+			"description": "The seven bones of each ankle and rear foot: talus, calcaneus, navicular, cuboid, and three cuneiforms. Drawn as one group per foot.",
+			"joints": ["FMA:24476", "FMA:24479", "FMA:24492"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:24492",
+			"name": "Metatarsal bone",
+			"latin": "Os metatarsale",
+			"synonyms": [],
+			"system": "skeleton",
+			"count": 10,
+			"sides": {
+				"right": "FMA:78510",
+				"left": "FMA:78511"
+			},
+			"description": "The five long bones of each mid-foot, between the tarsals and the toes. Drawn as one group per foot.",
+			"joints": ["FMA:24491", "FMA:24493"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:24493",
+			"name": "Phalanx of toe",
+			"latin": "Phalanx digiti pedis",
+			"synonyms": ["Bone of toe", "Foot phalanx"],
+			"system": "skeleton",
+			"count": 28,
+			"sides": {
+				"right": "FMA:231317",
+				"left": "FMA:231319"
+			},
+			"description": "The fourteen toe bones of each foot: two in the big toe and three in each other toe. Drawn as one group per foot.",
+			"joints": ["FMA:24492"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:49006",
+			"name": "Temporalis",
+			"latin": "Musculus temporalis",
+			"synonyms": ["Temporal muscle", "Temporalis muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:49007",
+				"left": "FMA:49008"
+			},
+			"description": "A fan-shaped chewing muscle filling the temple on each side of the head.",
+			"origin": ["FMA:52737", "FMA:9613", "FMA:52734"],
+			"insertion": ["FMA:52748"],
+			"action": "Elevates and retracts the mandible, closing the jaw.",
+			"nerve": "Deep temporal nerves, from the mandibular nerve"
+		},
+		{
+			"id": "FMA:48996",
+			"name": "Masseter",
+			"latin": "Musculus masseter",
+			"synonyms": ["Masseter muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:48997",
+				"left": "FMA:48998"
+			},
+			"description": "A thick, square chewing muscle on the side of the jaw, one of the strongest muscles for its size.",
+			"origin": ["FMA:52747", "FMA:9711"],
+			"insertion": ["FMA:52748"],
+			"action": "Elevates the mandible, clenching the teeth.",
+			"nerve": "Masseteric nerve, from the mandibular nerve"
+		},
+		{
+			"id": "FMA:13407",
+			"name": "Sternocleidomastoid",
+			"latin": "Musculus sternocleidomastoideus",
+			"synonyms": ["Sternocleidomastoid muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13408",
+				"left": "FMA:13409"
+			},
+			"description": "A long strap muscle running diagonally up the side of the neck from the sternum and clavicle to the mastoid process behind the ear.",
+			"origin": ["FMA:7485", "FMA:13321"],
+			"insertion": ["FMA:52737", "FMA:52735"],
+			"action": "Turns the head to the opposite side and tilts it to the same side; both together flex the neck.",
+			"nerve": "Accessory nerve"
+		},
+		{
+			"id": "FMA:9627",
+			"name": "Pectoralis major",
+			"latin": "Musculus pectoralis major",
+			"synonyms": ["Pectoralis major muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13373",
+				"left": "FMA:13374"
+			},
+			"description": "The large fan-shaped muscle of the upper chest. It also arises from the upper costal cartilages.",
+			"origin": ["FMA:13321", "FMA:7485"],
+			"insertion": ["FMA:13303"],
+			"action": "Flexes, adducts, and medially rotates the arm at the shoulder.",
+			"nerve": "Lateral and medial pectoral nerves"
+		},
+		{
+			"id": "FMA:13397",
+			"name": "Serratus anterior",
+			"latin": "Musculus serratus anterior",
+			"synonyms": ["Boxer's muscle", "Serratus anterior muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13398",
+				"left": "FMA:13399"
+			},
+			"description": "A saw-toothed muscle on the side of the chest, from the upper eight or nine ribs to the inner edge of the shoulder blade.",
+			"origin": [
+				"FMA:7597",
+				"FMA:7620",
+				"FMA:7638",
+				"FMA:7749",
+				"FMA:7776",
+				"FMA:8147",
+				"FMA:7830",
+				"FMA:8120"
+			],
+			"insertion": ["FMA:13394"],
+			"action": "Pulls the scapula forward around the chest wall and rotates it upward, as in reaching and punching.",
+			"nerve": "Long thoracic nerve"
+		},
+		{
+			"id": "FMA:9628",
+			"name": "Rectus abdominis",
+			"latin": "Musculus rectus abdominis",
+			"synonyms": ["Rectus abdominis muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13377",
+				"left": "FMA:13378"
+			},
+			"description": "The paired vertical muscle of the front of the abdomen, divided by tendons into the segments of a 'six-pack'.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:7485", "FMA:7776", "FMA:8147", "FMA:7830"],
+			"action": "Flexes the trunk and compresses the abdomen.",
+			"nerve": "Thoracoabdominal (lower intercostal) nerves and the subcostal nerve"
+		},
+		{
+			"id": "FMA:13335",
+			"name": "External oblique",
+			"latin": "Musculus obliquus externus abdominis",
+			"synonyms": ["External abdominal oblique muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13336",
+				"left": "FMA:13337"
+			},
+			"description": "The largest and outermost of the flat muscles on the side of the abdomen; its fibers run down and forward.",
+			"origin": [
+				"FMA:7776",
+				"FMA:8147",
+				"FMA:7830",
+				"FMA:8120",
+				"FMA:8337",
+				"FMA:8418",
+				"FMA:8499",
+				"FMA:8515"
+			],
+			"insertion": ["FMA:16585"],
+			"action": "Flexes and rotates the trunk and compresses the abdomen.",
+			"nerve": "Thoracoabdominal (lower intercostal) nerves and the subcostal nerve"
+		},
+		{
+			"id": "FMA:9626",
+			"name": "Trapezius",
+			"latin": "Musculus trapezius",
+			"synonyms": ["Trapezius muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13419",
+				"left": "FMA:13420"
+			},
+			"description": "A large diamond-shaped muscle of the upper back and back of the neck.",
+			"origin": [
+				"FMA:52735",
+				"FMA:12525",
+				"FMA:9165",
+				"FMA:9187",
+				"FMA:9209",
+				"FMA:9248",
+				"FMA:9922",
+				"FMA:9945",
+				"FMA:9968",
+				"FMA:9991",
+				"FMA:10014",
+				"FMA:10037",
+				"FMA:10059",
+				"FMA:10081"
+			],
+			"insertion": ["FMA:13321", "FMA:13394"],
+			"action": "Elevates, retracts, and depresses the scapula and rotates it upward.",
+			"nerve": "Accessory nerve"
+		},
+		{
+			"id": "FMA:13357",
+			"name": "Latissimus dorsi",
+			"latin": "Musculus latissimus dorsi",
+			"synonyms": ["Latissimus dorsi muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:13358",
+				"left": "FMA:13359"
+			},
+			"description": "The broad, flat muscle of the lower back that sweeps up to the arm; its upper edge forms the back of the armpit.",
+			"origin": [
+				"FMA:9968",
+				"FMA:9991",
+				"FMA:10014",
+				"FMA:10037",
+				"FMA:10059",
+				"FMA:10081",
+				"FMA:16585",
+				"FMA:8337",
+				"FMA:8418",
+				"FMA:8499",
+				"FMA:8515"
+			],
+			"insertion": ["FMA:13303"],
+			"action": "Extends, adducts, and medially rotates the arm.",
+			"nerve": "Thoracodorsal nerve"
+		},
+		{
+			"id": "FMA:32546",
+			"name": "Infraspinatus",
+			"latin": "Musculus infraspinatus",
+			"synonyms": ["Infraspinatus muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:32547",
+				"left": "FMA:32548"
+			},
+			"description": "A thick triangular rotator cuff muscle filling the back of the shoulder blade below its spine.",
+			"origin": ["FMA:13394"],
+			"insertion": ["FMA:13303"],
+			"action": "Laterally rotates the arm and steadies the head of the humerus in its socket.",
+			"nerve": "Suprascapular nerve"
+		},
+		{
+			"id": "FMA:32549",
+			"name": "Teres major",
+			"latin": "Musculus teres major",
+			"synonyms": ["Teres major muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:32551",
+				"left": "FMA:32552"
+			},
+			"description": "A thick, rounded muscle from the lower corner of the shoulder blade to the front of the humerus.",
+			"origin": ["FMA:13394"],
+			"insertion": ["FMA:13303"],
+			"action": "Adducts, extends, and medially rotates the arm.",
+			"nerve": "Lower subscapular nerve"
+		},
+		{
+			"id": "FMA:32521",
+			"name": "Deltoid",
+			"latin": "Musculus deltoideus",
+			"synonyms": ["Delt", "Deltoid muscle", "Deltoideus"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:32542",
+				"left": "FMA:32543"
+			},
+			"description": "The thick, triangular muscle that caps the shoulder.",
+			"origin": ["FMA:13321", "FMA:13394"],
+			"insertion": ["FMA:13303"],
+			"action": "Abducts the arm; its front fibers flex and its back fibers extend the arm.",
+			"nerve": "Axillary nerve"
+		},
+		{
+			"id": "FMA:37670",
+			"name": "Biceps brachii",
+			"latin": "Musculus biceps brachii",
+			"synonyms": ["Biceps brachii muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:37671",
+				"left": "FMA:37672"
+			},
+			"description": "The two-headed muscle on the front of the upper arm.",
+			"origin": ["FMA:13394"],
+			"insertion": ["FMA:23463"],
+			"action": "Flexes the elbow and supinates the forearm, turning the palm up.",
+			"nerve": "Musculocutaneous nerve"
+		},
+		{
+			"id": "FMA:37688",
+			"name": "Triceps brachii",
+			"latin": "Musculus triceps brachii",
+			"synonyms": ["Triceps brachii muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:37689",
+				"left": "FMA:37690"
+			},
+			"description": "The three-headed muscle on the back of the upper arm.",
+			"origin": ["FMA:13394", "FMA:13303"],
+			"insertion": ["FMA:23466"],
+			"action": "Extends the elbow.",
+			"nerve": "Radial nerve"
+		},
+		{
+			"id": "FMA:37667",
+			"name": "Brachialis",
+			"latin": "Musculus brachialis",
+			"synonyms": ["Brachialis muscle", "Casserio's muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:37668",
+				"left": "FMA:37669"
+			},
+			"description": "A strong elbow flexor lying under the biceps on the lower front of the humerus.",
+			"origin": ["FMA:13303"],
+			"insertion": ["FMA:23466"],
+			"action": "Flexes the elbow.",
+			"nerve": "Musculocutaneous nerve"
+		},
+		{
+			"id": "FMA:38485",
+			"name": "Brachioradialis",
+			"latin": "Musculus brachioradialis",
+			"synonyms": ["Brachioradialis muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38486",
+				"left": "FMA:38487"
+			},
+			"description": "A long muscle on the thumb side of the forearm, from above the elbow to the wrist.",
+			"origin": ["FMA:13303"],
+			"insertion": ["FMA:23463"],
+			"action": "Flexes the elbow, most strongly with the forearm half turned.",
+			"nerve": "Radial nerve"
+		},
+		{
+			"id": "FMA:38459",
+			"name": "Flexor carpi radialis",
+			"latin": "Musculus flexor carpi radialis",
+			"synonyms": ["Flexor carpi radialis muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38460",
+				"left": "FMA:38461"
+			},
+			"description": "A superficial muscle of the front of the forearm from the inner elbow to the base of the second metacarpal.",
+			"origin": ["FMA:13303"],
+			"insertion": ["FMA:9612"],
+			"action": "Flexes the wrist and bends the hand toward the thumb side.",
+			"nerve": "Median nerve"
+		},
+		{
+			"id": "FMA:38465",
+			"name": "Flexor carpi ulnaris",
+			"latin": "Musculus flexor carpi ulnaris",
+			"synonyms": ["Flexor carpi ulnaris muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38466",
+				"left": "FMA:38467"
+			},
+			"description": "The innermost superficial flexor of the forearm, along the ulna to the pisiform bone of the wrist.",
+			"origin": ["FMA:13303", "FMA:23466"],
+			"insertion": ["FMA:23889", "FMA:9612"],
+			"action": "Flexes the wrist and bends the hand toward the little-finger side.",
+			"nerve": "Ulnar nerve"
+		},
+		{
+			"id": "FMA:38494",
+			"name": "Extensor carpi radialis longus",
+			"latin": "Musculus extensor carpi radialis longus",
+			"synonyms": ["Extensor carpi radialis longus muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38495",
+				"left": "FMA:38496"
+			},
+			"description": "A muscle on the back of the forearm from above the outer elbow to the base of the second metacarpal.",
+			"origin": ["FMA:13303"],
+			"insertion": ["FMA:9612"],
+			"action": "Extends the wrist and bends the hand toward the thumb side.",
+			"nerve": "Radial nerve"
+		},
+		{
+			"id": "FMA:38500",
+			"name": "Extensor digitorum",
+			"latin": "Musculus extensor digitorum",
+			"synonyms": [],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38501",
+				"left": "FMA:38502"
+			},
+			"description": "The main finger extensor in the middle of the back of the forearm; its four tendons fan out over the back of the hand.",
+			"origin": ["FMA:13303"],
+			"insertion": ["FMA:23914"],
+			"action": "Extends the four fingers and the wrist.",
+			"nerve": "Posterior interosseous nerve, from the radial nerve"
+		},
+		{
+			"id": "FMA:22314",
+			"name": "Gluteus maximus",
+			"latin": "Musculus gluteus maximus",
+			"synonyms": ["Gluteus maximus muscle", "M.gluteus maximus"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22328",
+				"left": "FMA:22329"
+			},
+			"description": "The largest muscle of the buttock and one of the strongest in the body; much of it inserts into the iliotibial tract.",
+			"origin": ["FMA:16585", "FMA:16202", "FMA:20229"],
+			"insertion": ["FMA:9611"],
+			"action": "Extends and laterally rotates the thigh at the hip, as in climbing and rising from a chair.",
+			"nerve": "Inferior gluteal nerve"
+		},
+		{
+			"id": "FMA:22315",
+			"name": "Gluteus medius",
+			"latin": "Musculus gluteus medius",
+			"synonyms": ["Gluteus medius muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22330",
+				"left": "FMA:22331"
+			},
+			"description": "A fan-shaped hip muscle on the outer surface of the ilium, partly covered by the gluteus maximus.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:9611"],
+			"action": "Abducts and medially rotates the thigh and keeps the pelvis level when standing on one leg.",
+			"nerve": "Superior gluteal nerve"
+		},
+		{
+			"id": "FMA:22423",
+			"name": "Tensor fasciae latae",
+			"latin": "Musculus tensor fasciae latae",
+			"synonyms": ["Tensor fasciae latae muscle", "Tensor of fascia lata"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22425",
+				"left": "FMA:22426"
+			},
+			"description": "A short muscle at the front of the hip that pulls on the iliotibial tract running down the outer thigh.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:24476"],
+			"action": "Flexes, abducts, and medially rotates the thigh and steadies the knee through the iliotibial tract.",
+			"nerve": "Superior gluteal nerve"
+		},
+		{
+			"id": "FMA:22353",
+			"name": "Sartorius",
+			"latin": "Musculus sartorius",
+			"synonyms": ["Sartorius muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22354",
+				"left": "FMA:22355"
+			},
+			"description": "The longest muscle in the body: a narrow strap running diagonally across the front of the thigh.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:24476"],
+			"action": "Flexes, abducts, and laterally rotates the thigh and flexes the knee, as in sitting cross-legged.",
+			"nerve": "Femoral nerve"
+		},
+		{
+			"id": "FMA:22430",
+			"name": "Rectus femoris",
+			"latin": "Musculus rectus femoris",
+			"synonyms": ["Musculus rectos femoris", "Rectus femoris muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38928",
+				"left": "FMA:38929"
+			},
+			"description": "The middle muscle of the quadriceps on the front of the thigh, the only one that crosses the hip.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:24485", "FMA:24476"],
+			"action": "Extends the knee and flexes the thigh at the hip.",
+			"nerve": "Femoral nerve"
+		},
+		{
+			"id": "FMA:22431",
+			"name": "Vastus lateralis",
+			"latin": "Musculus vastus lateralis",
+			"synonyms": [],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38930",
+				"left": "FMA:38931"
+			},
+			"description": "The largest part of the quadriceps, on the outer side of the thigh.",
+			"origin": ["FMA:9611"],
+			"insertion": ["FMA:24485", "FMA:24476"],
+			"action": "Extends the knee.",
+			"nerve": "Femoral nerve"
+		},
+		{
+			"id": "FMA:22432",
+			"name": "Vastus medialis",
+			"latin": "Musculus vastus medialis",
+			"synonyms": [],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:38932",
+				"left": "FMA:38933"
+			},
+			"description": "The part of the quadriceps on the inner thigh, bulging just above the inner knee.",
+			"origin": ["FMA:9611"],
+			"insertion": ["FMA:24485", "FMA:24476"],
+			"action": "Extends the knee and steadies the patella.",
+			"nerve": "Femoral nerve"
+		},
+		{
+			"id": "FMA:22441",
+			"name": "Adductor longus",
+			"latin": "Musculus adductor longus",
+			"synonyms": ["Adductor longus muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22456",
+				"left": "FMA:22457"
+			},
+			"description": "A fan-shaped muscle of the inner thigh from the pubis to the middle of the femur.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:9611"],
+			"action": "Adducts the thigh.",
+			"nerve": "Obturator nerve"
+		},
+		{
+			"id": "FMA:43882",
+			"name": "Gracilis",
+			"latin": "Musculus gracilis",
+			"synonyms": ["Gracilis muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:43883",
+				"left": "FMA:43884"
+			},
+			"description": "A long, thin muscle down the inner side of the thigh.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:24476"],
+			"action": "Adducts the thigh and flexes the knee.",
+			"nerve": "Obturator nerve"
+		},
+		{
+			"id": "FMA:22356",
+			"name": "Biceps femoris",
+			"latin": "Musculus biceps femoris",
+			"synonyms": ["Biceps femoris muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22360",
+				"left": "FMA:22361"
+			},
+			"description": "The outer hamstring on the back of the thigh, with a long and a short head.",
+			"origin": ["FMA:16585", "FMA:9611"],
+			"insertion": ["FMA:24479"],
+			"action": "Flexes the knee and extends the thigh at the hip.",
+			"nerve": "Sciatic nerve (tibial and common fibular parts)"
+		},
+		{
+			"id": "FMA:22357",
+			"name": "Semitendinosus",
+			"latin": "Musculus semitendinosus",
+			"synonyms": ["Semitendinosus muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22358",
+				"left": "FMA:22359"
+			},
+			"description": "An inner hamstring on the back of the thigh, named for its long tendon.",
+			"origin": ["FMA:16585"],
+			"insertion": ["FMA:24476"],
+			"action": "Flexes the knee and extends the thigh at the hip.",
+			"nerve": "Sciatic nerve (tibial part)"
+		},
+		{
+			"id": "FMA:22541",
+			"name": "Gastrocnemius",
+			"latin": "Musculus gastrocnemius",
+			"synonyms": ["Gastrocnemius muscle", "M.gastrocnemius"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22556",
+				"left": "FMA:22557"
+			},
+			"description": "The two-headed calf muscle; with the soleus it forms the Achilles (calcaneal) tendon to the heel bone.",
+			"origin": ["FMA:9611"],
+			"insertion": ["FMA:24491"],
+			"action": "Plantarflexes the foot at the ankle and flexes the knee.",
+			"nerve": "Tibial nerve"
+		},
+		{
+			"id": "FMA:22542",
+			"name": "Soleus",
+			"latin": "Musculus soleus",
+			"synonyms": ["Soleus muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22558",
+				"left": "FMA:22559"
+			},
+			"description": "A broad, flat calf muscle under the gastrocnemius, joining it in the calcaneal tendon.",
+			"origin": ["FMA:24476", "FMA:24479"],
+			"insertion": ["FMA:24491"],
+			"action": "Plantarflexes the foot at the ankle, steadying the leg when standing.",
+			"nerve": "Tibial nerve"
+		},
+		{
+			"id": "FMA:22532",
+			"name": "Tibialis anterior",
+			"latin": "Musculus tibialis anterior",
+			"synonyms": ["Anterior tibial muscle", "Tibialis anterior muscle"],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22544",
+				"left": "FMA:22545"
+			},
+			"description": "The muscle along the outer front of the shin, felt when lifting the toes.",
+			"origin": ["FMA:24476"],
+			"insertion": ["FMA:24491", "FMA:24492"],
+			"action": "Dorsiflexes and inverts the foot.",
+			"nerve": "Deep fibular nerve"
+		},
+		{
+			"id": "FMA:22539",
+			"name": "Fibularis longus",
+			"latin": "Musculus fibularis longus",
+			"synonyms": [
+				"Fibularis longus muscle",
+				"Peroneus longus muscle",
+				"Peroneus longus"
+			],
+			"system": "muscles",
+			"count": 2,
+			"sides": {
+				"right": "FMA:22552",
+				"left": "FMA:22553"
+			},
+			"description": "A long muscle on the outer side of the lower leg whose tendon passes behind the outer ankle and under the foot.",
+			"origin": ["FMA:24479"],
+			"insertion": ["FMA:24491", "FMA:24492"],
+			"action": "Everts the foot and helps plantarflex it.",
+			"nerve": "Superficial fibular nerve"
+		},
+		{
+			"id": "FMA:50801",
+			"name": "Brain",
+			"latin": "Encephalon",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The organ of thought, sensation, and control of the body, enclosed by the cranium and continuous with the spinal cord.",
+			"neighbors": ["FMA:52734", "FMA:9613", "FMA:52737", "FMA:52735"]
+		},
+		{
+			"id": "FMA:9603",
+			"name": "Thyroid gland",
+			"latin": "Glandula thyroidea",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "A butterfly-shaped endocrine gland wrapped around the front of the trachea below the larynx. Its hormones set the body's metabolic rate.",
+			"neighbors": ["FMA:7394", "FMA:7131"]
+		},
+		{
+			"id": "FMA:7394",
+			"name": "Trachea",
+			"latin": "Trachea",
+			"synonyms": ["Windpipe"],
+			"system": "organs",
+			"count": 1,
+			"description": "The windpipe: a tube held open by C-shaped rings of cartilage that carries air from the larynx to the bronchi.",
+			"neighbors": ["FMA:9603", "FMA:7131", "FMA:7309", "FMA:7310"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7131",
+			"name": "Esophagus",
+			"latin": "Oesophagus",
+			"synonyms": ["Gullet"],
+			"system": "organs",
+			"count": 1,
+			"description": "The muscular tube that carries swallowed food from the throat to the stomach, behind the trachea and heart.",
+			"neighbors": ["FMA:7394", "FMA:7088", "FMA:7148"]
+		},
+		{
+			"id": "FMA:7088",
+			"name": "Heart",
+			"latin": "Cor",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The muscular pump in the middle of the chest, between the lungs and behind the sternum, that drives blood through the lungs and the body.",
+			"neighbors": ["FMA:7309", "FMA:7310", "FMA:7131", "FMA:7485"]
+		},
+		{
+			"id": "FMA:7309",
+			"name": "Right lung",
+			"latin": "Pulmo dexter",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The right organ of breathing, with three lobes. It is a little larger than the left lung.",
+			"neighbors": ["FMA:7088", "FMA:7394", "FMA:7197"]
+		},
+		{
+			"id": "FMA:7310",
+			"name": "Left lung",
+			"latin": "Pulmo sinister",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The left organ of breathing, with two lobes and a notch where the heart sits.",
+			"neighbors": ["FMA:7088", "FMA:7394", "FMA:7148", "FMA:7196"]
+		},
+		{
+			"id": "FMA:7197",
+			"name": "Liver",
+			"latin": "Hepar",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The largest internal organ, under the right ribs and diaphragm. It makes bile, stores glycogen, makes blood proteins, and clears toxins.",
+			"neighbors": ["FMA:7202", "FMA:7148", "FMA:7204", "FMA:7309", "FMA:7201"]
+		},
+		{
+			"id": "FMA:7202",
+			"name": "Gallbladder",
+			"latin": "Vesica biliaris",
+			"synonyms": ["Gall bladder"],
+			"system": "organs",
+			"count": 1,
+			"description": "A small pear-shaped sac under the liver that stores and concentrates bile and releases it into the duodenum.",
+			"neighbors": ["FMA:7197", "FMA:7200"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7148",
+			"name": "Stomach",
+			"latin": "Gaster",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "A J-shaped muscular bag in the upper left abdomen that churns food with acid and enzymes.",
+			"neighbors": [
+				"FMA:7131",
+				"FMA:7197",
+				"FMA:7196",
+				"FMA:7198",
+				"FMA:7200",
+				"FMA:7201"
+			]
+		},
+		{
+			"id": "FMA:7196",
+			"name": "Spleen",
+			"latin": "Lien",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "An organ behind the stomach under the left ribs that filters the blood, removes old red cells, and helps fight infection.",
+			"neighbors": ["FMA:7148", "FMA:7205", "FMA:7201", "FMA:7198"]
+		},
+		{
+			"id": "FMA:7198",
+			"name": "Pancreas",
+			"latin": "Pancreas",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "A long gland behind the stomach that makes digestive enzymes and the hormones insulin and glucagon.",
+			"neighbors": ["FMA:7148", "FMA:7200", "FMA:7196", "FMA:7205"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7204",
+			"name": "Right kidney",
+			"latin": "Ren dexter",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The right bean-shaped organ against the back wall of the abdomen that filters blood into urine; it sits a little lower than the left because of the liver.",
+			"neighbors": ["FMA:7197", "FMA:7200", "FMA:7201"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7205",
+			"name": "Left kidney",
+			"latin": "Ren sinister",
+			"synonyms": [],
+			"system": "organs",
+			"count": 1,
+			"description": "The left bean-shaped organ against the back wall of the abdomen that filters blood into urine.",
+			"neighbors": ["FMA:7196", "FMA:7198", "FMA:7148", "FMA:7201"],
+			"latinSource": "TA"
+		},
+		{
+			"id": "FMA:7200",
+			"name": "Small intestine",
+			"latin": "Intestinum tenue",
+			"synonyms": ["Small bowel"],
+			"system": "organs",
+			"count": 1,
+			"description": "The long, coiled tube from the stomach to the large intestine (duodenum, jejunum, and ileum) where most food is digested and absorbed.",
+			"neighbors": ["FMA:7148", "FMA:7201", "FMA:15900", "FMA:7198"]
+		},
+		{
+			"id": "FMA:7201",
+			"name": "Large intestine",
+			"latin": "Intestinum crassum",
+			"synonyms": ["Large bowel"],
+			"system": "organs",
+			"count": 1,
+			"description": "The wide tube framing the small intestine, from the cecum through the colon to the rectum, that absorbs water and forms stool.",
+			"neighbors": ["FMA:7200", "FMA:7197", "FMA:7148", "FMA:7196", "FMA:15900"]
+		},
+		{
+			"id": "FMA:15900",
+			"name": "Urinary bladder",
+			"latin": "Vesica urinaria",
+			"synonyms": ["Bladder"],
+			"system": "organs",
+			"count": 1,
+			"description": "A hollow muscular bag behind the pubic bones that stores urine.",
+			"neighbors": ["FMA:16585", "FMA:7200", "FMA:7201"]
+		},
+		{
+			"id": "FMA:7163",
+			"name": "Skin",
+			"latin": "Cutis",
+			"synonyms": ["Skin of body"],
+			"system": "skin",
+			"count": 1,
+			"description": "The body's outer covering and largest organ, which protects it, holds in water, senses touch, and helps control temperature. Drawn as the body's outline."
+		}
+	]
+}
