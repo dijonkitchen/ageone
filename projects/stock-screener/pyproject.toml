@@ -8,7 +8,7 @@ dependencies = [
     # Pinned: our tests record its standardized output, and the spot check reruns on each upgrade.
     "openbb-sec==2.0.0",
     "openbb-core==2.0.1",
-    "duckdb>=1.1",
+    "duckdb>=2.0.0",
     "pandas>=2.2",
     "numpy>=1.26",
     "requests>=2.32",
