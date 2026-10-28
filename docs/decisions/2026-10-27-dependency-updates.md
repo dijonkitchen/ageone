@@ -4,6 +4,8 @@
 
 2026-10-27: Proposed by Claude, at JC's request
 
+2026-10-28: Accepted by JC
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -50,7 +52,7 @@ A weekly scheduled Claude task does the sweep and reports back in the project th
 
 Renovate also covers Nix and the template, and its onboarding pull request (#27) is open.
 Dependabot was chosen because JC asked for it and it needs no third-party app.
-Running both would open duplicate pull requests, so #27 should be closed if this is accepted.
+Running both would open duplicate pull requests, so #27 was closed.
 
 ### Dependencies
 
