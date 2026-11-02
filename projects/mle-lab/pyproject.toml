@@ -4,18 +4,18 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "duckdb>=1.5",
-    "mlflow>=3.17",
-    "pandas>=3.0",
+    "mlflow>=3.17.2",
+    "pandas>=3.1.0",
     "scikit-learn>=1.9",
 ]
 
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
-    "mypy>=2.4",
-    "pandas-stubs>=3.0.5.260914",
-    "pytest>=9.1",
-    "ruff>=0.16",
+    "mypy>=2.4.1",
+    "pandas-stubs>=3.1.0.261029",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
 ]
 
 [project.scripts]
