@@ -33,7 +33,14 @@ The [comparison with mle-lab](https://claude.ai/artifact/VyZ22vmGqaS5CvhQpCUpdn)
 | Disaster risk | [FEMA National Risk Index](https://hazards.fema.gov/nri/data-resources) | Tract, county | Periodic |
 | Area covariates (income, tenure, commute, age, composition) | ACS 5-year | Tract | Yearly |
 | Mortgage rate | Freddie Mac PMMS via FRED | National | Weekly |
+| Property tax rates | NJ Treasury general and effective rates; California BOE county averages | Town (NJ), county (CA) | Yearly |
+| Homeowners insurance | NAIC Homeowners Report (HO-3 and HO-6 state averages) | State | Yearly, about two years behind |
+| New Jersey test results | NJSLA results from the NJ Department of Education | School, district | Yearly |
+| Graduation and college-prep rates | California Department of Education (graduation, A-G); NJ School Performance Reports | School, district | Yearly |
 | ZIP to tract weights | [HUD-USPS ZIP crosswalk](https://www.huduser.gov/portal/datasets/usps_crosswalk.html) | ZIP, tract | Quarterly; free token |
+
+These are the sources the home search scorecard used and verified, plus the Opportunity Atlas, FHFA, ACS, and the HUD crosswalk for outcomes and joins.
+Monthly housing cost (principal and interest at the PMMS rate with 20% down, plus property tax and insurance) is computed the same way as the scorecard.
 
 The unit of analysis is the ZIP code, because home values come by ZIP.
 Tract and block group values are averaged into ZIPs with the crosswalk's residential weights, and district values are joined through the districts that serve each ZIP.
