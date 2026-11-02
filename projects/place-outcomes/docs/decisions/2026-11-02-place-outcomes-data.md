@@ -4,6 +4,10 @@
 
 2026-11-02: Proposed by Claude, at JC's request
 
+2026-11-02: Accepted by JC
+
+2026-11-02: Amended by Claude, while building: the committed test data is a 40-ZIP sample of Zillow's file, credited to Zillow, since the loop's tests need its monthly layout; Zillow's terms allow free public use with attribution. FHFA stays the cross-check.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
