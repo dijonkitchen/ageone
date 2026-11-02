@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-10-23
+updated_at: 2026-11-02
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -23,6 +23,7 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | [SPEC-2026-10-16-mle-lab](../projects/mle-lab/specs/SPEC-2026-10-16-mle-lab.md) | SPEC-2026-09-30-projects-scaffold | 4 | ML engineering lab: forecast tomorrow's hourly ERCOT grid demand from real EIA-930 data against naive and the operator's forecast, with DuckDB features, MLflow tracking, registry, and serving, and a daily feedback loop that retrains behind an eval gate, replayable over years in minutes | Low | Done |
 | [SPEC-2026-09-30-og-trail-rebuild](../projects/og-trail/specs/SPEC-2026-09-30-og-trail-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | OG Trail rebuild: modern-life Oregon Trail engine, terminal and browser frontends, and agent players feeding the eval pages | Medium | Open |
 | [SPEC-2026-09-30-connect6-rebuild](../projects/connect6/specs/SPEC-2026-09-30-connect6-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 4 | Connect6 rebuild: pure engine, web UI, MCTS and LLM players, and a tournament feeding the eval pages | Medium | Open |
+| [SPEC-2026-11-02-place-outcomes](../projects/place-outcomes/specs/SPEC-2026-11-02-place-outcomes.md) | SPEC-2026-09-30-projects-scaffold | 4 | Schools, homes, and outcomes by place: join housing cost, school quality, student wellbeing, walkability, and disaster risk by ZIP in California and New Jersey with adult outcomes (Opportunity Atlas) and home values, then a monthly home value forecast that retrains behind an eval gate | Medium | Open |
 | [SPEC-2026-10-03-portfolio-kelly](../projects/stock-screener/specs/SPEC-2026-10-03-portfolio-kelly.md) | SPEC-2026-10-03-stock-screener | 4 | Portfolio and Kelly allocation: live prices and price ratios (now and over 10+ years), an interactive portfolio built from screen results, and fractional Kelly position sizing with constraints and a sensitivity view | High | Open |
 | [SPEC-2026-09-30-fread-rebuild](../projects/fread/specs/SPEC-2026-09-30-fread-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 5 | fread rebuild: private client-side RSS and Atom reader PWA with OPML and optional LLM summaries | Low | Open |
 | [SPEC-2026-09-30-fite-rebuild](../projects/fite/specs/SPEC-2026-09-30-fite-rebuild.md) | SPEC-2026-09-30-projects-scaffold | 5 | Fite rebuild: procedural pixel-art tournament fighter with CPU levels and keyboard, touch, and gamepad controls | Low | Open |
