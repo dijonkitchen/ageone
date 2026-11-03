@@ -8,6 +8,8 @@
 
 2026-11-02: Amended by Claude, while building: the committed test data is a 40-ZIP sample of Zillow's file, credited to Zillow, since the loop's tests need its monthly layout; Zillow's terms allow free public use with attribution. FHFA stays the cross-check.
 
+2026-11-03: Amended by Claude, while building milestone 2: SEDA downloads by script once Mozilla's root store (certifi) is trusted, since its chain ends at an emSign root this environment lacks, but downloading it means accepting its data use agreement, which bars republishing its files, so JC accepts it, tests use made-up scores, and the report stays local. Crosswalks are the Census 2010 ZCTA to tract file (population weights, no token, matching the Atlas's 2010 tracts) and NCES's 2024 district to ZCTA file (land area weights), in place of HUD's token-gated crosswalk. Question 1's baseline is area income and state, because the Atlas outcome already fixes parental income at the 25th percentile. EPA walkability and FEMA risk wait for a later change: their download URLs returned 404 and 403 from this environment.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves

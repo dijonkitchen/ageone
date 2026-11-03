@@ -11,6 +11,21 @@ ZHVI_URL = (
 ZHVI_FILE = "Zip_zhvi.csv"
 STATES = ("CA", "NJ")
 
+# Area factors and outcomes (questions 1 and 2). Census and NCES files are public domain.
+CENSUS_OPPORTUNITY = "https://www2.census.gov/ces/opportunity/"
+TRACT_OUTCOMES_FILE = "tract_outcomes_simple.csv"  # Opportunity Atlas: adult outcomes by childhood tract.
+TRACT_COVARIATES_FILE = "tract_covariates.csv"  # Opportunity Atlas: tract traits (2010 tracts).
+ZCTA_TRACT_URL = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt"
+ZCTA_TRACT_FILE = "zcta_tract_rel_10.txt"  # 2010 ZCTA-to-tract parts with population, matching the Atlas tracts.
+GRF_URL = "https://nces.ed.gov/programs/edge/data/GRF24.zip"
+GRF_MEMBER = "GRF24/grf24_lea_zcta5ce20.sas7bdat"
+LEA_ZCTA_FILE = "lea_zcta.csv"  # NCES school district (LEA) to ZCTA land-area overlaps, cut to STATES.
+# Stanford Education Data Archive: downloading means accepting its data use agreement
+# (edopportunity.org/trends/data), which bars republishing the files in full or in part.
+SEDA_URL = "https://stacks.stanford.edu/file/np279jm6134/seda_admindist_poolsub_cs_2025.2.csv"
+SEDA_FILE = "seda_admindist_poolsub_cs_2025.2.csv"
+STATE_FIPS = {"CA": "06", "NJ": "34"}
+
 HORIZON = 12  # Months ahead each forecast looks: the log change in home value over the next year.
 EVAL_MONTHS = 12  # The newest origin months with known labels judge each model.
 
