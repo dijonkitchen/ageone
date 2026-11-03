@@ -75,6 +75,19 @@ def cv_r2(df: pd.DataFrame, features: list[str], target: str, make: object) -> f
     return float(r2_score(df[target], cv_predict(df, features, target, make)))
 
 
+def by_state(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    return {str(s): g.reset_index(drop=True) for s, g in df.groupby("state")}
+
+
+def _r2s(df: pd.DataFrame, features: list[str], target: str) -> tuple[float, float, float]:
+    """Cross-validated R² of the baseline, the linear model, and the boosted model."""
+    return (
+        cv_r2(df, BASELINE, target, linear),
+        cv_r2(df, features, target, linear),
+        cv_r2(df, features, target, boosted),
+    )
+
+
 @dataclass(frozen=True)
 class Scores:
     target: str
@@ -85,6 +98,7 @@ class Scores:
     boosted_r2: float
     adds: dict[str, float]  # Each factor: cross-validated R² lost when the linear model drops it.
     coefficients: dict[str, float]  # Standardized linear coefficients on the full data.
+    states: dict[str, tuple[float, float, float]]  # Per state with 2+ counties: baseline, linear, boosted R².
 
 
 def score(df: pd.DataFrame, features: list[str], target: str) -> Scores:
@@ -102,6 +116,7 @@ def score(df: pd.DataFrame, features: list[str], target: str) -> Scores:
         boosted_r2=cv_r2(df, features, target, boosted),
         adds=adds,
         coefficients={k: float(v) for k, v in coefs.items()},
+        states={state: _r2s(g, features, target) for state, g in by_state(df).items() if g["county"].nunique() > 1},
     )
 
 
@@ -133,10 +148,10 @@ def price(df: pd.DataFrame) -> Price:
     residuals = df[["zip", "state", "county", "log_value", "achievement", "kfr"]].assign(
         predicted=predicted, gap=df["log_value"] - predicted
     )
-    by_state = {str(s): g for s, g in df.groupby("state")}
+    states = by_state(df)
     return Price(
         scores=score(df, features, "log_value"),
-        school_premium={s: premium(g, PRICE_CONTROLS) for s, g in by_state.items()},
-        school_premium_raw={s: premium(g, []) for s, g in by_state.items()},
+        school_premium={s: premium(g, PRICE_CONTROLS) for s, g in states.items()},
+        school_premium_raw={s: premium(g, []) for s, g in states.items()},
         residuals=residuals.sort_values("gap").reset_index(drop=True),
     )

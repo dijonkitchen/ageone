@@ -55,6 +55,8 @@ def analysis_frame(paths: Paths) -> pd.DataFrame:
 def show_scores(s: analysis.Scores) -> None:
     print(f"{s.target}: {s.zips:,} ZIPs in {s.counties} counties, cross-validated R² by county")
     print(f"  baseline (area income, state) {s.baseline_r2:.3f}; linear {s.linear_r2:.3f}; boosted {s.boosted_r2:.3f}")
+    for state, (base, lin, boost) in s.states.items():
+        print(f"  {state} alone: baseline {base:.3f}; linear {lin:.3f}; boosted {boost:.3f}")
     for f, lost in sorted(s.adds.items(), key=lambda kv: -kv[1]):
         print(f"  {analysis.LABELS.get(f, f):<55} coef {s.coefficients[f]:+.3f}  R² lost without it {lost:+.3f}")
 

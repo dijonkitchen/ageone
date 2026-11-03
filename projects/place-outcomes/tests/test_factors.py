@@ -78,3 +78,4 @@ def test_outcomes_and_price_report_scores_premiums_and_residuals(places: Paths) 
     assert len(q2.residuals) == len(df) and q2.residuals["gap"].is_monotonic_increasing
     for s in (q1, q2.scores):
         assert all(math.isfinite(v) for v in (s.baseline_r2, s.linear_r2, s.boosted_r2))
+        assert set(s.states) == {"CA", "NJ"} and all(math.isfinite(v) for r2 in s.states.values() for v in r2)

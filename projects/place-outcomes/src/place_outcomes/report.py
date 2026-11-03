@@ -60,7 +60,8 @@ def _scores(s: Scores, title: str) -> str:
     fit = pd.DataFrame(
         {
             "Model": ["Baseline: area income and state", "Linear, all factors", "Gradient boosted, all factors"],
-            "Cross-validated R²": [s.baseline_r2, s.linear_r2, s.boosted_r2],
+            "Cross-validated R², both states": [s.baseline_r2, s.linear_r2, s.boosted_r2],
+            **{f"{state} alone": list(r2) for state, r2 in s.states.items()},
         }
     )
     factors = pd.DataFrame(

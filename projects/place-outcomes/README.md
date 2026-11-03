@@ -40,6 +40,33 @@ Everything is written under `data/`, `mlflow.db`, and `mlruns/`, which git ignor
   Both compare a linear and a gradient boosted model with the baseline, cross-validated with whole counties held out, and report what each factor adds.
 - **School premium**: in each state, the home value difference for one standard deviation better school achievement, with and without controls for area income, density, jobs, commute, college share, and poverty.
 
+## Last outcomes and price run
+
+On 2,044 California and New Jersey ZIPs with every factor, in 78 counties (run 2026-11-03 with SEDA 2025.2, the Opportunity Atlas tract files on census.gov, last updated 2019, and Zillow's September 2026 values).
+Cross-validated R², with whole counties held out:
+
+| Question | Model | Both states | California | New Jersey |
+|----------|-------|-------------|------------|------------|
+| 1: adult income rank, children of 25th percentile parents | Baseline: area income and state | 0.472 | 0.407 | 0.532 |
+| | Linear, all factors | 0.560 | 0.472 | 0.609 |
+| | Gradient boosted, all factors | 0.517 | 0.390 | 0.567 |
+| 2: log home value | Baseline: area income and state | 0.539 | 0.572 | 0.361 |
+| | Linear, all factors | 0.715 | 0.752 | 0.539 |
+| | Gradient boosted, all factors | 0.715 | 0.748 | 0.429 |
+
+- **Outcomes**: the factors add 0.07 to 0.09 R² over area income, in each state and pooled.
+  The two that add most are the share of single-parent households (lower outcomes) and school achievement (higher outcomes); each loses about 0.02 R² when dropped.
+  The linear model beats the boosted one, which overfits on about 2,000 ZIPs.
+- **Price**: the factors add about 0.18 R² over area income, in each state and pooled.
+  Pooled, the state and the share of adults with a college degree add most; school achievement adds little once those are in, because they carry most of the same signal.
+- **School premium**: one standard deviation better school achievement goes with 7.1% higher home values in California and 9.4% in New Jersey, holding area income, density, jobs, commute, college share, and poverty fixed.
+  Without those controls the gap is 51.5% and 35.4%, so most of the raw school premium is the neighborhood around the schools.
+
+All of this is association, not cause: families choose where to live, and school scores reflect who lives there.
+The Opportunity Atlas's own [causal estimates](https://opportunityinsights.org/paper/neighborhoodsii/) are the place to read cause from.
+The ZIP-level report (`places report`) stays local, since it holds values derived from SEDA.
+Walkability, disaster risk, monthly cost, and student wellbeing are not in these models yet.
+
 ## How the forecast loop works
 
 - **Features** (DuckDB SQL, one row per ZIP and origin month): log changes over 1, 3, 6, 12, 24, and 60 months, 12-month volatility, the ZIP's level against its state's median, state and metro momentum, month of year, and state.
