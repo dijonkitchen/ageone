@@ -1,5 +1,6 @@
 {
   "id": "amend-conventions",
+  "split": "train",
   "title": "Amend an accepted decision record without rewriting it",
   "source": "Conventions decision record, Decision records section (amendments)",
   "prompt": "Amend the conventions decision record: eval case IDs are kebab-case and match their folder name under evals/cases/. Record it as written by eval-agent at JC's request.",

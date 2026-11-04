@@ -1,5 +1,6 @@
 {
   "id": "pr-title",
+  "split": "train",
   "mode": "direct",
   "title": "Write a Conventional Commits pull request title for a change",
   "source": "AGENTS.md agent workflow, step 7; .github/workflows/pr-title.yml",

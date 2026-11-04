@@ -1,5 +1,6 @@
 {
   "id": "read-csv-total",
+  "split": "train",
   "mode": "direct",
   "title": "Read a CSV table and aggregate one column",
   "source": "SPEC-2026-09-27-eval-benchmark-pages output-format experiment (reading)",

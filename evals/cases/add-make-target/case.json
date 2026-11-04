@@ -1,5 +1,6 @@
 {
   "id": "add-make-target",
+  "split": "train",
   "title": "Add a Makefile target that `make help` lists",
   "source": "SPEC-2026-09-26-make-setup Makefile; SPEC-2026-09-26-vendor-neutral-ai-harness eval command",
   "prompt": "Add a `make evals` target that runs `evals/run --self-check`, and make sure `make help` lists it.",

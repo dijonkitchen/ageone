@@ -1,5 +1,6 @@
 {
   "id": "fix-broken-link",
+  "split": "train",
   "title": "Fix a broken relative link without renaming files",
   "source": "Conventions decision record, General section (relative links)",
   "prompt": "A link in README.md points to a file that doesn't exist. Fix it.",

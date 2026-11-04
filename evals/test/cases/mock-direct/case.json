@@ -1,5 +1,6 @@
 {
   "id": "mock-direct",
+  "split": "test",
   "mode": "direct",
   "title": "Mock model replies with a fixed answer",
   "prompt": "MOCK-REPLY: 42",

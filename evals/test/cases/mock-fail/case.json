@@ -1,0 +1,9 @@
+{
+  "id": "mock-fail",
+  "split": "train",
+  "mode": "direct",
+  "title": "Mock model gives a wrong answer, so the failures view lists it",
+  "prompt": "MOCK-REPLY: 41",
+  "timeoutSec": 60,
+  "maxTurns": 1
+}
