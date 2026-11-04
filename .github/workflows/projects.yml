@@ -1,4 +1,4 @@
-# Runs `make check` in each project folder a pull request changes, and in every project on main.
+# Runs `make check` in each project or shared skill folder a pull request changes, and in all of them on main.
 # Each job sets up the pinned devenv environment with the root `make`, which also checks Bun and uv.
 # See specs/SPEC-2026-09-30-projects-scaffold.md and docs/decisions/2026-10-04-project-template.md.
 name: Projects
@@ -47,7 +47,7 @@ jobs:
         run: make
       - name: make check
         if: matrix.project != '_template'
-        run: devenv shell -- make -C projects/${{ matrix.project }} check
+        run: devenv shell -- make -C ${{ matrix.project }} check
       - name: New projects from the template pass make check
         if: matrix.project == '_template'
         run: |

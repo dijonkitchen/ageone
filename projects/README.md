@@ -11,6 +11,6 @@ The new project gets an `AGENTS.md` with `CLAUDE.md` symlinked to it, `specs/`, 
 
 ## CI
 
-The [Projects workflow](../.github/workflows/projects.yml) runs `make check` in each project folder that a pull request changes, and in every project on `main`; a folder without a `Makefile` (specs only) is skipped.
+The [Projects workflow](../.github/workflows/projects.yml) runs `make check` in each project or `skills/` folder that a pull request changes, and in all of them on `main`; a folder without a `Makefile` (specs only) is skipped.
 [`changed`](changed) decides which, and [`new`](new) is what `make new` runs.
 See [Project template](../docs/decisions/2026-10-04-project-template.md).
