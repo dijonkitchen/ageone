@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="SimpleFit: track the few fitness numbers with the best evidence for health and longevity. Private and offline.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0b7a5a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SimpleFit">
+<title>SimpleFit</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+<h1>SimpleFit</h1>
+<p id="backup-reminder" class="reminder" hidden></p>
+</header>
+<main>
+<section aria-labelledby="next-h">
+<h2 id="next-h">Next</h2>
+<p id="next" class="next"></p>
+</section>
+
+<section aria-labelledby="week-h">
+<h2 id="week-h">This week</h2>
+<div id="week"></div>
+</section>
+
+<section aria-labelledby="log-h">
+<h2 id="log-h">Log</h2>
+<form id="log-form" class="row">
+<label>What <select id="log-kind" name="kind"></select></label>
+<label>Amount <input id="log-value" name="value" type="number" inputmode="decimal" step="any" required></label>
+<label>Day <input id="log-day" name="day" type="date" required></label>
+<button type="submit">Add</button>
+</form>
+<p id="log-error" class="error" role="alert"></p>
+<ul id="entries" class="entries"></ul>
+</section>
+
+<section aria-labelledby="trends-h">
+<h2 id="trends-h">Trends <small>(8 weeks)</small></h2>
+<div id="trends" class="trends"></div>
+</section>
+
+<section aria-labelledby="zones-h">
+<h2 id="zones-h">Heart rate zones</h2>
+<div id="zones"></div>
+</section>
+
+<section aria-labelledby="settings-h">
+<h2 id="settings-h">You and your targets</h2>
+<form id="settings" class="grid">
+<label>Birth year <input name="birthYear" type="number" inputmode="numeric" min="1900" max="2100"></label>
+<label>Sex (for fitness bands) <select name="sex"><option value="">Not set</option><option value="female">Female</option><option value="male">Male</option></select></label>
+<label>Measured max heart rate <input name="maxHr" type="number" inputmode="numeric" min="100" max="230" placeholder="estimated if empty"></label>
+<label>Zone 2 minutes a week <input name="zone2" type="number" inputmode="numeric" min="0" max="1500"></label>
+<label>Zone 4 minutes a week <input name="zone4" type="number" inputmode="numeric" min="0" max="300"></label>
+<label>Strength sessions a week <input name="strength" type="number" inputmode="numeric" min="0" max="14"></label>
+</form>
+</section>
+
+<section aria-labelledby="backup-h">
+<h2 id="backup-h">Backup</h2>
+<p>Your data stays on this device. Export it to keep a copy, or to move it to another device.</p>
+<div class="row">
+<button id="export" type="button">Export</button>
+<label class="button">Import <input id="import" type="file" accept="application/json,.json" hidden></label>
+</div>
+<p id="backup-status"></p>
+</section>
+
+<section aria-labelledby="sources-h">
+<h2 id="sources-h">Sources</h2>
+<ul class="sources">
+<li>Max heart rate, 208 − 0.7 × age: Tanaka, Monahan, Seals. <i>J Am Coll Cardiol</i> 2001;37(1):153–156.</li>
+<li>Zones from heart rate reserve: Karvonen, Kentala, Mustala. <i>Ann Med Exp Biol Fenn</i> 1957;35(3):307–315.</li>
+<li>VO₂max estimate, 15.3 × max ÷ resting heart rate: Uth et al. <i>Eur J Appl Physiol</i> 2004;91(1):111–115.</li>
+<li>Fitness bands from treadmill VO₂peak percentiles: Kaminsky et al. (FRIEND). <i>Mayo Clin Proc</i> 2022;97(2):285–293.</li>
+<li>150 minutes a week and strength on 2 or more days: WHO 2020 guidelines, Bull et al. <i>Br J Sports Med</i> 2020;54(24):1451–1462.</li>
+<li>4 × 4 minute intervals: Helgerud et al. <i>Med Sci Sports Exerc</i> 2007;39(4):665–671.</li>
+</ul>
+<p class="small">Estimates, not medical advice.</p>
+</section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

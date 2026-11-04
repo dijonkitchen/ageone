@@ -1,4 +1,4 @@
-# Build the eval and benchmark pages from committed results on every pull request; publish them from main.
+# Build the eval and benchmark pages from committed results, and the SimpleFit PWA, on every pull request; publish them from main.
 # Publishing needs GitHub Pages set to "GitHub Actions" in the repository's settings (once).
 # See specs/SPEC-2026-09-27-eval-benchmark-pages.md.
 name: Site
@@ -20,6 +20,10 @@ jobs:
         with:
           node-version: 22
       - run: site/build
+      # SimpleFit, the fitness PWA (projects/simplefit), is published at <pages>/simplefit/.
+      - uses: oven-sh/setup-bun@v2
+      - name: Build SimpleFit into the site
+        run: cd projects/simplefit && bun install --frozen-lockfile && bun build.ts ../../_site/simplefit
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
