@@ -1,0 +1,44 @@
+[project]
+name = "roi"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "Screen stocks and options and evaluate strategies offline, with a cited research assistant; no live trading."
+dependencies = []
+
+[project.optional-dependencies]
+# Live prices through OpenBB (many vendors, e.g. yfinance). Heavy, so optional: uv sync --extra openbb
+openbb = ["openbb>=4"]
+
+[project.scripts]
+roi = "roi.cli:main"
+
+[dependency-groups]
+dev = ["mypy>=2.4", "pytest>=9.1", "ruff>=0.16"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roi"]
+
+[tool.mypy]
+files = ["src", "tests"]
+strict = true
+
+# Tests are typed where it helps; their fixture helpers may stay untyped.
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+# OpenBB is an optional extra, imported only by its adapter.
+[[tool.mypy.overrides]]
+module = "openbb.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["criteria(*ids): the acceptance criteria in docs/acceptance.md that a test checks"]
