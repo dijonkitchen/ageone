@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="An interactive SVG view of the human body: turn body systems on and off, pick a structure to learn what it is, and search by name.">
+<title>Anatomy Viewer</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+<h1>Anatomy Viewer</h1>
+<div class="views" role="radiogroup" aria-label="View">
+<label><input type="radio" name="view" value="front" checked> Front</label>
+<label><input type="radio" name="view" value="back"> Back</label>
+<label><input type="radio" name="view" value="side"> Side</label>
+</div>
+<div class="search">
+<label for="q" class="visually-hidden">Search structures</label>
+<input id="q" type="search" placeholder="Search: femur, os coxae, thigh bone…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+<div id="results" role="listbox" aria-label="Matches" hidden></div>
+</div>
+</header>
+<main>
+<section class="stage-wrap" aria-label="Body">
+<svg id="stage" aria-label="Human body, front view. Tab to move through structures; Enter picks one; arrow keys pan; plus and minus zoom; 0 resets."></svg>
+<div class="zoom">
+<button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+<button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+<button id="zoom-reset" type="button" aria-label="Reset zoom">⟲</button>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+</section>
+<aside>
+<section aria-labelledby="layers-h">
+<h2 id="layers-h">Layers</h2>
+<p class="hint">Deep to superficial. Peel the body from skin to bone; a faded layer lets the pointer through to the layers under it.</p>
+<div id="layers"></div>
+</section>
+<section id="details" aria-live="polite" aria-labelledby="details-h">
+<h2 id="details-h">Details</h2>
+<p class="hint">Hover over or pick a structure, or search for one.</p>
+</section>
+<section class="sources" aria-labelledby="sources-h">
+<h2 id="sources-h">Sources</h2>
+<ul id="sources"></ul>
+<p class="hint">For learning, not medical advice.</p>
+</section>
+</aside>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -4,7 +4,6 @@
 
 An interactive browser view of the human body, drawn in SVG, where you turn body systems on and off, pick a structure to learn what it is, and search for structures by name.
 Movement comes later, in its own spec; this one only keeps the drawings ready for it.
-
 - **Views**: front (anterior) and back (posterior) views of a whole adult body, standing in the anatomical position, plus a side (lateral) view.
   Switching views keeps the selected structure selected when it shows in the new view.
 - **Layers**: each body system is its own layer, drawn from deep to superficial: skeleton, ligaments, muscles (deep and superficial), organs, blood vessels, nerves, lymphatics, and skin with surface landmarks.

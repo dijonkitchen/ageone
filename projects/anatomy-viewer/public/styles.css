@@ -1,0 +1,362 @@
+:root {
+	--bg: #faf8f4;
+	--panel: #ffffff;
+	--ink: #24211c;
+	--muted: #5f584d;
+	--line: #d8d1c4;
+	--accent: #1f5fbf;
+	--bone: #efe5cf;
+	--bone-line: #6b5a3e;
+	--muscle: #c8564b;
+	--muscle-line: #6e241d;
+	--organ: #d99a4e;
+	--organ-line: #6f4514;
+	--skin: #f1cfb2;
+	--skin-line: #7d5f48;
+	--decor: #3a3128;
+	--pick: #1f5fbf;
+	--hover: #f2c230;
+	--stage: #f3efe7;
+	--on-accent: #ffffff;
+	color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #17161a;
+		--panel: #201f24;
+		--ink: #ece8e1;
+		--muted: #b3ab9e;
+		--line: #3a3740;
+		--accent: #7fb0ff;
+		--bone: #d8ccb2;
+		--bone-line: #f0e6d0;
+		--muscle: #c2584e;
+		--muscle-line: #ffb4a9;
+		--organ: #cf9447;
+		--organ-line: #ffd9a6;
+		--skin: #8a6c58;
+		--skin-line: #e2c3aa;
+		--decor: #141216;
+		--pick: #7fb0ff;
+		--hover: #ffd54a;
+		--stage: #1d1c21;
+		--on-accent: #0f1420;
+	}
+}
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+body {
+	background: var(--bg);
+	color: var(--ink);
+	font:
+		15px / 1.45 system-ui,
+		sans-serif;
+	display: flex;
+	flex-direction: column;
+}
+header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 18px;
+	padding: 10px 16px;
+	border-bottom: 1px solid var(--line);
+}
+h1 {
+	font-size: 19px;
+	margin: 0;
+}
+h2 {
+	font-size: 15px;
+	margin: 0 0 6px;
+}
+.views {
+	display: flex;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	overflow: hidden;
+}
+.views label {
+	padding: 5px 12px;
+	cursor: pointer;
+}
+.views input {
+	position: absolute;
+	opacity: 0;
+}
+.views label:has(input:checked) {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+.views label:has(input:focus-visible) {
+	outline: 2px solid var(--accent);
+	outline-offset: -3px;
+}
+.search {
+	position: relative;
+	flex: 1;
+	min-width: 220px;
+	max-width: 420px;
+}
+#q {
+	width: 100%;
+	font: inherit;
+	padding: 6px 10px;
+	border-radius: 8px;
+	border: 1px solid var(--line);
+	background: var(--panel);
+	color: var(--ink);
+}
+#results {
+	position: absolute;
+	z-index: 5;
+	left: 0;
+	right: 0;
+	top: 100%;
+	margin: 4px 0 0;
+	padding: 4px;
+	list-style: none;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	max-height: 60vh;
+	overflow: auto;
+	box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+}
+#results > * {
+	padding: 5px 8px;
+	border-radius: 6px;
+	cursor: pointer;
+}
+#results [aria-selected="true"],
+#results [role="option"]:hover {
+	background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+#results small {
+	color: var(--muted);
+	margin-left: 6px;
+}
+main {
+	flex: 1;
+	display: flex;
+	min-height: 0;
+}
+.stage-wrap {
+	flex: 1;
+	position: relative;
+	min-width: 0;
+	background: var(--stage);
+}
+#stage {
+	width: 100%;
+	height: 100%;
+	display: block;
+	touch-action: none;
+	cursor: grab;
+}
+.zoom {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+button {
+	font: inherit;
+	color: var(--ink);
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	padding: 4px 10px;
+	cursor: pointer;
+}
+.zoom button {
+	width: 38px;
+	height: 38px;
+	font-size: 18px;
+}
+#tip {
+	position: absolute;
+	pointer-events: none;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	padding: 2px 8px;
+	font-size: 13px;
+	white-space: nowrap;
+}
+aside {
+	width: 330px;
+	padding: 12px 16px;
+	border-left: 1px solid var(--line);
+	background: var(--panel);
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+.hint {
+	color: var(--muted);
+	font-size: 13px;
+	margin: 0 0 8px;
+}
+.layer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 3px 0;
+}
+.layer[data-planned] {
+	color: var(--muted);
+}
+.tri {
+	display: flex;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	overflow: hidden;
+	font-size: 13px;
+}
+.tri label {
+	padding: 2px 8px;
+	cursor: pointer;
+}
+.tri input {
+	position: absolute;
+	opacity: 0;
+}
+.tri label:has(input:checked) {
+	background: var(--accent);
+	color: var(--on-accent);
+}
+.tri label:has(input:focus-visible) {
+	outline: 2px solid var(--accent);
+	outline-offset: -3px;
+}
+#details h3 {
+	margin: 0;
+	font-size: 18px;
+}
+#details .latin {
+	font-style: italic;
+	color: var(--muted);
+	margin: 0 0 6px;
+}
+#details dl {
+	margin: 8px 0;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 4px 10px;
+}
+#details h4 {
+	margin: 10px 0 4px;
+	font-size: 13px;
+	color: var(--muted);
+}
+#details dt {
+	color: var(--muted);
+}
+#details dd {
+	margin: 0;
+}
+.rel {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+.rel button {
+	font-size: 13px;
+	padding: 1px 8px;
+	border-radius: 999px;
+}
+.sources ul {
+	padding-left: 18px;
+	margin: 0 0 6px;
+	font-size: 13px;
+}
+.sources a {
+	color: var(--accent);
+}
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+}
+/* Layers and structures */
+.layer-g[data-state="faded"] {
+	opacity: 0.3;
+	pointer-events: none;
+}
+.layer-g[data-state="hidden"] {
+	display: none;
+}
+.structure {
+	stroke-width: 0.15;
+	vector-effect: non-scaling-stroke;
+	cursor: pointer;
+	outline: none;
+}
+[data-layer="skeleton"] .structure {
+	fill: var(--bone);
+	stroke: var(--bone-line);
+}
+[data-layer="muscles"] .structure {
+	fill: var(--muscle);
+	stroke: var(--muscle-line);
+	fill-opacity: 0.88;
+}
+[data-layer="organs"] .structure {
+	fill: var(--organ);
+	stroke: var(--organ-line);
+}
+[data-layer="skin"] .structure {
+	fill: var(--skin);
+	stroke: var(--skin-line);
+	fill-opacity: 0.35;
+}
+.decor {
+	fill: var(--decor);
+	pointer-events: none;
+}
+.structure:hover,
+.structure:focus-visible {
+	stroke: var(--hover);
+	stroke-width: 2.5px;
+}
+.structure.picked {
+	stroke: var(--pick);
+	stroke-width: 3px;
+	fill-opacity: 1;
+}
+.structure.related {
+	stroke: var(--pick);
+	stroke-width: 1.5px;
+	stroke-dasharray: 3 2;
+}
+@media (max-width: 760px) {
+	html,
+	body {
+		height: auto;
+	}
+	main {
+		flex-direction: column;
+	}
+	.stage-wrap {
+		height: 62vh;
+		flex: none;
+	}
+	aside {
+		width: auto;
+		border-left: none;
+		border-top: 1px solid var(--line);
+	}
+}
