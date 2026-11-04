@@ -1,0 +1,39 @@
+[project]
+name = "og-trail"
+version = "0.1.0"
+description = "The Oregon Trail for modern life, with agent players (SPEC-2026-09-30-og-trail-rebuild)."
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+og-trail = "og_trail.cli:main"
+
+[dependency-groups]
+dev = ["mypy>=2.4", "pytest>=9.1", "ruff>=0.16"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/og_trail"]
+
+[tool.mypy]
+files = ["src", "tests"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+extend-select = ["E", "F", "I", "UP", "B"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false

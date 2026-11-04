@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OG Trail</title>
+<style>
+  :root {
+    --bg: #0b0f0b;
+    --panel: #101710;
+    --ink: #b7f5b0;
+    --dim: #5f8f5a;
+    --hot: #e8ff9c;
+    --bad: #ff8c8c;
+    --line: #234223;
+    --font: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); }
+  body {
+    padding-block: 20px; padding-inline: 16px; min-height: 100vh;
+    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 4px);
+  }
+  .wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.2em; text-shadow: 0 0 8px rgba(183,245,176,0.5); }
+  header small { color: var(--dim); }
+  button {
+    font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+    padding: 10px 14px; text-align: left; cursor: pointer; border-radius: 4px; width: 100%;
+  }
+  button:hover, button:focus-visible { border-color: var(--hot); color: var(--hot); outline: none; }
+  button.ghost { width: auto; padding: 6px 10px; color: var(--dim); }
+  button .key { color: var(--dim); margin-right: 8px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  h2 { margin: 0 0 10px; font-size: 1.05rem; color: var(--hot); }
+  h3 { margin: 12px 0 6px; font-size: 0.8rem; color: var(--dim); letter-spacing: 0.15em; text-transform: uppercase; }
+  #text { white-space: pre-wrap; line-height: 1.5; margin: 0 0 14px; }
+  #choices { display: grid; gap: 8px; }
+  form { display: flex; gap: 8px; }
+  input { flex: 1; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+  input:focus { border-color: var(--hot); outline: none; }
+  #error { color: var(--bad); min-height: 1.4em; margin-top: 8px; }
+  #log { margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: 0.9rem; }
+  #log li { padding: 3px 0; border-top: 1px dashed var(--line); }
+  #log li:first-child { border-top: 0; color: var(--ink); }
+  .map { position: relative; height: 54px; }
+  .map .road { position: absolute; left: 0; right: 0; top: 30px; height: 2px; background: var(--line); }
+  .map .stop { position: absolute; top: 24px; width: 2px; height: 14px; background: var(--dim); }
+  .map .stop span { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: var(--dim); white-space: nowrap; }
+  .map .car { position: absolute; top: 8px; transform: translateX(-50%); font-size: 1.3rem; transition: left 0.6s ease; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; align-items: start; }
+  .stat { border: 1px solid var(--line); border-radius: 4px; padding: 8px; }
+  .stat b { display: block; color: var(--dim); font-weight: normal; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .person { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; padding: 4px 0; }
+  .person .bar { grid-column: 1 / -1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .person .bar i { display: block; height: 100%; background: var(--ink); }
+  .person.gone { color: var(--dim); text-decoration: line-through; }
+  .person.gone .bar i { background: var(--dim); }
+  .supplies { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+  .supplies span:nth-child(even) { text-align: right; }
+  .hidden { display: none !important; }
+  footer { color: var(--dim); font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>OG TRAIL</h1>
+    <small>The Oregon Trail, but for modern life.</small>
+    <button class="ghost" id="new">New game</button>
+  </header>
+
+  <section class="panel" id="mapPanel">
+    <div class="map" id="map"><div class="road"></div><div class="car" id="car">🚗</div></div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div class="grid">
+    <main class="panel">
+      <h2 id="title"></h2>
+      <p id="text"></p>
+      <div id="choices"></div>
+      <form id="form" class="hidden" autocomplete="off">
+        <input id="input" type="text" aria-label="your answer">
+        <button type="submit" style="width:auto">Go</button>
+      </form>
+      <div id="error" role="alert"></div>
+    </main>
+    <aside class="panel" id="side">
+      <h3>Party</h3>
+      <div id="party"></div>
+      <h3>Supplies</h3>
+      <div class="supplies" id="supplies"></div>
+      <h3>Recently</h3>
+      <ul id="log"></ul>
+    </aside>
+  </div>
+  <footer>Same engine as the terminal version. Press 1–9 to choose, Enter to submit.</footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const KEY = "og_trail_game";
+  const LANDMARKS = [[200,"Paycheck"],[400,"Loans"],[600,"Costco"],[800,"Enroll"],[1000,"Chat"],[1200,"Target"],[1400,"Layoff"],[1600,"Scroll"],[1800,"Lease"]];
+  let gameId = null;
+  let view = null;
+
+  async function api(path, body) {
+    const res = await fetch("/api/games" + path, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  async function newGame() {
+    const seed = new URLSearchParams(location.search).get("seed");
+    const { data } = await api("", seed === null ? {} : { seed: Number(seed) });
+    gameId = data.id;
+    localStorage.setItem(KEY, gameId);
+    render(data.view);
+  }
+
+  async function resumeOrNew() {
+    const saved = localStorage.getItem(KEY);
+    if (saved) {
+      const { ok, data } = await api("/" + saved);
+      if (ok) { gameId = saved; render(data.view); return; }
+    }
+    await newGame();
+  }
+
+  async function submit(value) {
+    $("error").textContent = "";
+    const { ok, data } = await api("/" + gameId + "/input", { value });
+    if (!ok) { $("error").textContent = data.error || "That didn't work."; }
+    if (data.view) render(data.view);
+  }
+
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function renderMap(st) {
+    const map = $("map");
+    map.querySelectorAll(".stop").forEach((n) => n.remove());
+    for (const [miles, name] of LANDMARKS) {
+      const stop = el("div", "stop");
+      stop.style.left = (miles / st.miles_total * 100) + "%";
+      stop.appendChild(el("span", "", name));
+      map.appendChild(stop);
+    }
+    $("car").style.left = (st.miles / st.miles_total * 100) + "%";
+    $("car").textContent = st.car > 0 ? "🚗" : "🚶";
+  }
+
+  function stat(label, value) {
+    const box = el("div", "stat");
+    box.appendChild(el("b", "", label));
+    box.appendChild(document.createTextNode(value));
+    return box;
+  }
+
+  function renderStatus(st) {
+    const stats = $("stats");
+    stats.replaceChildren(
+      stat("Week", st.week),
+      stat("Miles", st.miles + " / " + st.miles_total),
+      stat("Money", "$" + st.money.toLocaleString()),
+      stat("Hustle", st.hustle),
+      stat("Budget", st.budget),
+      stat("Next stop", st.next_landmark.name + " (" + st.next_landmark.miles + " mi)"),
+      stat("Car", st.car + "%"),
+      stat("Rent", "$" + st.rent.toLocaleString() + " / 4 wk"),
+      stat("Work", st.employed ? "employed" : "job hunting"),
+    );
+    const party = $("party");
+    party.replaceChildren(...st.party.map((p) => {
+      const row = el("div", "person" + (p.alive ? "" : " gone"));
+      row.appendChild(el("span", "", p.name));
+      row.appendChild(el("span", "", p.status));
+      const bar = el("div", "bar");
+      const fill = el("i");
+      fill.style.width = p.health + "%";
+      bar.appendChild(fill);
+      row.appendChild(bar);
+      return row;
+    }));
+    const labels = { groceries: "Groceries", coffee: "Coffee", meds: "Med kits", parts: "Car parts", outfits: "Outfits" };
+    const sup = $("supplies");
+    sup.replaceChildren();
+    for (const [k, v] of Object.entries(st.supplies)) {
+      sup.appendChild(el("span", "", labels[k] || k));
+      sup.appendChild(el("span", "", String(v)));
+    }
+    renderMap(st);
+  }
+
+  function render(v) {
+    view = v;
+    const inSetup = v.phase.startsWith("setup");
+    $("mapPanel").classList.toggle("hidden", inSetup);
+    $("side").classList.toggle("hidden", inSetup);
+    if (!inSetup && v.status) renderStatus(v.status);
+
+    $("title").textContent = v.title;
+    $("text").textContent = v.text;
+    const choices = $("choices");
+    choices.replaceChildren(...v.choices.map((c, i) => {
+      const b = el("button");
+      b.appendChild(el("span", "key", (i + 1) + ")"));
+      b.appendChild(document.createTextNode(c.label));
+      b.addEventListener("click", () => submit(c.id));
+      return b;
+    }));
+    const form = $("form");
+    const input = $("input");
+    const wantsText = v.input_type === "text" || v.input_type === "number";
+    form.classList.toggle("hidden", !wantsText);
+    if (wantsText) {
+      input.type = v.input_type === "number" ? "number" : "text";
+      input.min = "0";
+      input.value = "";
+      input.focus();
+    }
+    if (v.input_type === "none") {
+      const again = el("button", "", "Play again");
+      again.addEventListener("click", newGame);
+      choices.appendChild(again);
+    }
+    $("log").replaceChildren(...[...v.log].reverse().map((line) => el("li", "", line)));
+  }
+
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); submit($("input").value); });
+  $("new").addEventListener("click", () => { if (confirm("Start a new game?")) newGame(); });
+  document.addEventListener("keydown", (e) => {
+    if (!view || view.input_type !== "choice") return;
+    if (e.target.tagName === "INPUT") return;
+    const n = Number(e.key);
+    if (n >= 1 && n <= view.choices.length) submit(view.choices[n - 1].id);
+  });
+
+  resumeOrNew();
+})();
+</script>
+</body>
+</html>
