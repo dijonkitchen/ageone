@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns="http://purl.org/rss/1.0/"
+>
+<channel rdf:about="https://planet.debian.org/">
+	<title>Planet Debian</title>
+	<link>https://planet.debian.org/</link>
+	<description>Planet Debian - https://planet.debian.org/</description>
+
+	<items>
+		<rdf:Seq> 
+		  <rdf:li rdf:resource="http://blog.sesse.net/blog/tech/2026-10-21-23-19_decompilation_patterns_part_18_signed_division.html"/>
+		  <rdf:li rdf:resource="http://blog.sesse.net/blog/tech/2026-10-20-23-33_decompilation_patterns_part_17_loop_rotation.html"/>
+		  <rdf:li rdf:resource="https://cascardo.eti.br/blog/dmem_cgroup_7.3/"/>
+		  <rdf:li rdf:resource="https://etbe.coker.com.au/?p=6326"/>
+		  <rdf:li rdf:resource="http://blog.sesse.net/blog/tech/2026-10-19-21-53_decompilation_patterns_part_16_tail_reduplication.html"/>
+		  <rdf:li rdf:resource="http://dirk.eddelbuettel.com/blog/2026/10/18#myman_0.12.0"/>
+		  <rdf:li rdf:resource="https://blog.apdu.fr/posts/2026/10/new-version-of-pcsc-lite-253/"/>
+		  <rdf:li rdf:resource="http://blog.sesse.net/blog/tech/2026-10-18-10-47_decompilation_patterns_part_15_redundant_if_for.html"/>
+		  <rdf:li rdf:resource="http://dirk.eddelbuettel.com/blog/2026/10/17#rcpparmadillo_15.6.2-1"/>
+		  <rdf:li rdf:resource="http://blog.sesse.net/blog/tech/2026-10-17-21-29_decompilation_patterns_part_14_strength_increase.html"/>
+		  <rdf:li rdf:resource="http://dirk.eddelbuettel.com/blog/2026/10/16#rcppsimdjson_0.1.17"/>
+		  <rdf:li rdf:resource="https://diffoscope.org/news/diffoscope-334-released/"/>
+		  <rdf:li rdf:resource="https://codon.org.uk/~mjg59/blog/p/epics-eac2-v2-seems-fairly-easily-bypassable/"/>
+		  <rdf:li rdf:resource="http://dirk.eddelbuettel.com/blog/2026/10/14#qlcal-r_0.1.4"/>
+		  <rdf:li rdf:resource="https://reproducible-builds.org/reports/2026-09/"/>
+		  <rdf:li rdf:resource="https://www.eyrie.org/~eagle/reviews/books/9798376517017.html"/>
+		  <rdf:li rdf:resource="https://www.freexian.com/blog/debian-contributions-09-2026/"/>
+		  <rdf:li rdf:resource="http://dirk.eddelbuettel.com/blog/2026/10/13#rquantlib_0.4.29"/>
+		  <rdf:li rdf:resource="https://codon.org.uk/~mjg59/blog/p/linux-lockdown-and-hibernation-again/"/>
+		  <rdf:li rdf:resource="https://maytham.aezign.au/blog/menus-without-javascript"/>
+		  <rdf:li rdf:resource="https://maytham.aezign.au/blog/underlining-in-css"/>
+		  <rdf:li rdf:resource="https://www.eyrie.org/~eagle/reviews/books/1-250-40009-0.html"/>
+		  <rdf:li rdf:resource="https://retout.co.uk/2026/10/10/zeversolar-esphome/"/>
+		  <rdf:li rdf:resource="tag:www.chiark.greenend.org.uk,2026-10-09:/~cjwatson/blog/activity-2026-09.html"/>
+		  <rdf:li rdf:resource="https://etbe.coker.com.au/?p=6312"/>
+		  <rdf:li rdf:resource="https://etbe.coker.com.au/?p=6320"/>
+		  <rdf:li rdf:resource="tag:veronneau.org,2026-10-09:/removing-myself-as-a-lintian-uploader-in-the-next-few-weeks.html"/>
+		  <rdf:li rdf:resource="https://diffoscope.org/news/diffoscope-333-released/"/>
+		  <rdf:li rdf:resource="https://anarc.at/blog/2026-10-08-dst-warning/"/>
+		  <rdf:li rdf:resource="http://blog.alteholz.eu/?p=2854"/>
+		  <rdf:li rdf:resource="hatenablog://entry/14945776032087269493"/>
+		  <rdf:li rdf:resource="tag:bits.debian.org,2026-10-07:/2026/10/forky-artwork-cfp.html"/>
+		  <rdf:li rdf:resource="https://etbe.coker.com.au/?p=6307"/>
+		  <rdf:li rdf:resource="https://etbe.coker.com.au/?p=6310"/>
+		  <rdf:li rdf:resource="https://utkarsh2102.org/posts/foss-in-sept-26/"/>
+		  <rdf:li rdf:resource="http://www.luffy.cx/en/blog/2026-go-netip-addrto6.html"/>
+		  <rdf:li rdf:resource="http://www.luffy.cx/en/blog/2026-go-compiler-optimization-netip.html"/>
+		  <rdf:li rdf:resource="http://www.luffy.cx/en/blog/2026-http-over-ssh.html"/>
+		  <rdf:li rdf:resource="https://www.decadent.org.uk/ben/blog/2026/10/02/foss-activity-in-september-2026"/>
+		  <rdf:li rdf:resource="http://www.netfort.gr.jp/~dancer/diary/daily/2026-Oct-2.html.en#2026-Oct-2-16:56:37"/>
+		  <rdf:li rdf:resource="https://blog.apdu.fr/posts/2026/09/macos-golden-gate-and-smart-cards-status/"/>
+		  <rdf:li rdf:resource="https://gwolf.org/2026/09/the-origins-of-gpu-computing.html"/>
+		  <rdf:li rdf:resource="https://optimizedbyotto.com/post/multiple-git-remotes/"/>
+		  <rdf:li rdf:resource="https://maytham.aezign.au/blog/how-dns-and-nameservers-work"/>
+		  <rdf:li rdf:resource="https://diffoscope.org/news/diffoscope-332-released/"/>
+		  <rdf:li rdf:resource="https://aezign.com.au/resources/how-dns-and-nameservers-work"/>
+		  <rdf:li rdf:resource="https://notes.secretsauce.net/notes/2026/09/27_lunar-terminator-paradox.html"/>
+		  <rdf:li rdf:resource="https://aquilamacedo.xyz/debian/salsa-ci/2026/09/27/transition-aware-rebuilds"/>
+		  <rdf:li rdf:resource="https://www.eyrie.org/~eagle/reviews/books/0-7564-2013-X.html"/>
+		  <rdf:li rdf:resource="https://diffoscope.org/news/diffoscope-331-released/"/>
+		  <rdf:li rdf:resource="https://sunweavers.net/160 at https://sunweavers.net/blog"/>
+		  <rdf:li rdf:resource="https://diffoscope.org/news/diffoscope-330-released/"/>
+		  <rdf:li rdf:resource="http://www.luffy.cx/en/blog/2026-goatcounter.html"/>
+		  <rdf:li rdf:resource="tag:blogger.com,1999:blog-8085113335874848981.post-6303472353413203122"/>
+		  <rdf:li rdf:resource="https://blog.apdu.fr/posts/2026/09/new-version-of-libccid-184/"/>
+		  <rdf:li rdf:resource="https://www.freexian.com/blog/debian-lts-report-2026-08/"/>
+		  <rdf:li rdf:resource="https://blog.apdu.fr/posts/2026/09/new-version-of-pcsc-lite-252/"/>
+		  <rdf:li rdf:resource="hatenablog://entry/14945776032079905182"/>
+		  <rdf:li rdf:resource="https://notes.pault.ag/why-write/"/>
+		  <rdf:li rdf:resource="http://www.hungry.com/~pere/blog/Long_term_storage_of_Mattermost_messages_with_Noark_5_XML.html"/>
+		</rdf:Seq>
+	</items>
+</channel>
+
+
+<item rdf:about="http://blog.sesse.net/blog/tech/2026-10-21-23-19_decompilation_patterns_part_18_signed_division.html">
+	<title>Steinar H. Gunderson: Decompilation patterns, part 18: Signed division</title>
+	<link>http://blog.sesse.net/blog/tech/2026-10-21-23-19_decompilation_patterns_part_18_signed_division.html</link>
+     <content:encoded>&lt;p&gt;As promised, the last one (for now?), and this one blew my mind the first
+time I saw it:&lt;/p&gt;
+
+&lt;pre&gt;    var_v0 = sp4014;
+    if ((s32) sp4014 &amp;lt; 0) {
+        var_v0 = sp4014 + 0x7FF;
+    }
+    temp_s1 = 0x800 - (sp4014 - (((s32) var_v0 &amp;gt;&amp;gt; 0xB) &amp;lt;&amp;lt; 0xB));
+&lt;/pre&gt;
+
+&lt;p&gt;There&#39;s actually two things going on here. First, the compiler
+is faking a signed division using shifting (which rounds down) as a building block:
+If the value is negative, then you add a bias to make shift into round-up.
+(The right-shift by 0xB, or 11, is exactly a division by 0x800.)&lt;/p&gt;
+
+&lt;p&gt;So this means what we&#39;re looking at is:&lt;/p&gt;
+
+&lt;pre&gt;    var_v0 = (s32) sp4014 / 0x800;
+    temp_s1 = 0x800 - (sp4014 - var_v0 * 0x800);
+&lt;/pre&gt;
+
+&lt;p&gt;which reduces further to:&lt;/p&gt;
+
+&lt;pre&gt;    temp_s1 = 0x800 - ((s32) sp4014 % 0x800);
+&lt;/pre&gt;
+
+&lt;p&gt;Tada. That&#39;s it. Now you know all the tricks, except those that I don&#39;t know
+or that I forgot. You don&#39;t need the LLM. Have fun. :-)&lt;/p&gt;
+
+&lt;p&gt;Edit: Corrected a thinko; of course, MIPS has signed division.
+This is for power-of-two optimizations only.&lt;/p&gt;</content:encoded> 
+	<dc:date>2026-10-21T21:30:20+00:00</dc:date>
+	<dc:creator>Steinar H. Gunderson</dc:creator>
+</item> 
+<item rdf:about="http://blog.sesse.net/blog/tech/2026-10-20-23-33_decompilation_patterns_part_17_loop_rotation.html">
+	<title>Steinar H. Gunderson: Decompilation patterns, part 17: Loop rotation</title>
+	<link>http://blog.sesse.net/blog/tech/2026-10-20-23-33_decompilation_patterns_part_17_loop_rotation.html</link>
+     <content:encoded>&lt;p&gt;Occasionally, you&#39;ll see code like this (after initial cleanup):&lt;/p&gt;
+
+&lt;pre&gt;    var_v0_2 = crc &amp;amp; 0x80000000;
+    do {
+       if (var_v0_2 != 0) {
+           crc = (crc &amp;lt;&amp;lt; 1) ^ 0x1EDC6F41;
+       } else {
+           crc &amp;lt;&amp;lt;= 1;
+       }
+       var_a0 += 1;
+       var_v0_2 = crc &amp;amp; 0x80000000;
+    } while (var_a0 &amp;lt; 8U);
+&lt;/pre&gt;
+
+&lt;p&gt;The thing with &lt;code&gt;var_v0_2&lt;/code&gt; is unnatural. GCC sometimes does these loop rotation tricks, seemingly
+to save registers (don&#39;t ask me how exactly it does). You want to un-rotate
+back into:&lt;/p&gt;
+
+&lt;pre&gt;    do {
+       var_v0_2 = crc &amp;amp; 0x80000000;
+       if (var_v0_2 != 0) {
+           crc = (crc &amp;lt;&amp;lt; 1) ^ 0x1EDC6F41;
+       } else {
+           crc &amp;lt;&amp;lt;= 1;
+       }
+       var_a0 += 1;
+    } while (var_a0 &amp;lt; 8U);
+&lt;/pre&gt;
+
+&lt;p&gt;and then of course, you can clean up the rest:&lt;/p&gt;
+
+&lt;pre&gt;for (i = 0; i &amp;lt; 8; ++i) {
+    if (crc &amp;amp; 0x80000000) {
+        crc = (crc &amp;lt;&amp;lt; 1) ^ 0x1EDC6F41;
+    } else {
+        crc &amp;lt;&amp;lt;= 1;
+    }
+}
+&lt;/pre&gt;
+
+&lt;p&gt;Last one tomorrow, I think.&lt;/p&gt;</content:encoded> 
+	<dc:date>2026-10-20T22:33:00+00:00</dc:date>
+	<dc:creator>Steinar H. Gunderson</dc:creator>
+</item> 
+ 
+
+</rdf:RDF>

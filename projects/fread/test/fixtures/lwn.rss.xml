@@ -1,0 +1,77 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+    		xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>LWN.net</title>
+        <link>https://lwn.net</link>
+        <description> LWN.net is a comprehensive source of news and opinions from
+        and about the Linux community.  This is the main LWN.net feed,
+        listing all articles which are posted to the site front page.
+</description>
+        <language>en-us</language>
+        <pubDate>Fri, 23 Oct 2026 02:20:41 +0000</pubDate>
+        <lastBuildDate>Fri, 23 Oct 2026 02:20:41 +0000</lastBuildDate>
+        <docs>https://www.rssboard.org/rss-specification</docs>
+        <webMaster>lwn@lwn.net</webMaster>
+        <atom:link href="https://lwn.net/headlines/rss2"
+    		rel="self" type="application/rss+xml"/>
+    <item>
+        <title>[$] The end of __get_user() and __put_user()</title>
+        <link>https://lwn.net/Articles/1102061/</link>
+        <guid>https://lwn.net/Articles/1102061/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>Linus Torvalds rarely writes significant amounts of kernel code these days, so
+the &lt;a
+href=&quot;https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=22a78a25438d&quot;&gt;merging&lt;/a&gt;
+of a 48-part patch series from him is an unusual event.  This series,
+destined for the 7.4 kernel release, performs some long-delayed kernel
+cleanup by removing a couple of the primitives used to access user-space memory
+from the kernel.  What was once a best practice has long been superseded,
+but it can take time for such changes to work their way through a body of
+code this large.
+</description>
+        <pubDate>Thu, 22 Oct 2026 16:25:50 +0000</pubDate>
+        </item>
+        <item>
+        <title>KeePassXC 2.8.0 released</title>
+        <link>https://lwn.net/Articles/1102270/</link>
+        <guid>https://lwn.net/Articles/1102270/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>&lt;p&gt;&lt;a href=&quot;https://keepassxc.org/blog/2026-10-21-2.8.0-released/&quot;&gt;Version
+2.8.0&lt;/a&gt; of the &lt;a href=&quot;https://keepassxc.org/&quot;&gt;KeePassXC&lt;/a&gt; password-management application has been
+released.&lt;/p&gt;
+
+&lt;blockquote class=&quot;bq&quot;&gt;
+The new release brings a lot of long-awaited new features, many bugfixes, and
+several security updates. Among the major features are the migration from Qt5 to
+Qt6, Auto-Type on Wayland (Linux), configurable keyboard shortcuts, remote
+database synchronization with external tools, quick unlock with password on
+macOS, and quick unlock via Polkit on Linux. Version 2.8.0 is also the first
+version for which we ship native ARM64 builds for Windows and an experimental
+AArch64 (i.e., ARM64) AppImage for Linux.
+&lt;/blockquote&gt;
+
+&lt;p&gt;See the &lt;a
+href=&quot;https://github.com/keepassxreboot/keepassxc/releases/tag/2.8.0&quot;&gt;changelog&lt;/a&gt;
+for a full list of new features, major changes, and bug fixes.&lt;/p&gt;</description>
+        <pubDate>Thu, 22 Oct 2026 13:34:37 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] Rust features in the future</title>
+        <link>https://lwn.net/Articles/1099606/</link>
+        <guid>https://lwn.net/Articles/1099606/</guid>
+        <dc:creator>daroc</dc:creator>
+        <description>&lt;p&gt;
+There are several Rust features that kernel developers have been hoping to
+stabilize, but Josh Triplett wanted to describe all of the &lt;em&gt;other&lt;/em&gt;
+features that the Rust project is currently working on. He spoke about the topic
+at Kangrejos 2026, leaving the assembled kernel developers with several ideas
+about how to use these upcoming Rust features in the kernel.
+The features included refinements to the type system, small syntax improvements, and a
+smarter borrow checker.
+&lt;/p&gt;
+</description>
+        <pubDate>Thu, 22 Oct 2026 13:19:56 +0000</pubDate>
+        </item>
+        
+        </channel>
+</rss>

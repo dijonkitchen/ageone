@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="referrer" content="no-referrer">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: http: data:; connect-src https: http:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+	<meta name="color-scheme" content="light dark">
+	<meta name="theme-color" content="#1f6feb">
+	<title>fread</title>
+	<link rel="manifest" href="manifest.webmanifest">
+	<link rel="icon" href="icon.svg" type="image/svg+xml">
+	<link rel="stylesheet" href="styles.css">
+	<script type="module" src="app.js"></script>
+</head>
+<body>
+	<header>
+		<strong class="brand">fread</strong>
+		<label class="toggle"><input type="checkbox" id="unread-only"> Unread only</label>
+		<span class="spacer"></span>
+		<button type="button" id="refresh">Refresh</button>
+		<button type="button" id="mark-all">Mark all read</button>
+		<button type="button" id="open-settings" aria-label="Settings">Settings</button>
+	</header>
+	<p id="status" role="status" aria-live="polite"></p>
+	<main>
+		<nav aria-label="Feeds">
+			<form id="add">
+				<input id="add-url" type="url" inputmode="url" placeholder="Feed URL" aria-label="Feed URL" required>
+				<button type="submit">Add</button>
+			</form>
+			<ul id="feeds"></ul>
+			<div class="opml">
+				<label class="button">Import OPML<input id="import" type="file" accept=".opml,.xml,text/xml,text/x-opml" hidden></label>
+				<button type="button" id="export">Export OPML</button>
+			</div>
+		</nav>
+		<section aria-label="Articles"><ul id="items"></ul></section>
+		<article id="reader" aria-label="Reader"></article>
+	</main>
+	<dialog id="settings">
+		<form id="settings-form" method="dialog">
+			<h2>Settings</h2>
+			<label>Theme
+				<select id="theme"><option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select>
+			</label>
+			<label>CORS proxy (optional)
+				<input id="proxy" type="url" placeholder="https://proxy.example/?url={url}">
+				<small>Off by default. Feeds then go through this proxy, which sees which feeds you read.</small>
+			</label>
+			<label class="toggle"><input type="checkbox" id="images"> Load images in articles
+				<small>Off by default: loading an image tells its host you read the article.</small>
+			</label>
+			<fieldset>
+				<legend>Summaries</legend>
+				<label class="toggle"><input type="checkbox" id="summaries"> Summarize articles with a model</label>
+				<label>Model role <select id="summary-role"></select></label>
+				<label>OpenRouter key <input id="api-key" type="password" autocomplete="off"></label>
+				<small>Off by default. When on, the article you summarize is sent to OpenRouter. The key stays in this browser.</small>
+			</fieldset>
+			<div class="dialog-actions">
+				<button type="button" id="remove-feed">Remove selected feed</button>
+				<span class="spacer"></span>
+				<button type="submit" value="cancel" formnovalidate>Cancel</button>
+				<button type="submit" value="save">Save</button>
+			</div>
+		</form>
+	</dialog>
+</body>
+</html>

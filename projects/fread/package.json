@@ -1,0 +1,19 @@
+{
+	"name": "fread",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"@types/bun": "^1.4.2",
+		"@types/jsdom": "^30.0.0",
+		"jsdom": "^30.1.3",
+		"typescript": "^7.0.2"
+	},
+	"dependencies": {
+		"dompurify": "^3.3.0"
+	},
+	"scripts": {
+		"build": "bun build.ts",
+		"serve": "bun build.ts && bunx serve dist"
+	}
+}

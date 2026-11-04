@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<opml version="1.0">
+    <head>
+        <title>Subscriptions in feedly Cloud</title>
+    </head>
+    <body>
+        <outline text="Tech" title="Tech">
+            <outline type="rss" text="LWN.net" title="LWN.net" xmlUrl="https://lwn.net/headlines/rss" htmlUrl="https://lwn.net"/>
+            <outline type="rss" text="Rust Blog" title="Rust Blog" xmlUrl="https://blog.rust-lang.org/feed.xml" htmlUrl="https://blog.rust-lang.org/"/>
+        </outline>
+        <outline text="Comics" title="Comics">
+            <outline type="rss" text="xkcd.com" title="xkcd.com" xmlUrl="https://xkcd.com/atom.xml" htmlUrl="https://xkcd.com/"/>
+        </outline>
+    </body>
+</opml>
