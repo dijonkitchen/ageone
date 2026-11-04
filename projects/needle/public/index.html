@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Needle</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#1b1f24">
+</head>
+<body>
+<header><h1>Needle</h1><p id="mode"></p></header>
+<main>
+<form id="ask-form">
+<label for="question">Question</label>
+<input id="question" required autocomplete="off">
+<button id="ask" type="submit">Ask</button>
+</form>
+<p id="status" role="status"></p>
+<article id="note" hidden>
+<h2 id="note-title">Answer</h2>
+<div id="answer"></div>
+<ol id="sources"></ol>
+<details><summary>Markdown</summary><pre id="markdown"></pre></details>
+</article>
+<section>
+<h2>Library</h2>
+<label for="library-search">Search notes</label>
+<input id="library-search" type="search" autocomplete="off">
+<ul id="notes"></ul>
+</section>
+<details id="settings">
+<summary>Settings</summary>
+<label for="key">OpenRouter key (stays in this browser)</label>
+<input id="key" type="password" autocomplete="off">
+<label for="role">Model role</label>
+<select id="role"></select>
+<label for="proxy">Kagi search proxy URL</label>
+<input id="proxy" type="url" placeholder="https://your-proxy.example/search">
+<label for="pasted">Or paste search results (title, URL, snippet; blank line between)</label>
+<textarea id="pasted" rows="6"></textarea>
+<button id="save" type="button">Save settings</button>
+<h3>Vault</h3>
+<button id="mirror" type="button">Mirror to a folder</button>
+<button id="export" type="button">Export zip</button>
+</details>
+</main>
+<script src="app.js" type="module"></script>
+</body>
+</html>
