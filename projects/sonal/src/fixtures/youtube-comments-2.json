@@ -1,0 +1,17 @@
+{
+	"kind": "youtube#commentThreadListResponse",
+	"items": [
+		{
+			"id": "Ug3",
+			"snippet": {
+				"topLevelComment": {
+					"snippet": {
+						"authorDisplayName": "Cy",
+						"textDisplay": "What mic is that?",
+						"likeCount": 0
+					}
+				}
+			}
+		}
+	]
+}
