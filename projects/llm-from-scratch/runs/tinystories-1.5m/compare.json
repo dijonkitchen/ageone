@@ -1,0 +1,28 @@
+{
+  "stories": 200,
+  "bytes": 158664,
+  "context": 256,
+  "ours": {
+    "run": "runs/tinystories-1.5m",
+    "parameters": 1484800,
+    "vocab_size": 2048,
+    "bits_per_byte": 0.755,
+    "samples": [
+      "Once upon a time, there was a little girl named Lily. Lily was always sad and alone. She wanted to find a modern toy. She asked her friend, Sam, for help.\n\"Sam, can you help me find a modern toy?\" asked Lily. Sam looked and looked, but a big, shiny thing could talk. He thought about it and decided to take a box. He found a big, shiny ball in the front of Lily.\nWhen Sam came home, Lily asked Sam, \"Can I have my ball, please?\" Sam said, \"Yes, I can have my ball.\" Lily was happy and they both started to play. They played every day. At the end of the day, Lily and Sam learned a new toy.",
+      "Tom and his dog went to the park. They saw a big tree with a dict on it. Tom wanted to climb the tree and see what was on the ground. He thought, \"I can climb the tree and get the dictionary.\"\nTom and Lily went to the tree. They saw a sign that said, \"Can I climb the tree?\" The sign replied, \"Yes, I can climb the tree. Let's climb the tree.\"\nThey climbed the tree as they climbed, but then they reached the top of the tree. The dictionary was too close to the tree. The tree was gone. Tom and Lily were sad that their dictionary was gone to the ground.",
+      "The sun was hot, so Ben wanted to try to go home. He tried to climb the tree, but it was too hot. Mom saw him looking for the red apples. She tried to reach the red apples, but it was too hard. She tried and tried, but he was too big for the red apples.\nMom heard the apple and came to the tree. She saw the red apples and the apples on the ground. She was so happy and said, \"Thank you, Ben! You soh shared the apples, but be careful, it's ok.\" Ben learned to listen to his mom and never came back to the tree again."
+    ]
+  },
+  "theirs": {
+    "model": "roneneldan/TinyStories-1M",
+    "revision": "77f1b168e219585646439073245fe87e56b3023e",
+    "parameters": 3745984,
+    "vocab_size": 50257,
+    "bits_per_byte": 0.7801,
+    "samples": [
+      "Once upon a time, there was a little girl named Lily. She loved to play outside with her friends, but they didn't want to play with the new toy. One day, Lily and her friends kept playing in the garden when a big wind blew on the ground.\n\nLily's friends went outside and saw something shiny as a lot of grass. They had never seen one before. Suddenly, Lily had a plan. She decided to open the box and see what was inside. Lily started to count the buttons, but the door opened. She counted her friends, \"One, two, three! Inside it, there are kids! There are lots of pretty flowers, and some other toys they're. You can do that!\"\n\nLily was so happy, she smiled as she watched the old man. She played with the different colors of the pretty colors, and even made them laugh. She learned that even if she was right, she should be careful, she should not touch anything.\n",
+      "Tom and his dog went to the park. The park was big and had lots of fun things to play. Sue loved the park and went on a swing and swing.\n\nOne day, Tom saw a pretty rose outside he saw. He was so excited and wanted to see it. He opened the rose and saw a lot of flowers in the grass. He wanted to get a drink.\n\nTom's mom saw that Tom was sad too. She told Tim that the rose was bad. Tom was lonely and wanted to play with the flowers. So, he decided to make the rose feel better.\n\nTom put the rose back in the park and went to the park. He found a swing and picked the rose again. He was happy to have a home with a friend. And they all lived happily ever after.\n",
+      "The sun was hot, so Ben liked to go to the pond and eat some food. He wanted to eat the food and eat the food.\n\nBen said she loved a lot. He said he wanted to eat the food. Ben was so excited! He asked his mom.\n\n\"Do you want to eat the food?\" Ben asked.\n\nHis mom smiled and said, \"Yes, you can eat food. Just do not give it to the animals. And we don't want the food to eat. Then you can eat the food. Don't eat them again?\"\n\nBen nodded and followed the food. They ate the food and ate the food. They were very happy. They ate bread and ate the food. They were happy and full.\n"
+    ]
+  }
+}
