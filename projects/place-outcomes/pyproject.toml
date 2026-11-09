@@ -1,0 +1,39 @@
+[project]
+name = "place-outcomes"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5",
+    "mlflow>=3.17.2",
+    "pandas>=3.1.0",
+    "scikit-learn>=1.9",
+]
+
+[dependency-groups]
+dev = ["mypy>=2.4", "pandas-stubs>=3.1.0.261029", "pytest>=9.1", "ruff>=0.16"]
+
+[project.scripts]
+places = "place_outcomes.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/place_outcomes"]
+
+[tool.mypy]
+files = ["src", "tests"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[[tool.mypy.overrides]]
+# scikit-learn ships no type hints.
+module = ["sklearn.*"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
