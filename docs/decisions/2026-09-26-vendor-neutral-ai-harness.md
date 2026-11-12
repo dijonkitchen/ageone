@@ -21,6 +21,8 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-10-03: Amended by Claude, at JC's request: pi is pinned at 1.0.1, which has MCP and codemode built in.
 
+2026-11-12: Amended by Claude, at JC's request: model access (section 2) moves to Vercel AI Gateway, with OpenRouter one setting away, and the OpenRouter-specific parts of sections 6 and 8 become one gateway's settings ([Model Gateway](2026-11-12-model-gateway.md)).
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
