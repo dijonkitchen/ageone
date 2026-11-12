@@ -2,7 +2,7 @@
   "question": "Which format should our tools use for data a model reads, and for data a model writes?",
   "answer": null,
   "decision": "docs/decisions/2026-09-27-agent-tool-interfaces.md",
-  "models": ["cheap", "openrouter/openai/gpt-6-luna", "openrouter/deepseek/deepseek-v4.1-flash"],
+  "models": ["cheap", "openai/gpt-6-luna", "deepseek/deepseek-v4.1-flash"],
   "reps": 3,
   "variants": [
     { "id": "csv", "label": "CSV", "harness": "direct", "cases": "variants/csv" },

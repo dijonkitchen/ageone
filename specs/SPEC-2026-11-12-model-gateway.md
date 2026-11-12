@@ -16,10 +16,10 @@ In an agent loop most of the cost is context re-read from the prompt cache, so e
   `--gateway openrouter` on `evals/run` and `experiments/run`, and a `<route>:<model>` ID anywhere a model is accepted, such as `openrouter:deepseek/deepseek-v4.1-flash` or `anthropic:claude-sonnet-5` (direct, with `ANTHROPIC_API_KEY`).
 - On Vercel:
   - pi uses its built-in `vercel-ai-gateway` provider with `AI_GATEWAY_API_KEY`.
-  - Open-weight models are pinned to the US and EU host allowlist through pi's `vercelGatewayRouting.only`, using Vercel's host names (`fireworks`, `togetherai`, `parasail`, `baseten`, `modal`, `deepinfra`; CoreWeave isn't on Vercel).
-  - Zero data retention and no prompt training are on as team-wide settings in Vercel, because pi sends Vercel only `only` and `order`, not `zeroDataRetention`.
-    `direct` mode builds its own requests, so it also sets `zeroDataRetention: true` and the allowlist on each one.
-  - Claude Code runs through Vercel's Claude Code endpoint, `https://ai-gateway.vercel.sh/claude-code`.
+  - Every request carries `providerOptions.gateway.zeroDataRetention: true`, and open-weight models are pinned to the US and EU host allowlist with `providerOptions.gateway.only`, using Vercel's host names (`fireworks`, `togetherai`, `parasail`, `baseten`, `modal`, `deepinfra`; CoreWeave isn't on Vercel).
+    pi's Vercel provider sends no gateway options (it speaks the Anthropic Messages API, and pi sends `vercelGatewayRouting` only on its OpenAI-compatible path), so a pi extension in the repo adds them to each request; `direct` mode builds its own requests and sets them itself.
+  - Zero data retention and no prompt training are also on as team-wide settings in Vercel, as the backstop for pi outside the repo and other tools.
+  - Claude Code runs through Vercel's Claude Code endpoint, `https://ai-gateway.vercel.sh/claude-code`, and sends the same options as an extra request body.
 - On OpenRouter, routing works as it does today: `zdr`, `data_collection: "deny"`, and `only` with no fallbacks for open-weight models.
 - Each results line records the route it ran through and the cost the gateway billed.
   pi prices a call from its own catalog at one list price per model, while the gateway bills the host that served it plus any surcharge, so pi's figure is kept only as a fallback and marked as such.

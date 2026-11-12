@@ -7,16 +7,16 @@ The [Vendor-Neutral AI Harness](../../docs/decisions/2026-09-26-vendor-neutral-a
 
 ## Setup
 
-Both harnesses run every case in [`evals/cases`](../../evals/cases) with the same models, reached through OpenRouter, in the same fresh sandbox per case.
+Both harnesses run every case in [`evals/cases`](../../evals/cases) with the same models, reached through the same gateway, in the same fresh sandbox per case.
 pi runs with its four tools plus the pinned web search extension; Claude Code runs with its own built-in tools.
 Direct cases run with tools turned off in both.
 
 ## Conclusion
 
-Not run yet: the runs need an OpenRouter key.
+Not run yet: the runs need an AI Gateway key.
 
 ## Not measured
 
 OpenCode, which is next once it has an adapter.
 Interactive use, IDE integration, and tasks longer than one prompt.
-Claude Code's web search goes through Anthropic's server-side tool, which OpenRouter may not pass through for every model, so the web case measures each harness's web access as shipped.
+Claude Code's web search goes through Anthropic's server-side tool, which a gateway may not pass through for every model, so the web case measures each harness's web access as shipped.

@@ -10,7 +10,8 @@ import { loadCases } from "../evals/lib/sandbox.mjs";
 
 const USAGE = `usage: experiments/run <experiment> [options]
 
-  --model <m>      a role or provider/model ID; repeatable (default: the experiment's models)
+  --model <m>      a role, a creator/model ID, or a <route>:<model> ID; repeatable (default: the experiment's models)
+  --gateway <name> route roles and plain model IDs through this gateway instead of the one in harness/models.json
   --reps <n>       repetitions (default: the experiment's reps)
   --variant <ids>  comma-separated variants (default: all)
   --estimate       print the estimated cost and exit
@@ -24,6 +25,7 @@ const { values: opt, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     model: { type: "string", multiple: true },
+    gateway: { type: "string" },
     reps: { type: "string" },
     variant: { type: "string" },
     estimate: { type: "boolean", default: false },
@@ -52,6 +54,38 @@ const variants = opt.variant ? exp.variants.filter((v) => opt.variant.split(",")
 const casesDir = (v) => (v.cases.startsWith("evals/") ? join(ROOT, v.cases) : join(dir, v.cases));
 const results = join(dir, "results");
 
+// Tokens for one run of a case. A direct case is one call: the prompt (about 4 characters a token) and 400 output tokens.
+// An agent case is AGENT.turns calls on a growing context: a system prompt and tools, then each turn adds its output
+// and a tool result. The first call writes the context to the prompt cache; each later call reads the context
+// up to the previous call from the cache and writes what is new, which is where most of an agent's input cost goes.
+const AGENT = { turns: 8, system: 6000, output: 800, toolResult: 1200 };
+function estimateTokens(c) {
+  const prompt = Math.ceil(c.prompt.length / 4);
+  if (c.mode === "direct") return { input: prompt, cacheRead: 0, cacheWrite: 0, output: 400 };
+  const t = { input: 0, cacheRead: 0, cacheWrite: 0, output: AGENT.turns * AGENT.output };
+  let cached = 0;
+  let context = AGENT.system + prompt;
+  for (let turn = 0; turn < AGENT.turns; turn++) {
+    t.cacheRead += cached;
+    t.cacheWrite += context - cached;
+    cached = context;
+    context += AGENT.output + AGENT.toolResult;
+  }
+  return t;
+}
+
+// Per-token prices from a gateway's model list, which name them differently (OpenRouter: prompt and completion;
+// Vercel: input and output). A missing cache-read price is charged as input; a cache write costs at least input.
+function prices(p) {
+  if (!p) return null;
+  const input = Number(p.prompt ?? p.input);
+  const output = Number(p.completion ?? p.output);
+  if (!Number.isFinite(input) || !Number.isFinite(output)) return null;
+  const read = Number(p.input_cache_read);
+  const write = Number(p.input_cache_write);
+  return { input, output, cacheRead: Number.isFinite(read) && read > 0 ? read : input, cacheWrite: Math.max(input, Number.isFinite(write) ? write : 0) };
+}
+
 function evalsRun(args) {
   const r = spawnSync(join(ROOT, "evals", "run"), args, { stdio: "inherit" });
   return r.status ?? 1;
@@ -68,35 +102,37 @@ if (opt["self-check"]) {
   process.exit(bad ? 1 : 0);
 }
 
-// Estimate: prompt tokens (about 4 characters each) plus an allowance for output and, in agent cases,
-// re-reading the context each turn, priced from OpenRouter's public model list.
-const pricing = new Map();
-try {
-  const res = await fetch("https://openrouter.ai/api/v1/models");
-  for (const m of (await res.json()).data) pricing.set(m.id, m.pricing);
-} catch {
-  console.error("warning: could not fetch OpenRouter prices; showing tokens only");
+const resolved = models.map((m) => resolveModel(config, m, { gateway: opt.gateway }));
+
+// Estimate: priced from each route's public model list, counting cache reads and writes.
+const lists = new Map();
+for (const route of new Set(resolved.map((m) => m.gateway).filter(Boolean))) {
+  try {
+    const res = await fetch(config.gateways[route].modelsUrl);
+    lists.set(route, new Map((await res.json()).data.map((m) => [m.id, m.pricing])));
+  } catch {
+    console.error(`warning: could not fetch ${route} prices; showing tokens only`);
+  }
 }
 let total = 0;
-const lines = ["model,calls,est_tokens_in,est_tokens_out,est_cost_usd"];
-for (const m of models) {
-  const model = resolveModel(config, m);
-  let calls = 0, tin = 0, tout = 0;
+const lines = ["model,runs,est_tokens_in,est_cache_read,est_cache_write,est_tokens_out,est_cost_usd,est_cost_per_run"];
+for (const model of resolved) {
+  const sum = { runs: 0, input: 0, cacheRead: 0, cacheWrite: 0, output: 0 };
   for (const v of variants) {
     for (const c of loadCases(casesDir(v))) {
-      const turns = c.mode === "direct" ? 1 : 8;
-      calls += reps;
-      tin += reps * turns * (Math.ceil(c.prompt.length / 4) + (c.mode === "direct" ? 0 : 6000));
-      tout += reps * turns * (c.mode === "direct" ? 400 : 800);
+      const t = estimateTokens(c);
+      sum.runs += reps;
+      for (const k of ["input", "cacheRead", "cacheWrite", "output"]) sum[k] += reps * t[k];
     }
   }
-  const p = model.provider === "openrouter" ? pricing.get(model.id) : null;
-  const cost = p ? tin * Number(p.prompt) + tout * Number(p.completion) : null;
+  const p = prices(lists.get(model.gateway)?.get(model.id));
+  const cost = p ? sum.input * p.input + sum.cacheRead * p.cacheRead + sum.cacheWrite * p.cacheWrite + sum.output * p.output : null;
   if (cost !== null) total += cost;
-  lines.push(`${model.full},${calls},${tin},${tout},${cost === null ? "unknown" : cost.toFixed(4)}`);
+  const tokensIn = sum.input + sum.cacheRead + sum.cacheWrite;
+  lines.push(`${model.full},${sum.runs},${tokensIn},${sum.cacheRead},${sum.cacheWrite},${sum.output},${cost === null ? "unknown" : cost.toFixed(4)},${cost === null ? "unknown" : (cost / sum.runs).toFixed(4)}`);
 }
 console.log(lines.join("\n"));
-console.log(`# estimated total: $${total.toFixed(2)} for ${variants.length} variants x ${models.length} models x ${reps} reps`);
+console.log(`# estimated total: $${total.toFixed(2)} for ${variants.length} variants x ${models.length} models x ${reps} reps, at list prices before any gateway fee or surcharge`);
 if (opt.estimate) process.exit(0);
 if (!opt.yes) {
   console.log("# not run: add --yes to run it");
@@ -106,7 +142,7 @@ if (!opt.yes) {
 let failed = 0;
 for (const v of variants) {
   failed += evalsRun(["--harness", v.harness, "--cases", casesDir(v), "--results", results, "--experiment", id, "--variant", v.id, "--reps", String(reps),
-    ...models.flatMap((m) => ["--model", m])]) ? 1 : 0;
+    ...(opt.gateway ? ["--gateway", opt.gateway] : []), ...models.flatMap((m) => ["--model", m])]) ? 1 : 0;
 }
 console.log(`# next: site/build, then open _site/${id}/index.html`);
 process.exit(failed ? 1 : 0);

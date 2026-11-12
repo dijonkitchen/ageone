@@ -4,6 +4,8 @@
 
 2026-11-12: Proposed by Claude, at JC's request
 
+2026-11-12: Amended by Claude, while implementing [SPEC-2026-11-12-model-gateway](../../specs/SPEC-2026-11-12-model-gateway.md): pi sends Vercel no gateway options at all, so a pi extension in the repo sends zero data retention and the host allowlist on each request; Claude Code sends them as an extra request body.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
@@ -84,10 +86,17 @@ A `<route>:<model>` ID overrides the route for one call, where the route is a ga
 
 ### Privacy on Vercel
 
-- pi sends Vercel only `only` and `order` from `vercelGatewayRouting`, not `zeroDataRetention`, so zero data retention is the team-wide setting.
+- pi's built-in Vercel provider sends every model through Vercel's Anthropic Messages endpoint, and pi sends `vercelGatewayRouting` only on its OpenAI-compatible path (checked in the pinned 1.0.1 and in 1.5.2), so on Vercel pi sends no gateway options at all.
+  [`harness/gateway-options.ts`](../../harness/gateway-options.ts), a pi extension on pi's `before_provider_request` hook, adds `providerOptions.gateway` to each request: `zeroDataRetention: true`, and `only` for open-weight models.
+  If it can't work out the options, it names a model no gateway serves, so the request fails instead of going out without them.
+  `.pi/settings.json` loads it in this repo and the eval runner passes it to pi; `evals/test/run` checks the fields reach the request.
+- Per-request zero data retention costs nothing extra; the team-wide setting ($0.10 per 1,000 requests) stays on as the backstop for pi outside the repo and other tools ([ZDR](https://vercel.com/docs/ai-gateway/security-and-compliance/zdr)).
   Disallow prompt training is a separate team-wide toggle, free, and turned on too.
+- Alibaba Cloud and Moonshot AI are zero-retention providers on Vercel, so zero data retention alone doesn't keep open-weight models off China-based hosts; the `only` allowlist does.
+- Claude Code can't send gateway options itself, but it merges `CLAUDE_CODE_EXTRA_BODY` into every request body, which Vercel documents for passing `providerOptions` ([Anthropic Messages API](https://vercel.com/docs/ai-gateway/sdks-and-apis/anthropic-messages-api)), so the eval runner sets it.
+  It also sets `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`, since zero-retention Claude can be served from Bedrock or Vertex, which reject Anthropic's beta headers.
 - Zero data retention needs a paid account: Pro or Enterprise, or purchased AI Gateway credits (free credits don't count).
-- Open-weight models get the host allowlist per request through `vercelGatewayRouting.only`.
+- Open-weight models get the host allowlist per request through `providerOptions.gateway.only`, from the extension above.
   `only` is a hard filter: if no listed host can serve the model, the request fails instead of falling back.
 - Claude Fable 5.x isn't available under zero data retention on any provider: Anthropic requires 30-day retention for those models ([Vercel ZDR](https://vercel.com/docs/ai-gateway/security-and-compliance/zdr), [Anthropic retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention)).
 - Zero data retention doesn't cover provider-side tools such as a provider's own web search; our web search runs through pi-web-access, outside the gateway.
@@ -97,6 +106,9 @@ A `<route>:<model>` ID overrides the route for one call, where the route is a ga
 ### Cost per task
 
 - Results record the route and the cost the gateway billed; pi's own figure is a fallback, since pi prices each model at one list price and its pinned version undercounts long prompts on models with prompt-length pricing tiers (fixed in pi 1.1.0).
+  The billed cost comes from each gateway's generation lookup (`GET /v1/generation?id=`), by the response's ID.
+  Vercel documents chat completion IDs as generation IDs, but not Anthropic Messages IDs, which is what pi's Vercel provider gets back; until a live run shows they work, a run whose IDs aren't generation IDs records pi's figure, marked as such.
+  Claude Code reports no request IDs, so its cost is its own estimate.
 - `experiments/run --estimate` counts cache reads and writes.
 - Effort is set per role and recorded, because it moves cost per task more than the gateway: on FrontierCode 2.0, Opus 5.5 costs $1.70 a run at medium effort and $12.82 at max.
 - Newer models at the same list price are cheaper per task when cache reads cost less: Sonnet 5.5 and GPT-6.1 Sol list at $2 and $10 per million input and output tokens, like Sonnet 5 and GPT-6 Sol, with cache reads at $0.10 instead of $0.20.
@@ -114,11 +126,11 @@ OpenRouter's own-key terms changed since that record: own provider keys are free
 ### High-level C4(context/container/component/code) diagram
 
 ```
-person / CI ──> harness (pi) ──> pi-ai ──> active gateway (harness/models.json "gateway")
-                                    │          ├── vercel (default): Claude, GPT, Gemini; team-wide ZDR
-                                    │          │      └──> allowlisted US/EU hosts for open-weight models
-                                    │          └── openrouter (alternative): same roles; zdr per request
-                                    └──> vendor API direct, with a <vendor>:<model> ID
+person / CI ──> harness (pi + harness/gateway-options.ts) ──> active gateway (harness/models.json "gateway")
+                    │                            ├── vercel (default): Claude, GPT, Gemini; ZDR per request and team-wide
+                    │                            │      └──> allowlisted US/EU hosts for open-weight models
+                    │                            └── openrouter (alternative): same roles; zdr per request
+                    └──> vendor API direct, with a <vendor>:<model> ID
 ```
 
 ### Choices and Tradeoffs/Risks
@@ -126,7 +138,8 @@ person / CI ──> harness (pi) ──> pi-ai ──> active gateway (harness/m
 - Vercel over OpenRouter: about 5% cheaper per task on closed models and no fee.
   Costs more for open-weight models under zero data retention, lists fewer text models, and zero data retention is a paid team setting.
   pi sends every Vercel model through Vercel's Anthropic Messages endpoint, so GPT, Gemini, and open-weight models pass through a translation layer; pi's changelog shows Vercel-specific fixes in the past (unsigned thinking replayed as text, fixed in 0.86.0; one-hour cache writes priced at the five-minute rate, fixed in 0.99.0).
-  Mitigation: evals run per route, and the swap back is one setting, tested without a key.
+  On that endpoint pi sends no gateway options, so privacy on Vercel depends on our extension as well as the team-wide settings.
+  Mitigation: evals run per route, the offline test checks the options reach each request, and the swap back is one setting, tested without a key.
 - Not Anthropic direct for the Claude roles: without plan credit it costs the same as Vercel, and it gives up zero data retention (Anthropic deletes API data within 30 days by default; zero data retention is arranged per organization through sales).
   Its first-party-only features (Message Batches, Files API, code execution) are unused today.
   Revisit if plan credit or those features come to matter more than zero data retention for Claude.
@@ -159,7 +172,9 @@ A Vercel team with purchased AI Gateway credits (or a Pro plan), and `AI_GATEWAY
       "keyEnv": "AI_GATEWAY_API_KEY",
       "openaiBaseUrl": "https://ai-gateway.vercel.sh/v1",
       "claudeCodeBaseUrl": "https://ai-gateway.vercel.sh/claude-code",
+      "claudeCodeEnv": { "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1" },
       "modelsUrl": "https://ai-gateway.vercel.sh/v1/models",
+      "routing": { "zeroDataRetention": true },
       "openWeightHosts": ["fireworks", "togetherai", "parasail", "baseten", "modal", "deepinfra"]
     },
     "openrouter": {
@@ -176,7 +191,7 @@ A Vercel team with purchased AI Gateway credits (or a Pro plan), and `AI_GATEWAY
 }
 ```
 
-Results lines gain `route` and `cost_source` (`gateway` or `pi`).
+Results lines gain `route`, `effort`, `cost_source` (`gateway`, or the harness or API whose estimate it is), and `served_hosts`.
 
 ## Key Results and retrospective feedback
 

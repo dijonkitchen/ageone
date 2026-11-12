@@ -24,11 +24,15 @@ export function readRecords(files) {
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const range = (xs) => (xs.length ? [Math.min(...xs), Math.max(...xs)] : null);
 
+// A record's model label carries its route (vercel:anthropic/claude-sonnet-5), so two gateways never share a row.
+// poolRoutes drops the route to compare one model across gateways in a single row.
+const modelLabel = (r, poolRoutes) => (poolRoutes && r.route && r.model.startsWith(`${r.route}:`) ? r.model.slice(r.route.length + 1) : r.model);
+
 // One row per group (harness, model, variant): pass rate with the pass-rate range across cases' repetitions,
 // cost per completed task, and means with min-max for tokens, turns, and time.
-export function summarize(records, infra = []) {
+export function summarize(records, infra = [], { poolRoutes = false } = {}) {
   const groups = new Map();
-  const key = (r) => `${r.experiment ?? ""}|${r.variant ?? ""}|${r.harness}|${r.model}`;
+  const key = (r) => `${r.experiment ?? ""}|${r.variant ?? ""}|${r.harness}|${modelLabel(r, poolRoutes)}`;
   for (const r of records) {
     if (!groups.has(key(r))) groups.set(key(r), { records: [], infra: 0 });
     groups.get(key(r)).records.push(r);
@@ -44,7 +48,7 @@ export function summarize(records, infra = []) {
       experiment: r0.experiment ?? null,
       variant: r0.variant ?? null,
       harness: r0.harness,
-      model: r0.model,
+      model: modelLabel(r0, poolRoutes),
       runs: rs.length,
       infra: n,
       cases: reps.size,
@@ -53,6 +57,8 @@ export function summarize(records, infra = []) {
       // Spread: the range of per-repetition pass rates, so a difference smaller than this is noise.
       pass_rate_range: repRange(rs),
       cost_per_completed: passes.length && costs.length === rs.length ? costs.reduce((a, b) => a + b, 0) / passes.length : null,
+      // True when any run's cost is a harness's or provider's estimate rather than what the gateway billed.
+      cost_estimated: rs.some((r) => r.cost_source && r.cost_source !== "gateway"),
       tokens_in: mean(rs.map((r) => r.tokens_in)),
       tokens_out: mean(rs.map((r) => r.tokens_out)),
       turns: mean(rs.map((r) => r.turns)),
@@ -78,7 +84,11 @@ export function table(rows) {
     "|---|---|---|---|---|---|---|---|---|---|",
   ];
   for (const s of rows) {
-    lines.push(`| ${s.harness} | ${s.model} | ${s.variant ?? "-"} | ${pct(s.pass_rate)} (${s.pass_rate_range ? s.pass_rate_range.map(pct).join("-") : "-"}) | ${s.runs} (${s.cases} x ${s.reps}) | ${s.infra} | ${s.cost_per_completed === null ? "-" : "$" + fmt(s.cost_per_completed, 4)} | ${fmt(s.tokens_in, 0)} / ${fmt(s.tokens_out, 0)} | ${fmt(s.turns, 1)} | ${fmt(s.wall_s, 1)} |`);
+    const cost = s.cost_per_completed === null ? "-" : `$${fmt(s.cost_per_completed, 4)}${s.cost_estimated ? " *" : ""}`;
+    lines.push(`| ${s.harness} | ${s.model} | ${s.variant ?? "-"} | ${pct(s.pass_rate)} (${s.pass_rate_range ? s.pass_rate_range.map(pct).join("-") : "-"}) | ${s.runs} (${s.cases} x ${s.reps}) | ${s.infra} | ${cost} | ${fmt(s.tokens_in, 0)} / ${fmt(s.tokens_out, 0)} | ${fmt(s.turns, 1)} | ${fmt(s.wall_s, 1)} |`);
+  }
+  if (rows.some((s) => s.cost_estimated && s.cost_per_completed !== null)) {
+    lines.push("", "\\* Includes the harness's own cost estimate from list prices where the gateway's billed cost wasn't available.");
   }
   return lines.join("\n");
 }
