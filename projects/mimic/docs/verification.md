@@ -37,7 +37,7 @@ runs on three targets through one `Device` interface:
 |---|---|---|
 | Golden model | `pytest` (`make test`) | ~1.5 min for all |
 | RTL, Icarus Verilog, model in lockstep | cocotb (`make rtl`) | ~12 min for all |
-| Gate-level netlist (post-layout, IHP cell models) | cocotb (`make gl`) | see below |
+| Gate-level netlist (IHP cell models), model in lockstep | cocotb (`make gl`) | ~25 min for all |
 
 In lockstep ([`test/test.py`](../test/test.py)) the RTL and the model take the same inputs every
 cycle; any difference in `uo_out`, `uio_out` or `uio_oe` fails the test at that cycle with both
@@ -165,11 +165,37 @@ sample point drifted when slowed with the clock divider (now slowed with ticks p
   marked).
 - Yosys synthesis for IHP SG13CMOS5L is checked for area at every architectural change; see
   [architecture](architecture.md#area-and-timing) for the numbers and the choices they drove.
-- GATE_LEVEL_RESULTS
+- **Gate level.** The scenarios run on the synthesized netlist with IHP's cell models, in lockstep
+  with the golden model (pins every cycle), at about 13,000 cycles a second: all 41 pass on the synthesized netlist.
+  The cell models feed their flip-flops from nets that `$setuphold` timing checks drive;
+  Icarus Verilog does not run timing checks, so those nets stayed undriven and every flip-flop
+  read X. `test/Makefile` builds a copy of the models that uses the inputs directly (the
+  checks' delays are zero, so the copy is functionally exact).
 
 ## Hardening
 
-HARDENING_RESULTS
+Tiny Tapeout's flow (LibreLane 3.1.0.dev4, IHP SG13CMOS5L, 8x4 tiles: 1724 x 711 µm) on this
+design, with the settings in `src/config.json` and the [area and timing decision](decisions/2026-11-13-mimic-area.md):
+
+| Stage | Result |
+|---|---|
+| Synthesis (Yosys, `AREA 0`) | 37,492 cells, 511,881 µm²: 2,344 flip-flops, 2,048 memory latches, 64 clock-gate latches |
+| Placement | 42% utilization, 50% after buffering |
+| Clock tree | 865 clock buffers; the 64 memory-word clock gates are leaves of the tree |
+| Timing repair (typical corner) | No setup violations at 20 ns; 1,631 hold buffers, then hold slack +0.10 ns |
+| After repair | 46,677 cells, 618,721 µm², 51% utilization |
+| Static timing at 60 MHz (16.6 ns), before layout | Typical corner met; slow corner (1.08 V, 125 °C) −1.10 ns |
+ROUTING_RESULTS
+
+Three things only a real flow shows, each now a setting with a comment in `src/config.json`:
+
+- The default delay-oriented synthesis buffered every multiplexer select (38,000 buffers) and even
+  used I/O pad cells as buffers: 1.25 mm², more than the die. Area-oriented mapping halves it.
+- The memory latches time-borrow, which static timing reports as slack exactly 0; with the
+  resizer's default 0.05 ns margin, all 2,048 of them counted as violations.
+- OpenROAD's timing analysis of the design takes about 5 GB per corner; repairing against three
+  corners exhausted the 16 GB machine (twice taking the whole container down), so repair runs at
+  the typical corner, where the chip will run, and sign-off still reports all three.
 
 ## Running it
 

@@ -23,7 +23,7 @@ rtl: ## Every scenario on the RTL (Icarus Verilog), each output compared with th
 	. .venv/bin/activate && $(MAKE) -C test -s clean && $(MAKE) -C test -s
 	uv run python -m cocotb_tools.check_results test/results.xml
 
-gl: ## A subset of the scenarios on the gate-level netlist (test/Makefile picks it), in lockstep with the model.
+gl: ## Every scenario on the gate-level netlist (copy it to test/gate_level_netlist.v, set PDK_ROOT), in lockstep with the model.
 	. .venv/bin/activate && $(MAKE) -C test -s clean && $(MAKE) -C test -s GATES=yes
 	uv run python -m cocotb_tools.check_results test/results.xml
 
