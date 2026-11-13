@@ -755,3 +755,21 @@ async def isa_exec_irq(b: Bench) -> None:
     await b.step(100)
     assert await _x(b, 1) == 77 and await _x(b, 2) == 88
     assert (await b.read(isa.REG_IRQ))[0] == 0
+
+
+@scenario
+async def i2c_loopback(b: Bench) -> None:
+    """The I2C controller on SM0 writes to the I2C target on SM1 over wires on the board."""
+    b.add(periph.Wire((2, 6), (3, 7)))
+    await b.load(programs.load("i2c", SCL=2, SDA=3, DIV=8), 0, origin=0)
+    await b.load(programs.load("i2c_target", SCL=6, SDA=7, ADDR=0x42), 1, origin=22)
+    await b.start(0b11)
+    data = bytes([0x5A, 0x00, 0xFF])
+    slots = protocols.i2c_write(0x42, data) + protocols.i2c_write(0x17, b"\x99")
+    results: list[int] = []
+    for slot in slots:
+        await b.put(0, slot)
+        results += await b.get(0, 1)
+    assert [protocols.i2c_acked(r) for r in results] == [True] * 4 + [False, False], [hex(r) for r in results]
+    got = await b.get(1, 4)
+    assert got == [*data, 0x100], [hex(g) for g in got]

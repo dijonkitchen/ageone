@@ -53,7 +53,8 @@ multiplexers cost more than the storage; that, not storage, is why the memory ha
 See [the decision](decisions/2026-11-13-mimic-imem.md).
 
 Programs share the memory freely: the loader relocates jumps and wrap points to wherever a
-program goes, and the ten example programs all fit together in pairs or fours.
+program goes. UART TX and RX together take 16 words, Ethernet TX and RX 60, and the two-SM
+USB receiver all 64.
 
 ## FIFOs and routing
 

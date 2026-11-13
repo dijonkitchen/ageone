@@ -1,6 +1,6 @@
 # Protocols
 
-Thirteen programs in [`programs/`](../programs), each tested on the golden model and on the RTL
+Fourteen programs in [`programs/`](../programs), each tested on the golden model and on the RTL
 against an independent model of the device at the other end ([`periph.py`](../sw/mimic/periph.py)),
 written from the protocol's specification. Each program's comments explain its timing.
 
@@ -11,6 +11,7 @@ written from the protocol's specification. Each program's comments explain its t
 | [`spi_ctrl`](../programs/spi_ctrl.mim) | 7 | SPI controller, modes 0-3 | One program, `CPOL`/`CPHA` as defines; the program frames chip select from a header word |
 | [`spi_target`](../programs/spi_target.mim) | 11 | SPI target, mode 0 | Replies from the TX FIFO, `0xFF` when the host has queued none (`pull ifempty noblock` from X); CS resynchronizes |
 | [`i2c`](../programs/i2c.mim) | 22 | I2C controller | Open-drain pins; clock stretching; START, repeated START, STOP, ACK/NACK as a nine-bit slot per FIFO word |
+| [`i2c_target`](../programs/i2c_target.mim) | 36 | I2C target (writes) | Address match with `x!=y`; ACK on open-drain SDA; STOP and repeated START detected mid-byte; tested against the `i2c` controller on another SM |
 | [`ws2812`](../programs/ws2812.mim) | 4 | WS2812 LEDs | 800 kHz from a 7.5 divider |
 | [`eth_tx`](../programs/eth_tx.mim) | 41 | 10BASE-T transmit | Manchester at 6 cycles a bit (10 Mb/s at 60 MHz); preamble, SFD; the CRC unit computes the FCS as bits go out |
 | [`eth_rx`](../programs/eth_rx.mim) | 19 | 10BASE-T receive | Clock recovery from transitions; SFD search; CRC-32 check; end of frame by timeout |
@@ -21,8 +22,8 @@ written from the protocol's specification. Each program's comments explain its t
 | [`pwm`](../programs/pwm.mim) | 12 | PWM | Period and duty from one FIFO word with the ALU; repeats the last setting |
 
 Every program fits beside others in the 64-word memory, and several run at once: the tests run
-UART RX into UART TX (16 words), Ethernet TX and RX together fit in 60, and the USB receiver's
-two SMs use all 64.
+UART RX into UART TX (16 words), the I2C controller and target together (58), Ethernet TX and
+RX together (60), and the USB receiver's two SMs (all 64).
 
 ## Techniques
 

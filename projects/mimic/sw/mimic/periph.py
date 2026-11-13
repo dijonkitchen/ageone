@@ -594,3 +594,16 @@ def nec_pulses(addr: int, cmd: int, unit: int) -> list[tuple[int, int]]:
         for i in range(8):
             out += [(0, unit), (1, (3 if byte >> i & 1 else 1) * unit)]
     return out + [(0, unit), (1, 10 * unit)]
+
+
+class Wire(Peripheral):
+    """Board wires joining pairs of uio pins into open-drain buses with a pull-up (wired-AND)."""
+
+    def __init__(self, *pairs: tuple[int, int]) -> None:
+        self.pairs = pairs
+
+    def tick(self, bench: Bench) -> None:
+        for a, b in self.pairs:
+            low = any(bench.uio_oe >> p & 1 and not bench.uio_out >> p & 1 for p in (a, b))
+            for p in (a, b):
+                bench.drive(p, 0 if low else None)

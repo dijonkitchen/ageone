@@ -1,0 +1,59 @@
+; I2C target (write transfers) with a 7-bit address, on open-drain SDA; SCL is only read.
+; Each byte written to us goes to the RX FIFO (bits 7:0), ACKed; STOP pushes 0x100.
+; Other addresses (and reads) are not ACKed and are ignored until the next START.
+; The controller's SCL low phase must leave the target a few ticks to answer (it does not
+; stretch the clock).
+.program i2c_target
+.define SCL uio6
+.define SDA uio7
+.define ADDR 0x42
+.in_pins SDA
+.set_pins SDA 1
+.opendrain SDA
+.initial SDA=1
+.shift_in left
+.fifo rx                        ; four words: the host must read before they fill, or ACKs stall
+idle:
+    set y, ADDR * 2             ; the address byte of a write to us
+    wait 1 gpio SCL
+    wait fall pin 0             ; SDA falls...
+    jmp !gpio SCL, idle         ; ...while SCL is high: START
+addr:
+    mov isr, null
+    set x, 7
+abit:
+    wait 0 gpio SCL
+    wait 1 gpio SCL
+    in pins, 1
+    jmp x--, abit
+    mov x, isr
+    jmp x!=y, idle              ; not our address, or a read
+ack:
+    wait 0 gpio SCL
+    set pins, 0                 ; ACK
+    wait 1 gpio SCL
+    wait 0 gpio SCL
+    set pins, 1
+    mov isr, null
+    wait 1 gpio SCL             ; the first bit of the next byte, or a STOP or START
+    in pins, 1
+    jmp pin 0, was1
+was0:                           ; SDA was low: SDA rising while SCL is high is a STOP
+    jmp !gpio SCL, rest
+    jmp !pin 0, was0
+    set isr, 0x100
+    push
+    jmp idle
+was1:                           ; SDA was high: SDA falling while SCL is high is a repeated START
+    jmp !gpio SCL, rest
+    jmp pin 0, was1
+    jmp addr
+rest:
+    set x, 6
+rbit:
+    wait 0 gpio SCL
+    wait 1 gpio SCL
+    in pins, 1
+    jmp x--, rbit
+    push                        ; the byte
+    jmp ack

@@ -54,7 +54,7 @@ MUTANTS = {
     ),
 }
 
-FILTER = "test_(random_isa_[0-5]|isa_)"
+FILTER = "test_[ri][as][na_]"  # random_isa_* and isa_* (the cocotb Makefile cannot take "|")
 
 
 def run(name: str) -> bool:
@@ -68,7 +68,11 @@ def run(name: str) -> bool:
         MODEL.write_text(source.replace(old, new))
         subprocess.run(["make", "-s", "clean"], cwd=ROOT / "test", check=False, capture_output=True)
         res = subprocess.run(
-            ["make", "-s", f"COCOTB_TEST_FILTER={FILTER}"], cwd=ROOT / "test", capture_output=True, text=True
+            ["make", "-s", f"COCOTB_TEST_FILTER={FILTER}"],
+            cwd=ROOT / "test",
+            capture_output=True,
+            text=True,
+            check=False,
         )
         caught = "FAIL=0" not in res.stdout + res.stderr
     finally:

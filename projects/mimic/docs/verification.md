@@ -104,6 +104,7 @@ from that protocol's specification, not from the program ([`periph.py`](../sw/mi
 | `spi_ctrl_mode0`-`3` | All four modes against a target that shifts on the opposite edge; chip select framing |
 | `spi_target` | Against a controller; replies from the FIFO and the `0xFF` default |
 | `i2c`, `i2c_stretch` | Against an EEPROM-like target: writes, repeated START and reads, ACK/NACK, an absent address, and a target that stretches every clock (checked to have stretched) |
+| `i2c_loopback` | The I2C controller on one SM writing to the I2C target on another, over board wires: ACKs, data, STOP, an address nobody answers |
 | `ws2812` | Pulse widths decoded by a WS2812 model |
 | `eth_tx`, `eth_tx_line_rate` | A Manchester decoder recovers the frame; FCS compared with `zlib.crc32`; at 10 Mb/s (6 cycles a bit) and slower |
 | `eth_rx`, `eth_rx_line_rate` | Frames from a Manchester encoder with its clock 0.3-0.5% off and its phase unrelated to the chip's; data and CRC residue checked |

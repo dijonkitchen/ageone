@@ -87,7 +87,12 @@ async def make_bench(dut) -> Bench:
     await FallingEdge(dut.clk)
     dut.rst_n.value = 1
     dev = Lockstep(dut) if LOCKSTEP else RtlDevice(dut)
-    return Bench(dev)
+    bench = Bench(dev)
+    if GATES:
+        # The instruction memory's latches power up unknown; in a netlist that X can reach
+        # outputs through the read multiplexers, so clear the memory first (the model sees it too).
+        await bench.write(0x00, *([0] * 64))
+    return bench
 
 
 def _make_test(name: str, fn):

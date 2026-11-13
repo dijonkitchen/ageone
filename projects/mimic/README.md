@@ -26,7 +26,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 |---|---|
 | UART TX and RX, any baud, framing errors; RX routed into TX as a baud converter | [`uart_tx`](programs/uart_tx.mim), [`uart_rx`](programs/uart_rx.mim) |
 | SPI controller, modes 0-3; SPI target | [`spi_ctrl`](programs/spi_ctrl.mim), [`spi_target`](programs/spi_target.mim) |
-| I2C controller, 100/400 kHz, clock stretching, repeated START | [`i2c`](programs/i2c.mim) |
+| I2C controller, 100/400 kHz, clock stretching, repeated START; I2C target | [`i2c`](programs/i2c.mim), [`i2c_target`](programs/i2c_target.mim) |
 | 10BASE-T Ethernet TX and RX at 10 Mb/s: Manchester, preamble, CRC-32 | [`eth_tx`](programs/eth_tx.mim), [`eth_rx`](programs/eth_rx.mim) |
 | Low-speed USB receive at 1.5 Mb/s: NRZI, clock recovery, unstuffing, CRC5/CRC16 | [`usb_ls_rx`](programs/usb_ls_rx.mim) + [`usb_ls_rx_pkt`](programs/usb_ls_rx_pkt.mim) |
 | WS2812 LEDs, PS/2 keyboards, NEC infrared, PWM | [`ws2812`](programs/ws2812.mim), [`ps2_rx`](programs/ps2_rx.mim), [`pulse_capture`](programs/pulse_capture.mim), [`pwm`](programs/pwm.mim) |
