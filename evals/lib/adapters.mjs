@@ -104,7 +104,8 @@ const pi = {
       onLine(line, kill) {
         let ev;
         try { ev = JSON.parse(line); } catch { return; }
-        if (ev.type === "turn_end") {
+        // A turn that ended in an API error isn't a model turn: pi may retry it, and it mustn't use up the turn budget.
+        if (ev.type === "turn_end" && ev.message?.stopReason !== "error") {
           r.turns++;
           if (r.turns >= caseDef.maxTurns) kill("max_turns");
         }

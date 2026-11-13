@@ -4,7 +4,8 @@
 //    requires, a direct request's URL and privacy fields, and the Claude Code environment.
 // 2. The pi and direct adapters against a local mock model, on a vendor route and on each gateway's route
 //    (the mock stands in for the gateway), checking each run is graded, records its metrics and billed cost,
-//    and that the gateway's privacy and host fields reach the request.
+//    and that the gateway's privacy and host fields reach the request; and that a gateway refusing a request
+//    is an infra error, never a model failure, while pi retries a passing outage within the turn limit.
 import { spawn } from "node:child_process";
 import { isDeepStrictEqual } from "node:util";
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -106,10 +107,12 @@ try {
     if (code !== 0) throw new Error(`evals/run --harness ${harness} exited ${code}`);
   }
   const files = readdirSync(results).map((f) => join(results, f));
-  const infra = files.filter((f) => f.endsWith(".infra.jsonl"));
-  if (infra.length) { failed++; console.error(`infra failures:\n${readRecords(infra).map((r) => `${r.harness} ${r.model} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
+  const infra = readRecords(files.filter((f) => f.endsWith(".infra.jsonl")));
+  const unexpected = infra.filter((r) => r.case !== "mock-error" && !(r.case === "mock-retry" && r.harness === "direct"));
+  if (unexpected.length) { failed++; console.error(`infra failures:\n${unexpected.map((r) => `${r.harness} ${r.model} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
   const records = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
-  const want = [["pi", "mock-agent", 2], ["pi", "mock-direct", 1], ["direct", "mock-direct", 1]];
+  // pi retries a failed request within the case's one allowed turn, so mock-retry passes in one turn.
+  const want = [["pi", "mock-agent", 2], ["pi", "mock-direct", 1], ["direct", "mock-direct", 1], ["pi", "mock-retry", 1]];
   for (const model of models) {
     const m = resolveModel(base, model);
     for (const [harness, id, turns] of want) {
@@ -128,6 +131,18 @@ try {
         !billed && same(r.cost_source, harness === "pi" ? "pi" : "provider", "cost source"),
         !(r.wall_ms > 0) && "no wall time",
         !r.commit && "no commit",
+      ]);
+    }
+    // A gateway refusing the request is an infra error, never a model failure, even on the run's last allowed turn.
+    // Direct mode makes one request and doesn't retry, so a passing outage is an infra error there too.
+    for (const [harness, id, code] of [["pi", "mock-error", 403], ["direct", "mock-error", 403], ["direct", "mock-retry", 503]]) {
+      const graded = records.filter((x) => x.harness === harness && x.case === id && x.model === m.full);
+      const r = infra.find((x) => x.harness === harness && x.case === id && x.model === m.full);
+      report(`${harness} ${m.full} ${id} is an infra error`, [
+        graded.length && `graded as a model ${graded[0].pass ? "pass" : "failure"} (stop reason ${graded[0].stop_reason})`,
+        !r && !graded.length && "no record",
+        r && same(r.status, "infra_error", "status"),
+        r && !String(r.error ?? "").includes(String(code)) && `error doesn't name the HTTP status: ${r.error}`,
       ]);
     }
     // What reached the model: the gateway's privacy and host fields, and nothing gateway-specific on a vendor route.

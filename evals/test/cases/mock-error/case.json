@@ -1,0 +1,8 @@
+{
+  "id": "mock-error",
+  "mode": "direct",
+  "title": "Mock gateway refuses the request, so the run is an infra error, not a model failure",
+  "prompt": "MOCK-STATUS: 403",
+  "timeoutSec": 60,
+  "maxTurns": 1
+}

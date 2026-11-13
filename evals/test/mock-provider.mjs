@@ -1,7 +1,9 @@
 // A scripted OpenAI-compatible model server for testing the runner without API keys.
 // A prompt holding `MOCK-BASH: <command>` gets one bash tool call, then "done";
 // `MOCK-TOOLS: [{"name": ..., "arguments": {...}}, ...]` gets those tool calls one per turn, then "done";
-// `MOCK-REPLY: <text>` gets that text back.
+// `MOCK-REPLY: <text>` gets that text back; `MOCK-STATUS: <code>` gets that HTTP error, as a gateway refusing the request;
+// `MOCK-FAIL-ONCE: <code>` gets that HTTP error on the first request for each model and transport (streamed or not)
+// only, as a passing upstream outage.
 // It also stands in for a gateway: each completion gets a generation ID, `GET /v1/generation?id=` reports
 // MOCK_BILLED dollars for it (answering "not found" once first, as a gateway does before usage is recorded),
 // and every request body is kept in `requests` so a test can check the privacy and routing fields.
@@ -11,9 +13,13 @@ const USAGE = { prompt_tokens: 100, completion_tokens: 10, total_tokens: 110 };
 export const MOCK_BILLED = 0.0002;
 export const MOCK_HOST = "mock-host";
 
+function promptOf(body) {
+  return (body.messages ?? []).filter((m) => m.role === "user").map((m) => (typeof m.content === "string" ? m.content : m.content.map((c) => c.text ?? "").join(""))).join("\n");
+}
+
 function reply(body) {
   const messages = body.messages ?? [];
-  const prompt = messages.filter((m) => m.role === "user").map((m) => (typeof m.content === "string" ? m.content : m.content.map((c) => c.text ?? "").join(""))).join("\n");
+  const prompt = promptOf(body);
   const bash = prompt.match(/MOCK-BASH: (.+)/);
   const script = bash ? [{ name: "bash", arguments: { command: bash[1] } }] : JSON.parse(prompt.match(/MOCK-TOOLS: (.+)/)?.[1] ?? "[]");
   const done = messages.filter((m) => m.role === "tool").length;
@@ -29,6 +35,7 @@ function reply(body) {
 export function startMock() {
   const requests = [];
   const looked = new Set();
+  const failedOnce = new Set();
   let n = 0;
   const server = createServer((req, res) => {
     const url = new URL(req.url, "http://mock");
@@ -50,6 +57,15 @@ export function startMock() {
     req.on("end", () => {
       const body = JSON.parse(raw || "{}");
       requests.push(body);
+      let status = Number(promptOf(body).match(/MOCK-STATUS: (\d+)/)?.[1]);
+      const once = Number(promptOf(body).match(/MOCK-FAIL-ONCE: (\d+)/)?.[1]);
+      const key = `${body.model} ${Boolean(body.stream)}`;
+      if (once && !failedOnce.has(key)) { failedOnce.add(key); status = once; }
+      if (status) {
+        res.writeHead(status, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: { message: `mock error ${status}`, type: "mock_error" } }));
+        return;
+      }
       if (process.env.MOCK_LOG_TOOLS) console.error(`mock tools: ${(body.tools ?? []).map((t) => t.function?.name).join(",")}`);
       const r = reply(body);
       const base = { id: `gen_mock-${++n}`, object: "chat.completion", created: 0, model: body.model };

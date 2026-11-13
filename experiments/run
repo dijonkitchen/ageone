@@ -1,6 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S NODE_USE_ENV_PROXY=1 node --disable-warning=UNDICI-EHPA
 // Run an experiment: every variant's cases against every model, through evals/run.
 // See experiments/README.md and specs/SPEC-2026-09-27-eval-benchmark-pages.md.
+// NODE_USE_ENV_PROXY makes fetch honor HTTPS_PROXY (Node 22.21+), as in cloud sandboxes whose proxy adds the API key.
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
