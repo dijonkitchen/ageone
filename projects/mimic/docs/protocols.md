@@ -72,6 +72,17 @@ tests' host is slower than a real one relative to the chip, so tests that stream
 run the line slower (`HALF` for Ethernet, the divider for UART) or keep transfers short; the
 programs themselves are unchanged.
 
+## What does not fit
+
+- **A complete USB device.** The receiver alone fills the 64-word memory, so receive and transmit
+  cannot be loaded together, and a device must answer a packet within a few bit times, which a
+  host over SPI cannot. The receiver suits a low-speed USB sniffer or analyzer; a device would
+  need more program memory and on-chip replies.
+- **Long Ethernet frames from a slow host.** Line rate is no problem on chip, but the FIFOs hold
+  16 bytes each way, so a frame longer than that needs the host to stream at 10 Mb/s.
+- **Physical layers.** USB and 10BASE-T need line interfaces (series resistors and pull-ups, an
+  Ethernet transformer and drivers) on a Pmod; the chip's pins are 3.3 V digital.
+
 ## Adding a protocol
 
 1. Write `programs/<name>.mim`: the instructions plus the `.pins`, `.shift`, `.crc` and other

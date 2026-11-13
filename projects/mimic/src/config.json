@@ -24,6 +24,16 @@
   "//": "corner; the flow repairs against 20 ns at every corner (see docs/verification.md).",
   "CLOCK_PERIOD": 20,
 
+  "//": "PL_RESIZER_SETUP_SLACK_MARGIN - The 2048 instruction-memory latches time-borrow, which",
+  "//": "STA reports as slack 0; with the default 0.05 ns margin the resizer counts all of them as",
+  "//": "violations and runs out of memory trying to fix them (14 GB). Zero margin leaves them be.",
+  "PL_RESIZER_SETUP_SLACK_MARGIN": 0,
+
+  "//": "RSZ_CORNERS - OpenROAD's timing analysis of this design (latches, 64 gated clocks) takes",
+  "//": "about 5 GB per corner; three corners do not fit a 16 GB machine. Repair at the typical",
+  "//": "corner, where the chip runs; sign-off STA still reports all three.",
+  "RSZ_CORNERS": ["nom_typ_1p20V_25C"],
+
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
   "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,

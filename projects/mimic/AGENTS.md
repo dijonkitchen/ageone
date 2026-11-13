@@ -16,7 +16,7 @@ Run from this folder, inside the root `make shell` environment.
 
 - `make check`: ruff, mypy, Verilator lint, every scenario on the golden model, and every scenario on the RTL in lockstep with the model (about 12 minutes); CI runs it whenever this folder changes.
 - `make test` (model only, about 2 minutes), `make rtl`, `make gl` (gate-level, after hardening).
-- `cd test && make COCOTB_TEST_FILTER=test_uart` runs some RTL scenarios; the filter is a regex, but `|` breaks the cocotb Makefile, so use character classes.
+- `cd test && make COCOTB_TEST_FILTER='test_(uart|spi)'` runs some RTL scenarios (a regex).
 - `make fix`: apply lint and format fixes.
 
 ## Rules

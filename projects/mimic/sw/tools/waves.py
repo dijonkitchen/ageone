@@ -8,8 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "sw")]
 
-from mimic import programs, protocols  # noqa: E402
-from mimic.bench import Bench, run  # noqa: E402
+from mimic import programs, protocols
+from mimic.bench import Bench, run
 
 PIN = 10  # uo2
 

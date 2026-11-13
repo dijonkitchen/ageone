@@ -90,15 +90,19 @@ def run(name: str) -> bool:
 
 
 def main(names: list[str]) -> int:
+    backup = MODEL.with_suffix(".py.orig")
+    if backup.exists():  # an interrupted run left a mutant in place
+        shutil.move(backup, MODEL)
     # The unmutated suite must pass, or a "caught" mutant means nothing.
     make("clean")
     baseline = summary(make(f"COCOTB_TEST_FILTER={FILTER}"))
     if "FAIL=0" not in baseline:
         print(f"the suite fails without mutants: {baseline}")
         return 1
-    results = {n: run(n) for n in (names or MUTANTS)}
-    for n, caught in results.items():
-        print(f"{n:24s} {'caught' if caught else 'SURVIVED'}")
+    results = {}
+    for n in names or MUTANTS:
+        results[n] = run(n)
+        print(f"{n:24s} {'caught' if results[n] else 'SURVIVED'}", flush=True)
     print(f"{sum(results.values())}/{len(results)} mutants caught")
     return 0 if all(results.values()) else 1
 

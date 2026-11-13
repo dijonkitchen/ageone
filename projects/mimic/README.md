@@ -35,6 +35,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 
 ## Documents
 
+- **[Write-up](docs/writeup.md)**: the entry in one read; start here.
 - [Architecture](docs/architecture.md): the design, what it adds to PIO and why, area and timing.
 - [Instruction set](docs/isa.md): the reference, including the assembler.
 - [Host port](docs/host.md): SPI frames, registers, loading, the debugger, the demo board.

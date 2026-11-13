@@ -8,6 +8,7 @@ Times are in clock cycles. Pins are GPIO numbers (uio 0-7, uo 8-14, ui 16-20).
 from __future__ import annotations
 
 from collections import deque
+from typing import ClassVar
 
 from .bench import Bench, Peripheral
 
@@ -616,7 +617,7 @@ class JtagTap(Peripheral):
     register in Shift-IR/Shift-DR, else held).
     """
 
-    NEXT = {  # state: (next if TMS=0, next if TMS=1)
+    NEXT: ClassVar[dict[str, tuple[str, str]]] = {  # state: (next if TMS=0, next if TMS=1)
         "reset": ("idle", "reset"),
         "idle": ("idle", "select_dr"),
         "select_dr": ("capture_dr", "select_ir"),
@@ -665,8 +666,7 @@ class JtagTap(Peripheral):
             elif nxt == "update_ir":
                 self.ir = self.shift & 0xF
             self.state = nxt
-        elif self._prev and not tck:  # falling: TDO
-            if self.state in ("shift_dr", "shift_ir"):
-                self._out = self.shift & 1
+        elif self._prev and not tck and self.state in ("shift_dr", "shift_ir"):  # falling: TDO
+            self._out = self.shift & 1
         bench.drive(self.tdo, self._out)
         self._prev = tck

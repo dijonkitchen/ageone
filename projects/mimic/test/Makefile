@@ -1,6 +1,6 @@
 # cocotb tests for Mimic. `make` runs RTL tests; `make GATES=yes` runs them on the gate-level
 # netlist (copy it to gate_level_netlist.v first, see docs/verification.md).
-# TESTCASE=<name> runs one test; WAVES=1 dumps tb.fst.
+# COCOTB_TEST_FILTER=<regex> picks tests; WAVES=1 dumps tb.fst.
 
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
@@ -38,5 +38,17 @@ PLUSARGS += +fst
 endif
 
 export PYTHONPATH := $(PWD)/../sw:$(PWD)/../sw/tests:$(PYTHONPATH)
+
+# Gate level is slow (a 40,000-cell netlist), so by default it runs a representative subset;
+# COCOTB_TEST_FILTER=. runs everything.
+ifeq ($(GATES),yes)
+COCOTB_TEST_FILTER ?= test_(chip_id|fifo_echo|uart_tx|spi_ctrl_mode3|i2c_loopback|eth_tx_line_rate|random_isa_0)$$
+endif
+
+# cocotb's makefile puts the filter on a shell command line unquoted; quote it so regexes
+# with | and () work: make COCOTB_TEST_FILTER='test_(uart|spi)'
+ifneq ($(COCOTB_TEST_FILTER),)
+override COCOTB_TEST_FILTER := '$(COCOTB_TEST_FILTER)'
+endif
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
