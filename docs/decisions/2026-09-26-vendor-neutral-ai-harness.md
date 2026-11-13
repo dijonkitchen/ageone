@@ -23,6 +23,8 @@ Fixed the repo link and where pi reads model config, added web search and open-w
 
 2026-11-12: Amended by Claude, at JC's request: model access (section 2) moves to Vercel AI Gateway, with OpenRouter one setting away, and the OpenRouter-specific parts of sections 6 and 8 become one gateway's settings ([Model Gateway](2026-11-12-model-gateway.md)).
 
+2026-11-13: Amended by Claude, after JC asked whether the latest pi helps: pi moves from 1.0.1 to 1.5.2 for automatic retries on gateway upstream errors, Claude-format tool schemas that keep `$defs`, correct costs on prompt-length price tiers, and security fixes. It still sends Vercel no gateway options, so the gateway extension stays.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves
