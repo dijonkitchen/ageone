@@ -22,7 +22,7 @@ jobs:
         run: harness/sync --check
       - name: Graders pass the reference solutions and fail the null baseline
         run: evals/run --self-check
-      - name: Runner records metrics through pi and direct mode against a mock model
+      - name: Both gateways' settings, and the runner through pi and direct mode against a mock model
         run: evals/test/run
       - name: Format experiment cases match their generator
         run: experiments/formats/generate && git diff --exit-code -- experiments/formats

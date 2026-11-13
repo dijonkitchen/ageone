@@ -3,8 +3,9 @@
 //
 //   harness/sync                    write the `default` role into .pi/settings.json
 //   harness/sync --check            exit 1 if .pi/settings.json is out of date (CI)
-//   harness/sync --agent-dir <dir>  also write <dir>/models.json (OpenRouter privacy and host allowlist)
-//                                   and <dir>/web-search.json; use ~/.pi/agent to apply them to your own pi
+//   harness/sync --agent-dir <dir>  also write <dir>/models.json (privacy and host allowlist for gateways whose
+//                                   routing pi sends itself) and <dir>/web-search.json; use ~/.pi/agent for your own pi.
+// Gateways pi can't route itself get their options from harness/gateway-options.ts, which .pi/settings.json loads.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PI_SETTINGS_PATH, WEB_SEARCH_PATH, loadConfig, piAgentModels, piProjectSettings } from "./config.mjs";
@@ -17,7 +18,7 @@ const have = existsSync(PI_SETTINGS_PATH) ? readFileSync(PI_SETTINGS_PATH, "utf8
 
 if (args[0] === "--check") {
   if (want !== have) {
-    console.error(".pi/settings.json does not match the default role in harness/models.json: run harness/sync");
+    console.error(".pi/settings.json does not match the default role and gateway in harness/models.json: run harness/sync");
     process.exit(1);
   }
   console.log("ok: .pi/settings.json matches harness/models.json");

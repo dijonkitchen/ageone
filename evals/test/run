@@ -1,49 +1,143 @@
 #!/usr/bin/env node
-// Offline test of the eval runner: the pi and direct adapters against a local mock model,
-// checking that each run is graded and records the metrics. No API keys needed.
+// Offline test of the gateway settings and the eval runner. No API keys needed.
+// 1. For each gateway in harness/models.json: the generated pi settings and models.json, the key evals/run
+//    requires, a direct request's URL and privacy fields, and the Claude Code environment.
+// 2. The pi and direct adapters against a local mock model, on a vendor route and on each gateway's route
+//    (the mock stands in for the gateway), checking each run is graded, records its metrics and billed cost,
+//    and that the gateway's privacy and host fields reach the request.
 import { spawn } from "node:child_process";
+import { isDeepStrictEqual } from "node:util";
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { claudeCodeEnv, directRequest, gatewayRouting, loadConfig, piAgentModels, piProjectSettings, piRequestFields, resolveModel } from "../../harness/config.mjs";
 import { readRecords } from "../lib/results.mjs";
-import { startMock } from "./mock-provider.mjs";
+import { MOCK_BILLED, MOCK_HOST, startMock } from "./mock-provider.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const { server, url } = await startMock();
+let failed = 0;
+function report(name, problems) {
+  problems = problems.filter(Boolean);
+  console.log(`${problems.length ? "FAIL" : "ok"}: ${name}${problems.length ? " " + problems.join("; ") : ""}`);
+  failed += problems.length ? 1 : 0;
+}
+const same = (a, b, what) => !isDeepStrictEqual(a, b) && `${what}: got ${JSON.stringify(a)}, want ${JSON.stringify(b)}`;
+
+// 1. Gateway settings, with no model calls.
+const base = loadConfig();
+const openWeight = base.openWeightModels[0];
+const closed = base.roles.default;
+const settingsBy = {};
+for (const [name, gw] of Object.entries(base.gateways)) {
+  const config = { ...base, gateway: name };
+  const env = { [gw.keyEnv]: `${name}-key` };
+  const def = resolveModel(config, "default");
+  const ow = resolveModel(config, openWeight);
+  const settings = piProjectSettings(config, {});
+  settingsBy[name] = settings;
+  const owRouting = gatewayRouting(config, ow);
+  const closedRouting = gatewayRouting(config, def);
+  const owDirect = directRequest(config, ow, "hi", env);
+  const closedDirect = directRequest(config, def, "hi", env);
+  const cc = claudeCodeEnv(config, def, env);
+  const ccOw = claudeCodeEnv(config, ow, env);
+  // Each gateway reaches pi one of two ways: routing in models.json, or the extension's request fields.
+  const piModels = piAgentModels(config).providers[gw.piProvider];
+  const owPi = piModels ? piModels.modelOverrides?.[ow.id]?.compat : piRequestFields(config, gw.piProvider, ow.id);
+  const closedPi = piModels ? piModels.compat : piRequestFields(config, gw.piProvider, def.id);
+  report(`gateway ${name}: settings, keys, requests, and Claude Code`, [
+    same(settings.defaultProvider, gw.piProvider, "pi defaultProvider"),
+    same(settings.defaultModel, gw.modelIds?.[closed] ?? closed, "pi defaultModel"),
+    same(settings.defaultThinkingLevel, base.effort?.default, "pi defaultThinkingLevel"),
+    !settings.extensions?.includes("../harness/gateway-options.ts") && "pi settings don't load harness/gateway-options.ts",
+    ...Object.keys(base.roles).map((role) => same(resolveModel(config, role).keyEnv, gw.keyEnv, `key for role ${role}`)),
+    same(ow.id, gw.modelIds?.[openWeight] ?? openWeight, "open-weight model ID"),
+    same(owDirect.url, `${gw.openaiBaseUrl}/chat/completions`, "direct URL"),
+    same(owDirect.headers.authorization, `Bearer ${name}-key`, "direct key"),
+    same(owDirect.body.model, ow.id, "direct model"),
+    // Privacy on every model; the host allowlist only on open-weight models, and it's a hard filter.
+    !JSON.stringify(closedRouting).includes("true") && "no privacy setting on a closed model",
+    "only" in closedRouting && "host allowlist on a closed model",
+    same(owRouting.only, gw.openWeightHosts, "open-weight host allowlist"),
+    "allow_fallbacks" in owRouting && owRouting.allow_fallbacks !== false && "open-weight requests may fall back",
+    !JSON.stringify(owDirect.body).includes(JSON.stringify(owRouting)) && "direct open-weight request lacks the routing",
+    !JSON.stringify(closedDirect.body).includes(JSON.stringify(closedRouting)) && "direct closed-model request lacks the routing",
+    !JSON.stringify(owPi ?? {}).includes(JSON.stringify(owRouting)) && "pi open-weight request lacks the routing",
+    !JSON.stringify(closedPi ?? {}).includes(JSON.stringify(closedRouting)) && "pi closed-model request lacks the routing",
+    same(cc.ANTHROPIC_BASE_URL, gw.claudeCodeBaseUrl, "Claude Code base URL"),
+    same(cc.ANTHROPIC_AUTH_TOKEN, `${name}-key`, "Claude Code token"),
+    same(cc.ANTHROPIC_API_KEY, "", "Claude Code ANTHROPIC_API_KEY"),
+    cc.CLAUDE_CODE_EXTRA_BODY && !cc.CLAUDE_CODE_EXTRA_BODY.includes(JSON.stringify(closedRouting)) && "Claude Code extra body lacks the routing",
+    ccOw.CLAUDE_CODE_EXTRA_BODY && !ccOw.CLAUDE_CODE_EXTRA_BODY.includes(JSON.stringify(owRouting)) && "Claude Code open-weight extra body lacks the routing",
+  ]);
+}
+// Switching gateway changes only the pi provider and model name, and nothing about the roles.
+const [first, ...rest] = Object.keys(settingsBy);
+for (const name of rest) {
+  const strip = ({ defaultProvider, defaultModel, ...s }) => s;
+  report(`switching gateway from ${first} to ${name} changes only pi's provider and model`, [
+    same(strip(settingsBy[name]), strip(settingsBy[first]), "other pi settings"),
+    same(piAgentModels({ ...base, gateway: name }), piAgentModels({ ...base, gateway: first }), "pi models.json"),
+    ...Object.keys(base.roles).map((role) => same(resolveModel({ ...base, gateway: name }, role).canonical, resolveModel({ ...base, gateway: first }, role).canonical, `role ${role}`)),
+  ]);
+}
+
+// 2. The runner against a mock model, on a vendor route and on each gateway's route.
+const { server, requests, url } = await startMock();
 const tmp = mkdtempSync(join(tmpdir(), "ageone-evals-test-"));
 const extra = join(tmp, "models.json");
-writeFileSync(extra, JSON.stringify({
-  providers: { mock: { baseUrl: url, api: "openai-completions", apiKey: "mock", models: [{ id: "scripted", cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0 } }] } },
-}));
-const env = { ...process.env, EVALS_PI_EXTRA_MODELS: extra, EVALS_DIRECT_BASE_URL: url, EVALS_DIRECT_API_KEY: "mock" };
+const cost = { input: 1, output: 2, cacheRead: 0, cacheWrite: 0 };
+const routes = Object.fromEntries(Object.keys(base.gateways).map((name, i) => [name, resolveModel(base, `${name}:${i % 2 ? closed : openWeight}`)]));
+const providers = { mock: { baseUrl: url, api: "openai-completions", apiKey: "mock", models: [{ id: "scripted", cost }] } };
+for (const m of Object.values(routes)) providers[m.provider] = { baseUrl: url, apiKey: "mock", models: [{ id: m.id, api: "openai-completions", cost }] };
+writeFileSync(extra, JSON.stringify({ providers }));
+const env = {
+  ...process.env, EVALS_PI_EXTRA_MODELS: extra, EVALS_DIRECT_BASE_URL: url, EVALS_DIRECT_API_KEY: "mock", EVALS_LOOKUP_DELAY_MS: "10",
+  ...Object.fromEntries(Object.values(base.gateways).map((gw) => [gw.keyEnv, "mock"])),
+};
 const results = join(tmp, "results");
-let failed = 0;
 try {
+  const models = ["mock:scripted", ...Object.values(routes).map((m) => m.full)];
   for (const harness of ["pi", "direct"]) {
     // Async, so this process's mock server keeps answering while the runner waits on it.
-    const child = spawn(join(here, "..", "run"), ["--harness", harness, "--model", "mock/scripted", "--cases", join(here, "cases"), "--results", results, "--reps", "1"], { env, stdio: "inherit" });
+    const child = spawn(join(here, "..", "run"), ["--harness", harness, ...models.flatMap((m) => ["--model", m]), "--cases", join(here, "cases"), "--results", results, "--reps", "1"], { env, stdio: "inherit" });
     const code = await new Promise((resolve) => child.on("close", resolve));
     if (code !== 0) throw new Error(`evals/run --harness ${harness} exited ${code}`);
   }
   const files = readdirSync(results).map((f) => join(results, f));
   const infra = files.filter((f) => f.endsWith(".infra.jsonl"));
-  if (infra.length) { failed++; console.error(`infra failures:\n${readRecords(infra).map((r) => `${r.harness} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
+  if (infra.length) { failed++; console.error(`infra failures:\n${readRecords(infra).map((r) => `${r.harness} ${r.model} ${r.case}: ${r.status} ${r.error}`).join("\n")}`); }
   const records = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
   const want = [["pi", "mock-agent", 2], ["pi", "mock-direct", 1], ["direct", "mock-direct", 1]];
-  for (const [harness, id, turns] of want) {
-    const r = records.find((x) => x.harness === harness && x.case === id);
-    const problems = !r ? ["no record"] : [
-      !r.pass && `not passed (${r.grader_note})`,
-      r.turns !== turns && `turns ${r.turns}, want ${turns}`,
-      !(r.tokens_in > 0 && r.tokens_out > 0) && "no tokens",
-      !(r.cost_usd > 0) && "no cost",
-      r.served_model !== "scripted" && `served model ${r.served_model}`,
-      !(r.wall_ms > 0) && "no wall time",
-      !r.commit && "no commit",
-    ].filter(Boolean);
-    console.log(`${problems.length ? "FAIL" : "ok"}: ${harness} ${id}${problems.length ? " " + problems.join(", ") : ""}`);
-    failed += problems.length ? 1 : 0;
+  for (const model of models) {
+    const m = resolveModel(base, model);
+    for (const [harness, id, turns] of want) {
+      const r = records.find((x) => x.harness === harness && x.case === id && x.model === m.full);
+      const billed = Boolean(m.gateway);
+      report(`${harness} ${m.full} ${id}`, !r ? ["no record"] : [
+        !r.pass && `not passed (${r.grader_note})`,
+        r.turns !== turns && `turns ${r.turns}, want ${turns}`,
+        !(r.tokens_in > 0 && r.tokens_out > 0) && "no tokens",
+        !(r.cost_usd > 0) && "no cost",
+        same(r.route, m.route, "route"),
+        same(r.served_model, m.id, "served model"),
+        billed && same(r.cost_source, "gateway", "cost source"),
+        billed && Math.abs(r.cost_usd - turns * MOCK_BILLED) > 1e-12 && `billed cost ${r.cost_usd}, want ${turns * MOCK_BILLED}`,
+        billed && same(r.served_hosts, [MOCK_HOST], "served hosts"),
+        !billed && same(r.cost_source, harness === "pi" ? "pi" : "provider", "cost source"),
+        !(r.wall_ms > 0) && "no wall time",
+        !r.commit && "no commit",
+      ]);
+    }
+    // What reached the model: the gateway's privacy and host fields, and nothing gateway-specific on a vendor route.
+    const sent = requests.filter((b) => b.model === m.id);
+    const routing = gatewayRouting(base, m);
+    const fields = (b) => JSON.stringify([b.provider, b.providerOptions]);
+    report(`requests for ${m.full} carry ${routing ? "the gateway's privacy and host fields" : "no gateway fields"}`, [
+      sent.length < 4 && `${sent.length} requests, want 4`,
+      ...sent.map((b, i) => (routing ? !fields(b).includes(JSON.stringify(routing)) : fields(b) !== "[null,null]") && `request ${i + 1}: ${fields(b)}`),
+    ]);
   }
 } finally {
   server.close();

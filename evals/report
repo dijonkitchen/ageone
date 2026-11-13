@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-// Summarize committed results: evals/report [results files...] (default: every evals/results/*.jsonl).
+// Summarize committed results: evals/report [--pool-routes] [results files...] (default: every evals/results/*.jsonl).
+// Each gateway gets its own rows; --pool-routes combines one model's runs across gateways.
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../harness/config.mjs";
 import { readRecords, summarize, table } from "./lib/results.mjs";
 
+const args = process.argv.slice(2);
+const poolRoutes = args.includes("--pool-routes");
+const named = args.filter((a) => a !== "--pool-routes");
 const dir = join(ROOT, "evals", "results");
-const files = process.argv.length > 2 ? process.argv.slice(2) : readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f));
+const files = named.length ? named : readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f));
 const ok = readRecords(files.filter((f) => !f.endsWith(".infra.jsonl")));
 const infra = readRecords(files.filter((f) => f.endsWith(".infra.jsonl")));
-console.log(table(summarize(ok, infra)));
+console.log(table(summarize(ok, infra, { poolRoutes })));

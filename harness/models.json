@@ -1,22 +1,44 @@
 {
+  "gateway": "vercel",
   "roles": {
-    "default": "openrouter/anthropic/claude-sonnet-5",
-    "cheap": "openrouter/google/gemini-3.8-flash",
-    "frontier": "openrouter/anthropic/claude-opus-5.5",
-    "judge": "openrouter/openai/gpt-6-sol"
+    "default": "anthropic/claude-sonnet-5",
+    "cheap": "google/gemini-3.8-flash",
+    "frontier": "anthropic/claude-opus-5.5",
+    "judge": "openai/gpt-6-sol"
   },
-  "openRouter": {
-    "routing": {
-      "zdr": true,
-      "data_collection": "deny"
+  "effort": {
+    "default": "medium"
+  },
+  "openWeightModels": [
+    "deepseek/deepseek-v4.1-flash",
+    "zai/glm-5.3",
+    "moonshotai/kimi-k3",
+    "alibaba/qwen3.8-27b"
+  ],
+  "gateways": {
+    "vercel": {
+      "piProvider": "vercel-ai-gateway",
+      "keyEnv": "AI_GATEWAY_API_KEY",
+      "openaiBaseUrl": "https://ai-gateway.vercel.sh/v1",
+      "claudeCodeBaseUrl": "https://ai-gateway.vercel.sh/claude-code",
+      "claudeCodeEnv": { "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1" },
+      "modelsUrl": "https://ai-gateway.vercel.sh/v1/models",
+      "routing": { "zeroDataRetention": true },
+      "openWeightHosts": ["fireworks", "togetherai", "parasail", "baseten", "modal", "deepinfra"]
     },
-    "openWeightHosts": ["deepinfra", "fireworks", "together", "parasail", "baseten", "coreweave", "modal"],
-    "openWeightModels": [
-      "deepseek/deepseek-v4.1-flash",
-      "z-ai/glm-5.3",
-      "moonshotai/kimi-k3",
-      "qwen/qwen3.8-27b"
-    ]
+    "openrouter": {
+      "piProvider": "openrouter",
+      "keyEnv": "OPENROUTER_API_KEY",
+      "openaiBaseUrl": "https://openrouter.ai/api/v1",
+      "claudeCodeBaseUrl": "https://openrouter.ai/api",
+      "modelsUrl": "https://openrouter.ai/api/v1/models",
+      "routing": { "zdr": true, "data_collection": "deny" },
+      "openWeightHosts": ["deepinfra", "fireworks", "together", "parasail", "baseten", "coreweave", "modal"],
+      "modelIds": {
+        "zai/glm-5.3": "z-ai/glm-5.3",
+        "alibaba/qwen3.8-27b": "qwen/qwen3.8-27b"
+      }
+    }
   },
   "harnesses": {
     "pi": { "package": "@earendil-works/pi-coding-agent", "version": "1.0.1", "bin": "pi" },

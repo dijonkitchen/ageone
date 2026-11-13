@@ -17,7 +17,7 @@ Each case is one model call with no harness or tools (`direct`), so the format i
 
 ## Conclusion
 
-Not run yet: the runs need an OpenRouter key.
+Not run yet: the runs need an AI Gateway key.
 
 ## Not measured
 

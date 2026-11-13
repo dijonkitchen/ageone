@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Run the pi version pinned in harness/models.json, installing it on first use.
-// Apply the roles file's OpenRouter privacy and host allowlist to your own pi once with:
+// In this repo, .pi/settings.json loads harness/gateway-options.ts, which adds the active gateway's privacy and host
+// options to each request. Apply the OpenRouter routing to your own pi once with:
 //   harness/sync --agent-dir ~/.pi/agent
 import { spawnSync } from "node:child_process";
 import { ensureTool, loadConfig } from "./config.mjs";

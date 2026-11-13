@@ -5,13 +5,14 @@
 Run agentic work in this repo through a harness that is not tied to one model vendor, so a newly released model can be tried the day it ships and the cheapest model that still passes can be the default.
 
 - Switching the model is a one-line config change, never a code change.
-  Roles (`default`, `cheap`, `frontier`, `judge`) map to `provider/model` IDs in one checked-in file.
+  Roles (`default`, `cheap`, `frontier`, `judge`) map to model IDs in one checked-in file.
   pi reads models from project `.pi/settings.json` (`defaultProvider`, `defaultModel`) and `--model`; its `models.json` is user-level only (`~/.pi/agent/`), so the roles file is ours and scripts pass each role to pi with `--model`.
-- OpenRouter is the default access for all roles (Claude, GPT, Gemini, and open-weight models on one key), with zero data retention enforced account-wide.
+- One gateway is the default access for all roles (Claude, GPT, Gemini, and open-weight models on one key), with zero data retention enforced.
+  It was OpenRouter; since [SPEC-2026-11-12-model-gateway](SPEC-2026-11-12-model-gateway.md) it is Vercel AI Gateway, with OpenRouter one setting away.
   At least one vendor API direct also works, so leaving the gateway is a config change.
 - Web search and page fetch work in the harness.
   pi ships only `read`, `bash`, `edit`, and `write`, with no web search (MCP arrived built in with pi 0.99.0, but adds no search), so a search extension is declared in project `.pi/settings.json` and covered by an eval case.
-- Open-weight models (including Chinese-lab models such as DeepSeek, Qwen, Kimi, GLM) run only on hosts that neither train on nor retain prompts: US or EU inference providers, reached through OpenRouter with zero data retention and an allowlist of hosts.
+- Open-weight models (including Chinese-lab models such as DeepSeek, Qwen, Kimi, GLM) run only on hosts that neither train on nor retain prompts: US or EU inference providers, reached through the gateway with zero data retention and an allowlist of hosts.
   China-based hosts, including the labs' own APIs, are not used for this repo's work.
 - Prompts, skills, and instructions live in the repo as plain files (`AGENTS.md`, `specs/`, `docs/decisions/`), not inside any vendor's product, so any harness can read them.
 - An eval suite built from this repo's own tasks runs on demand and on every model, prompt, or harness change.
@@ -34,7 +35,7 @@ Run agentic work in this repo through a harness that is not tied to one model ve
 ## Definition of done
 
 1. A model-roles config file exists in the repo and the chosen harness uses it; changing `default` to a different provider's model and running one task works with no other edit.
-2. Tasks run end to end on OpenRouter and on one vendor API direct, and one task runs on a Chinese-lab open-weight model served only by an allowlisted US or EU host.
+2. Tasks run end to end on the default gateway and on one vendor API direct, and one task runs on a Chinese-lab open-weight model served only by an allowlisted US or EU host.
 3. A task that needs the web (search, then fetch a page and cite it) completes in pi.
 4. `evals/` holds at least ten cases drawn from this repo's own tasks, a runner, and a results file per model run with the metrics above.
 5. The runner runs one case through pi, through one other harness, and in `direct` mode, and writes the same metrics for each.

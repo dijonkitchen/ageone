@@ -14,7 +14,10 @@ import { loadCases, makeSandbox, repoCommit, scriptEnv } from "./lib/sandbox.mjs
 const USAGE = `usage: evals/run [options]
 
   --harness <name>    pi (default), claude-code, direct, reference, or null
-  --model <m>         a role from harness/models.json or a provider/model ID; repeatable (default: default)
+  --model <m>         a role from harness/models.json, a creator/model ID on the active gateway, or a
+                      <route>:<model> ID (openrouter:deepseek/deepseek-v4.1-flash, anthropic:claude-sonnet-5);
+                      repeatable (default: default)
+  --gateway <name>    route roles and plain model IDs through this gateway instead of the one in harness/models.json
   --case <ids>        comma-separated case IDs (default: every case the harness can run)
   --reps <n>          repetitions per case and model (default: 3)
   --cases <dir>       case folder (default: evals/cases)
@@ -28,13 +31,15 @@ const USAGE = `usage: evals/run [options]
 Examples:
   evals/run --self-check
   evals/run --model default --model cheap --reps 3
-  evals/run --harness direct --model openrouter/deepseek/deepseek-v4.1-flash --case read-csv-total
+  evals/run --model default --gateway openrouter --reps 3
+  evals/run --harness direct --model deepseek/deepseek-v4.1-flash --case read-csv-total
 `;
 
 const { values: opt } = parseArgs({
   options: {
     harness: { type: "string", default: "pi" },
     model: { type: "string", multiple: true },
+    gateway: { type: "string" },
     case: { type: "string" },
     reps: { type: "string", default: "3" },
     cases: { type: "string", default: join(ROOT, "evals", "cases") },
@@ -67,15 +72,15 @@ if (opt.list) {
   process.exit(0);
 }
 
-// Each run bills the project's own key for its provider. Refuse to start without it, so a harness
+// Each run bills the project's own key for its route. Refuse to start without it, so a harness
 // can never fall back to credentials it finds on the machine (a logged-in CLI, a host's managed login).
-const PROVIDER_KEYS = { openrouter: "OPENROUTER_API_KEY", anthropic: "ANTHROPIC_API_KEY", openai: "OPENAI_API_KEY", google: "GEMINI_API_KEY" };
+if (opt.gateway && !config.gateways[opt.gateway]) throw new Error(`unknown gateway ${opt.gateway}; harness/models.json has ${Object.keys(config.gateways).join(", ")}`);
+const pickModel = (m) => resolveModel(config, m, { gateway: opt.gateway });
 
 function checkKeys(harness, models) {
   if (["reference", "null"].includes(harness)) return;
   for (const m of models) {
-    const { provider } = resolveModel(config, m);
-    const key = PROVIDER_KEYS[provider];
+    const key = pickModel(m).keyEnv;
     if (key && !process.env[key]) {
       console.error(`${m} needs ${key}; set it to the project's key (see evals/README.md)`);
       process.exit(2);
@@ -94,7 +99,7 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
   const runnable = cases.filter((c) => harness !== "direct" || c.mode === "direct");
   const all = { ok: [], infra: [] };
   for (const modelArg of models) {
-    const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", role: null } : resolveModel(config, modelArg);
+    const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", route: null, role: null, effort: null } : pickModel(modelArg);
     const file = resultsDir && resultsFile(resultsDir, date, harness, model.full, opt.variant);
     for (const caseDef of runnable) {
       for (let rep = 1; rep <= reps; rep++) {
@@ -120,7 +125,7 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
         const record = {
           date, commit, dirty,
           experiment: opt.experiment ?? null, variant: opt.variant ?? null,
-          case: caseDef.id, harness, harness_version: adapter.version(config), model: model.full, role: model.role, rep,
+          case: caseDef.id, harness, harness_version: adapter.version(config), model: model.full, route: model.route, role: model.role, effort: model.effort, rep,
           ...metrics, pass, score: pass === null ? null : pass ? 1 : 0, wall_ms, grader_note,
         };
         (r.status === "ok" ? all.ok : all.infra).push(record);
