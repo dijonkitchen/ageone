@@ -1,0 +1,39 @@
+[project]
+name = "mimic"
+version = "0.1.0"
+description = "Toolchain and golden model for Mimic, a reprogrammable protocol emulator ASIC"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["cocotb==2.0.1", "mypy>=2.4", "pytest>=9.1", "ruff>=0.16"]
+
+[project.scripts]
+mimic-asm = "mimic.asm:main"
+mimic-load = "mimic.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sw/mimic"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["tt", "runs", "test/sim_build"]
+
+[tool.mypy]
+files = ["sw/mimic", "sw/tests"]
+strict = true
+
+[[tool.mypy.overrides]]
+# The board driver is MicroPython: imported in tests, not type-checked.
+module = ["mimic_tt", "machine", "ttboard.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[tool.pytest.ini_options]
+testpaths = ["sw/tests"]
+pythonpath = ["sw", "sw/tests"]
+addopts = "-q"

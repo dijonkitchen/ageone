@@ -74,9 +74,9 @@ async def fifo_echo(b: Bench) -> None:
 # holds the RTL to the model every cycle.
 # ---------------------------------------------------------------------------
 
-import random  # noqa: E402
+import random
 
-from mimic.bench import Peripheral  # noqa: E402
+from mimic.bench import Peripheral
 
 
 class PinNoise(Peripheral):
@@ -203,7 +203,7 @@ for _seed in range(6):
 # UART
 # ---------------------------------------------------------------------------
 
-from mimic import periph, programs  # noqa: E402
+from mimic import periph, programs
 
 UART_TX_PIN = 8  # uo0
 UART_RX_PIN = 16  # ui0
@@ -261,7 +261,7 @@ async def uart_bridge(b: Bench) -> None:
 # SPI, I2C, WS2812
 # ---------------------------------------------------------------------------
 
-from mimic import protocols  # noqa: E402
+from mimic import protocols
 
 SPI_CS, SPI_MOSI, SPI_MISO, SPI_SCK = 0, 1, 2, 3  # uio0-3, the Pmod SPI layout
 
@@ -345,3 +345,175 @@ async def ws2812(b: Bench) -> None:
     await b.put(2, *[protocols.ws2812_word(c) for c in colors])
     await b.until(lambda: len(leds.frames) == 1, what="LED frame")
     assert leds.frames[0] == colors, [hex(c) for c in leds.frames[0]]
+
+
+# ---------------------------------------------------------------------------
+# 10BASE-T style Ethernet: Manchester, preamble and SFD, CRC-32 in hardware
+# ---------------------------------------------------------------------------
+
+import zlib
+
+ETH_TXD = 10  # uo2
+ETH_RXD = 17  # ui1
+
+
+async def _eth_tx(b: Bench, div: int, payload: bytes, half: int = 3) -> None:
+    rx = b.add(periph.ManchesterRx(ETH_TXD, bit=2 * half * div))
+    await b.load(programs.load("eth_tx", TXD=ETH_TXD, DIV=div, HALF=half), 0, start=True)
+    await b.put(0, *protocols.eth_tx_words(payload))
+    await b.until(lambda: len(rx.frames) == 1, limit=50_000, what="Ethernet frame")
+    frame = rx.frames[0]
+    assert frame[:-4] == payload, frame.hex()
+    assert frame[-4:] == protocols.eth_fcs(payload), (frame[-4:].hex(), protocols.eth_fcs(payload).hex())
+
+
+@scenario
+async def eth_tx_line_rate(b: Bench) -> None:
+    """10 Mb/s at 60 MHz: 6 cycles a bit, a frame that fits the joined TX FIFO."""
+    await _eth_tx(b, 1, bytes(range(0x30, 0x3C)))
+
+
+@scenario
+async def eth_tx(b: Bench) -> None:
+    await _eth_tx(b, 2, b"Mimic sends Ethernet frames!", half=4)
+
+
+async def _eth_rx(b: Bench, half: int, payload: bytes, bit_scale: float, phase: float) -> None:
+    tx = b.add(periph.ManchesterTx(ETH_RXD, bit=2 * half * bit_scale, phase=phase))
+    await b.load(programs.load("eth_rx", RXD=ETH_RXD, HALF=half), 1, start=True)
+    frame = payload + protocols.eth_fcs(payload)
+    tx.send(periph.manchester_frame_bits(frame))
+    words: list[int] = []
+    while True:
+        n = (await b.levels(1))[1]
+        if n:
+            words += await b.read(isa.sm_reg(1, isa.SM_RXF), n, inc=False)
+        elif (await b.read(isa.REG_IRQ))[0] & (1 << 1):
+            break
+    data, crc = protocols.eth_rx_frame(words)
+    assert data == frame, (data.hex(), frame.hex())
+    assert crc == protocols.ETH_RESIDUE, hex(crc)
+    assert zlib.crc32(data) == 0x2144DF1C  # the same check, in software
+
+
+@scenario
+async def eth_rx_line_rate(b: Bench) -> None:
+    """10 Mb/s with the transmitter 0.5% slow and out of phase with the chip's clock."""
+    await _eth_rx(b, 3, b"\x01\x80\xc2\x00", bit_scale=1.005, phase=0.37)
+
+
+@scenario
+async def eth_rx(b: Bench) -> None:
+    await _eth_rx(b, 9, b"Mimic receives frames too", bit_scale=0.997, phase=0.71)
+
+
+# ---------------------------------------------------------------------------
+# Low-speed USB receive: two SMs chained by the FIFO route
+# ---------------------------------------------------------------------------
+
+USB_DM, USB_DP = 18, 19  # ui2, ui3
+
+
+async def _usb_rx(b: Bench, bit_scale: float) -> None:
+    host = b.add(periph.UsbLsHost(USB_DM, USB_DP, bit=40 * bit_scale))
+    await b.load(programs.load("usb_ls_rx", DM=USB_DM), 2, origin=0)
+    await b.load(programs.load("usb_ls_rx_pkt"), 3, origin=34)  # 34 + 30 = all 64 words
+    await b.start(0b1100)
+    pid = protocols.USB_PID
+    packets = [
+        (pid["SETUP"], b"", (0x00, 0)),
+        (pid["DATA0"], bytes([0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x40, 0x00]), None),
+        (pid["IN"], b"", (0x15, 3)),
+        (pid["DATA1"], bytes([0xFF] * 4 + [0x7F, 0x3F]), None),  # long runs of 1s: bit stuffing
+    ]
+    for p, payload, token in packets:
+        host.send(periph.usb_bits(p, payload, token))
+        words: list[int] = []
+        start = b.cycle
+        while True:
+            assert b.cycle - start < 40_000, f"packet not received; words so far {[hex(w) for w in words]}"
+            n = (await b.levels(3))[1]
+            if n:
+                words += await b.read(isa.sm_reg(3, isa.SM_RXF), n, inc=False)
+            elif (await b.read(isa.REG_IRQ))[0] & (1 << 3):
+                await b.write(isa.REG_IRQ, 1 << 3)
+                break
+        got, crc = protocols.eth_rx_frame(words)  # the same layout
+        pid_byte = p | ((~p & 0xF) << 4)
+        assert got[0] == pid_byte, (hex(got[0]), hex(pid_byte))
+        if token is None:
+            assert got[1:-2] == payload, got.hex()
+            assert crc == protocols.USB_CRC16_RESIDUE, hex(crc)
+        else:
+            assert crc == protocols.USB_CRC5_RESIDUE, hex(crc)
+    assert not b.contention
+
+
+@scenario
+async def usb_ls_rx(b: Bench) -> None:
+    await _usb_rx(b, 1.0)
+
+
+@scenario
+async def usb_ls_rx_fast_host(b: Bench) -> None:
+    """The host's clock 1.5% fast, the limit low-speed USB allows."""
+    await _usb_rx(b, 1 / 1.015)
+
+
+@scenario
+async def usb_ls_rx_slow_host(b: Bench) -> None:
+    await _usb_rx(b, 1.015)
+
+
+# ---------------------------------------------------------------------------
+# Protocols Mimic was not built around: PS/2, NEC infrared via pulse capture, PWM
+# ---------------------------------------------------------------------------
+
+
+@scenario
+async def ps2_rx(b: Bench) -> None:
+    kbd = b.add(periph.Ps2Device(clk=5, data=4, half=30))
+    await b.load(programs.load("ps2_rx", DATA=4, CLK=5), 0, start=True)
+    codes = bytes([0x1C, 0xF0, 0x1C, 0x5A])  # 'a' make, break, Enter
+    kbd.send(codes)
+    kbd.send(b"\x29", bad_parity=True)
+    words = await b.get(0, 5)
+    assert bytes(w & 0xFF for w in words) == codes + b"\x29", [hex(w) for w in words]
+    assert [w >> 9 & 1 for w in words] == [1, 1, 1, 1, 0], [hex(w) for w in words]
+
+
+@scenario
+async def nec_ir(b: Bench) -> None:
+    """Pulse capture turns an NEC remote frame into durations; host software decodes them."""
+    unit = 500  # cycles per 562.5 us: 67 times faster than at 60 MHz, slow enough for the test's host
+    b.drive(20, 1)  # the receiver idles high
+    await b.load(programs.load("pulse_capture", PIN=20), 1, start=True)
+    b.add(periph.PulseTrain(20, periph.nec_pulses(0x04, 0x08, unit)))
+    words: list[int] = []
+    start = b.cycle
+    while len(words) < 67:
+        assert b.cycle - start < 150_000, f"{len(words)} pulses captured"
+        n = (await b.levels(1))[1]
+        words += await b.read(isa.sm_reg(1, isa.SM_RXF), n, inc=False) if n else []
+        if not n:
+            await b.step(50)
+    got = protocols.nec_decode(protocols.pulses(words), unit)
+    assert got == (0x04, 0x08), (got, protocols.pulses(words)[:8])
+
+
+@scenario
+async def pwm_capture_loopback(b: Bench) -> None:
+    """PWM on internal pin v0 (GPIO 24), measured by pulse capture on the same internal pin."""
+    await b.load(programs.load("pwm", OUT="v0", DIV=40), 0, origin=0)
+    await b.load(programs.load("pulse_capture", PIN="v0"), 1, origin=16)
+    await b.start(0b11)
+    period, duty = 20, 6
+    await b.put(0, (period << 16) | duty)
+    words = await b.get(1, 10)
+    widths = protocols.pulses(words)[2:]  # skip the start-up pulses
+    highs = {n for lv, n in widths if lv == 1}
+    lows = {n for lv, n in widths if lv == 0}
+    assert len(highs) == 1 and len(lows) == 1, widths  # every period identical
+    high, low = highs.pop(), lows.pop()
+    # 3 ticks a count; high for duty+1 counts plus the 7-tick reload, low for the rest.
+    assert (high, low) == (40 * (3 * (duty + 1) + 7), 40 * 3 * (period - duty)), (high, low)

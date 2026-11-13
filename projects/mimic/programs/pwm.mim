@@ -1,0 +1,26 @@
+; PWM: each TX FIFO word is period (bits 31:16) and duty (bits 15:0), in loop counts of 3 ticks.
+; The output is high for duty counts of every period. With no new word the last one repeats.
+.program pwm
+.define OUT uo3
+.define DIV 1
+.clkdiv DIV
+.set_pins OUT 1
+.pindirs OUT
+.x 0                            ; output low until the host sends a setting
+.wrap_target
+    pull noblock                ; a new setting, or X (the last one) again
+    mov x, osr
+    mov y, x
+    shr y, 16                   ; Y = period
+    and x, 0xFFFF               ; X = duty
+count:
+    jmp x<y, low
+    set pins, 1
+    jmp y--, count
+    jmp done
+low:
+    set pins, 0
+    jmp y--, count
+done:
+    mov x, osr                  ; keep the setting for pull noblock
+.wrap

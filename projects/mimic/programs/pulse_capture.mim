@@ -1,0 +1,19 @@
+; Pulse capture: the length of every level on a pin, in ticks, for decoding protocols in
+; host software (IR remotes, unknown serial lines, ...). While WAIT CHANGE waits it counts
+; X down, so one instruction is both the edge detector and the timer, with one-tick resolution.
+; Each word: bits 31:1 the ticks the level lasted less 5 (the loop's own ticks, which the wait
+; does not count), bit 0 the new level (the pulse had the other).
+.program pulse_capture
+.define PIN ui4
+.define DIV 1
+.in_pins PIN
+.shift_in left
+.fifo rx
+.clkdiv DIV
+.wrap_target
+    mov x, ~null
+    wait change pin 0 timeout   ; X counts down while the level holds
+    mov isr, ~x                 ; ticks elapsed
+    in pins, 1
+    push
+.wrap

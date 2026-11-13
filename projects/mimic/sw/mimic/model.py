@@ -311,6 +311,7 @@ class SM:
             6: self.osr,
             7: self.crc,
             8: irq_in,
+            9: self.isr_cnt | (self.osr_cnt << 8),
         }.get(srcsel, 0)
         movop = (ins >> 14) & 3
         movv = [srcv, (~srcv) & M32, bitrev(srcv), byteswap(srcv)][movop]
@@ -738,12 +739,7 @@ class Mimic:
 
     # ---- pins -------------------------------------------------------------
     def pins_in(self) -> int:
-        return (
-            (self.pin_out & 0xFF00_0000)
-            | (self.ui_s2 << 16)
-            | (self.pin_out & 0x0000_FF00)
-            | self.uio_s2
-        )
+        return (self.pin_out & 0xFF00_0000) | (self.ui_s2 << 16) | (self.pin_out & 0x0000_FF00) | self.uio_s2
 
     def outputs(self) -> tuple[int, int, int]:
         uo = (self.host.miso << 7) | ((self.pin_out >> 8) & 0x7F)

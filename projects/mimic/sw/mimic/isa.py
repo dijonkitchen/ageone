@@ -36,6 +36,7 @@ SRC = {
     "osr": 6,
     "crc": 7,
     "irq": 8,
+    "count": 9,  # bits 5:0 ISR count, bits 13:8 OSR count
 }
 
 # Destinations for OUT, MOV and SET, bits [19:16].
@@ -165,9 +166,7 @@ def enc_jmp(cond: int, addr: int, pin: int = 0, absolute: bool = False, sd: int 
     return _word(OP_JMP, (cond << 15) | (int(absolute) << 14) | ((pin & 31) << 9) | (addr & 63), sd)
 
 
-def enc_wait(
-    pol: int, src: int, index: int, absolute: bool = False, timeout: bool = False, sd: int = 0
-) -> int:
+def enc_wait(pol: int, src: int, index: int, absolute: bool = False, timeout: bool = False, sd: int = 0) -> int:
     args = (pol << 19) | (src << 16) | (int(timeout) << 15) | (int(absolute) << 14) | ((index & 31) << 9)
     return _word(OP_WAIT, args, sd)
 
@@ -222,7 +221,7 @@ def pack_clkdiv(div: float) -> int:
     if not 1.0 <= div < 65536.0:
         raise ValueError(f"clock divider {div} outside 1..65535")
     whole = int(div)
-    frac = int(round((div - whole) * 256))
+    frac = round((div - whole) * 256)
     if frac == 256:
         whole, frac = whole + 1, 0
     return (whole << 16) | (frac << 8)
@@ -274,9 +273,7 @@ def pack_shiftctrl(
     )
 
 
-def pack_pinctrl(
-    out_base: int = 0, out_count: int = 0, set_base: int = 0, set_count: int = 0, in_base: int = 0
-) -> int:
+def pack_pinctrl(out_base: int = 0, out_count: int = 0, set_base: int = 0, set_count: int = 0, in_base: int = 0) -> int:
     return (
         (out_base & 31)
         | ((out_count & 63) << 5)

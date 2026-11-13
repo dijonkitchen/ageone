@@ -12,10 +12,9 @@ from __future__ import annotations
 import os
 
 import cocotb
+import scenarios
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge
-
-import scenarios
 from mimic.bench import Bench
 from mimic.model import Mimic
 
@@ -23,7 +22,7 @@ GATES = os.environ.get("GATES") == "yes"
 LOCKSTEP = os.environ.get("LOCKSTEP", "1") != "0"
 
 
-def _int(sig) -> int:  # noqa: ANN001
+def _int(sig) -> int:
     v = sig.value
     if not v.is_resolvable:
         raise AssertionError(f"{sig._name} is {v} (X or Z)")
@@ -31,7 +30,7 @@ def _int(sig) -> int:  # noqa: ANN001
 
 
 class RtlDevice:
-    def __init__(self, dut) -> None:  # noqa: ANN001
+    def __init__(self, dut) -> None:
         self.dut = dut
 
     async def clock(self, ui_in: int, uio_in: int) -> tuple[int, int, int]:
@@ -48,7 +47,7 @@ SM_REGS = ("pc", "x", "y", "isr", "osr", "crc", "poly", "isr_cnt", "osr_cnt", "d
 class Lockstep:
     """The RTL and the golden model side by side; any difference fails the test."""
 
-    def __init__(self, dut) -> None:  # noqa: ANN001
+    def __init__(self, dut) -> None:
         self.rtl = RtlDevice(dut)
         self.model = Mimic()
         self.dut = dut
@@ -78,7 +77,7 @@ class Lockstep:
                     raise AssertionError(f"cycle {self.cycle}: SM{i}.{r} rtl={rtl:#x} model={ref:#x}")
 
 
-async def make_bench(dut) -> Bench:  # noqa: ANN001
+async def make_bench(dut) -> Bench:
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     dut.ena.value = 1
     dut.ui_in.value = 1 << 5  # host CS_N idle high
@@ -91,8 +90,8 @@ async def make_bench(dut) -> Bench:  # noqa: ANN001
     return Bench(dev)
 
 
-def _make_test(name: str, fn):  # noqa: ANN001, ANN202
-    async def run(dut) -> None:  # noqa: ANN001
+def _make_test(name: str, fn):
+    async def run(dut) -> None:
         bench = await make_bench(dut)
         await fn(bench)
         dut._log.info(f"{name}: {bench.cycle} cycles")

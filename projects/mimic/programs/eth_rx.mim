@@ -1,0 +1,49 @@
+; 10BASE-T style receiver: clock recovery from Manchester transitions, SFD search, CRC-32.
+; A bit is 2*HALF ticks; at 60 MHz, HALF 3 and DIV 1 is 10 Mb/s. Slow the line down with
+; HALF, not DIV: the timing below counts ticks, and the input synchronizer's two cycles
+; only stay below a tick at DIV 1.
+;
+; A data bit's value is the line level just after its mid-bit transition. After a transition
+; seen at tick D, the next wait starts at D+HALF+1: after any bit-boundary transition (seen at
+; D+HALF) and before the next mid-bit one (seen at D+2*HALF), with a tick of margin either way.
+;
+; The preamble (1010...) has transitions only mid-bit, so a rising one is followed by a high
+; line until the next bit. The SFD ends "11": the only place a rising transition is followed
+; by a falling one half a bit later. That is how the hunt finds the start of data.
+;
+; RX FIFO per frame: 32-bit data words (LSB first), then the partial last word (its bits at
+; the top), the CRC register (0xDEBB20E3 when the FCS checks), and COUNT (bits 5:0: the bits
+; in the partial word). IRQ (0 + SM) is set once the frame is in the FIFO.
+.program eth_rx
+.define RXD ui1
+.define DIV 1
+.define HALF 3
+.in_pins RXD
+.shift_in right autopush 32
+.crc 0xEDB88320 reflect in
+.fifo rx
+.clkdiv DIV
+hunt:
+    wait rise pin 0                 ; D: a rising mid-bit transition
+    nop                      [HALF - 1]
+    jmp pin 0, hunt                 ; D+HALF+1: still high, so the next bit is a 0: keep looking
+    wait change pin 0               ; it fell at the boundary: wait for the SFD's last mid-bit rise
+    mov isr, null                   ; D'+1
+    mov crc, ~null                  ; D'+2
+    set x, 4 * HALF          [HALF - 3]
+.wrap_target
+dwait:
+    wait change pin 0 timeout       ; D: the next mid-bit transition, or none for a bit: done
+    jmp !x, eof                     ; D+1
+    in pins, 1                      ; D+2: the bit; the CRC and autopush see it
+    set x, 2 * HALF          [HALF - 3] ; then back to dwait at D+HALF+1 for free
+.wrap
+eof:
+    mov x, count
+    push                            ; the partial word
+    mov isr, crc
+    push
+    mov isr, x
+    push
+    irq set 0 rel
+    jmp hunt

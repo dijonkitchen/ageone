@@ -78,7 +78,8 @@ module mimic_sm #(
                    OP_ALU = 4'h8, OP_ALUI = 4'h9;
 
   localparam [3:0] SRC_PINS = 4'd0, SRC_X = 4'd1, SRC_Y = 4'd2, SRC_STATUS = 4'd4,
-                   SRC_ISR  = 4'd5, SRC_OSR = 4'd6, SRC_CRC = 4'd7, SRC_IRQ = 4'd8;
+                   SRC_ISR  = 4'd5, SRC_OSR = 4'd6, SRC_CRC = 4'd7, SRC_IRQ = 4'd8,
+                   SRC_COUNT = 4'd9;
 
   localparam [3:0] DST_PINS = 4'd0, DST_X = 4'd1, DST_Y = 4'd2, DST_PINDIRS = 4'd4,
                    DST_PC   = 4'd5, DST_ISR = 4'd6, DST_OSR = 4'd7, DST_EXEC = 4'd8,
@@ -246,6 +247,7 @@ module mimic_sm #(
       SRC_OSR:    srcv = osr;
       SRC_CRC:    srcv = crc;
       SRC_IRQ:    srcv = {24'd0, irq_in};
+      SRC_COUNT:  srcv = {18'd0, osr_cnt, 2'd0, isr_cnt};  // bits in ISR, bits out of OSR
       default:    srcv = 32'd0;
     endcase
   end

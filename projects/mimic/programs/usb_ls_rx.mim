@@ -1,0 +1,60 @@
+; Low-speed USB receiver, line layer (1.5 Mb/s: T = 40 ticks a bit at 60 MHz).
+; NRZI decoding with clock recovery, bit unstuffing, SYNC and end-of-packet detection.
+; Decoded bytes (in bits 31:24, LSB first on the wire) go through the FIFO route to the
+; next SM (usb_ls_rx_pkt), then a word with bit 0 set marks the end of the packet.
+;
+; NRZI: a 0 is a transition, a 1 is none. After a transition at tick t the next one is due
+; at t+T, so the program watches the window t+T/2 .. t+3T/2: a transition there is a 0 and
+; re-times the receiver; none by its end (the middle of the bit) is a 1, and the next window
+; follows directly. Six 1s in a row are followed by a stuffed 0, which is dropped.
+; SE0 (D- and D+ both low) at any bit ends the packet.
+.program usb_ls_rx
+.define DM ui2                  ; D-; D+ must be the next pin
+.define T 40
+.in_pins DM
+.shift_in right autopush 8
+.route
+idle:
+    set y, 5                    ; Y: 1s left before a stuffed bit
+    wait 0 pin 0                ; J to K: the first transition of SYNC (t)
+    set x, T          [T/2 - 2]
+sync:
+    wait change pin 0 timeout   ; window opens at t + T/2
+    jmp !x, sync_end            ; no transition: the 1 that ends SYNC
+    set x, T          [T/2 - 4]
+    jmp sync
+sync_end:
+    set x, T - 4
+    jmp wait
+zero:                           ; a transition at t (a 0, at its start)
+    mov x, pins                 ; t+2
+    and x, 3
+    jmp !x, eop                 ; SE0
+    in null, 1
+    set y, 5
+    set x, T          [T/2 - 8] ; the next window opens at t + T/2
+.wrap_target
+wait:
+    wait change pin 0 timeout
+    jmp x--, zero               ; changed (X still above 0): a 0; X is reloaded there anyway
+one:                            ; no transition by the middle of the bit (t)
+    in x, 1                     ; t+2: a 1 (the jmp x-- above left X all ones)
+    mov x, pins
+    and x, 3
+    jmp !x, eop
+    jmp y--, more
+    set x, T - 9                ; six 1s: the next bit is a stuffed 0
+    nop
+    wait change pin 0 timeout
+    jmp !x, idle                ; seven 1s: bit-stuffing error, drop the packet
+    set y, 5
+    set x, T          [T/2 - 5]
+    jmp wait
+more:
+    set x, T - 8                ; the next window closes at t + T
+.wrap
+eop:
+    set isr, 1                  ; the end-of-packet marker
+    push
+    wait 1 pin 0                ; back to J
+    jmp idle

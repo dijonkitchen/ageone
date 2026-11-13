@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 from . import host, isa
 from .asm import Program
@@ -37,6 +37,8 @@ class Peripheral:
         raise NotImplementedError
 
 
+P = TypeVar("P", bound=Peripheral)
+
 HOST_CSN, HOST_SCK, HOST_MOSI = 5, 6, 7  # ui bits
 HOST_MISO = 7  # uo bit
 
@@ -61,7 +63,7 @@ class Bench:
         self.join_tx: dict[int, bool] = {}
 
     # ---- pins ---------------------------------------------------------------
-    def add(self, p: Peripheral) -> Peripheral:
+    def add(self, p: P) -> P:
         self.periphs.append(p)
         return p
 

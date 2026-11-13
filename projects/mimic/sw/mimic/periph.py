@@ -253,9 +253,8 @@ class I2CTarget(Peripheral):
                 self._shift = (self._shift << 1) | sda
                 self._nbits += 1
             else:  # 9th clock: ACK bit
-                if self._state == "read":
-                    if sda == 1:  # NACK from controller: stop sending
-                        self._state = "nack"
+                if self._state == "read" and sda == 1:  # NACK from the controller: stop sending
+                    self._state = "nack"
                 self._nbits = 9
         elif fall and self._state in ("addr", "write", "read", "nack"):
             if self._nbits == 8 and self._state != "read":
@@ -334,7 +333,264 @@ class Ws2812(Peripheral):
             self._low += 1
             if self._low == self.reset and self.bits:
                 self.frames.append(
-                    [sum(b << (23 - i) for i, b in enumerate(self.bits[j : j + 24])) for j in range(0, len(self.bits), 24)]
+                    [
+                        sum(b << (23 - i) for i, b in enumerate(self.bits[j : j + 24]))
+                        for j in range(0, len(self.bits), 24)
+                    ]
                 )
                 self.bits = []
         self._prev = lv
+
+
+class ManchesterTx(Peripheral):
+    """Drives IEEE 802.3 Manchester frames (preamble, SFD, data, FCS) onto a pin.
+
+    `bit` is cycles per bit (fractional values model a transmitter clock that is off
+    frequency), `phase` delays the first edge by a fraction of a cycle's worth of time.
+    The line idles low; each frame ends with a high idle pulse of `tail` bits.
+    """
+
+    def __init__(self, pin: int, bit: float, phase: float = 0.0, tail: float = 2.5) -> None:
+        self.pin, self.bit, self.phase, self.tail = pin, bit, phase, tail
+        self.frames: deque[list[int]] = deque()
+        self._levels: list[tuple[float, int]] = []  # (end time, level) of each half-bit
+        self._t = 0.0
+        self._i = 0
+
+    def send(self, frame_bits: list[int]) -> None:
+        self.frames.append(frame_bits)
+
+    @property
+    def idle(self) -> bool:
+        return not self.frames and not self._levels
+
+    def tick(self, bench: Bench) -> None:
+        if not self._levels:
+            bench.drive(self.pin, 0)
+            if not self.frames:
+                return
+            bits = self.frames.popleft()
+            half = self.bit / 2
+            t = self.phase
+            levels = []
+            for b in bits:
+                first, second = (0, 1) if b else (1, 0)
+                levels += [(t + half, first), (t + 2 * half, second)]
+                t += 2 * half
+            levels.append((t + self.tail * self.bit, 1))
+            levels.append((t + self.tail * self.bit + 1, 0))
+            self._levels, self._t, self._i = levels, 0.0, 0
+        self._t += 1
+        while self._i < len(self._levels) and self._t > self._levels[self._i][0]:
+            self._i += 1
+        if self._i >= len(self._levels):
+            self._levels = []
+            bench.drive(self.pin, 0)
+            return
+        bench.drive(self.pin, self._levels[self._i][1])
+
+
+class ManchesterRx(Peripheral):
+    """Records a pin and decodes IEEE 802.3 Manchester frames from its transitions."""
+
+    def __init__(self, pin: int, bit: float) -> None:
+        self.pin, self.bit = pin, bit
+        self.frames: list[bytes] = []
+        self._edges: list[tuple[int, int]] = []  # (cycle, new level)
+        self._prev = 0
+        self._cycle = 0
+
+    def tick(self, bench: Bench) -> None:
+        lv = bench.level(self.pin)
+        self._cycle += 1
+        if lv != self._prev:
+            self._edges.append((self._cycle, lv))
+        elif self._edges and self._cycle - self._edges[-1][0] > 4 * self.bit:
+            self._decode()
+            self._edges = []
+        self._prev = lv
+
+    def _decode(self) -> None:
+        edges = self._edges
+        bits = []
+        i = 0
+        while i < len(edges):
+            t, lv = edges[i]
+            bits.append(lv)  # level after a mid-bit transition
+            j = i + 1
+            while j < len(edges) and edges[j][0] < t + 0.75 * self.bit:
+                j += 1
+            if j >= len(edges) or edges[j][0] > t + 1.25 * self.bit:
+                break
+            i = j
+        # Strip the preamble: data starts after the first "1 1".
+        for k in range(1, len(bits)):
+            if bits[k] == 1 and bits[k - 1] == 1:
+                data_bits = bits[k + 1 :]
+                break
+        else:
+            return
+        n = len(data_bits) // 8
+        self.frames.append(bytes(sum(data_bits[8 * j + b] << b for b in range(8)) for j in range(n)))
+
+
+def manchester_frame_bits(data_with_fcs: bytes) -> list[int]:
+    """Preamble, SFD and the given bytes as bits in transmit order (LSB first)."""
+    frame = bytes([0x55] * 7 + [0xD5]) + data_with_fcs
+    return [(byte >> i) & 1 for byte in frame for i in range(8)]
+
+
+def usb_crc5(bits: list[int]) -> list[int]:
+    """USB token CRC5 bits as transmitted (inverted remainder, MSb first), from the spec."""
+    rem = 0x1F
+    for b in bits:
+        fb = ((rem >> 4) & 1) ^ b
+        rem = ((rem << 1) & 0x1F) ^ (0x05 if fb else 0)
+    rem ^= 0x1F
+    return [(rem >> (4 - i)) & 1 for i in range(5)]
+
+
+def usb_crc16(data: bytes) -> list[int]:
+    """USB data CRC16 bits as transmitted (inverted remainder, MSb first), from the spec."""
+    rem = 0xFFFF
+    for byte in data:
+        for i in range(8):
+            fb = ((rem >> 15) & 1) ^ ((byte >> i) & 1)
+            rem = ((rem << 1) & 0xFFFF) ^ (0x8005 if fb else 0)
+    rem ^= 0xFFFF
+    return [(rem >> (15 - i)) & 1 for i in range(16)]
+
+
+def usb_bits(pid: int, payload: bytes = b"", token: tuple[int, int] | None = None) -> list[int]:
+    """Bits of a packet after SYNC, LSB first, with its CRC: a token (addr, endp) or data."""
+    pid_byte = (pid & 0xF) | ((~pid & 0xF) << 4)
+    bits = [(pid_byte >> i) & 1 for i in range(8)]
+    if token is not None:
+        addr, endp = token
+        field = [(addr >> i) & 1 for i in range(7)] + [(endp >> i) & 1 for i in range(4)]
+        bits += field + usb_crc5(field)
+    elif pid & 0b11 == 0b11:  # data packets carry a CRC16
+        bits += [(b >> i) & 1 for b in payload for i in range(8)] + usb_crc16(payload)
+    return bits
+
+
+class UsbLsHost(Peripheral):
+    """Drives low-speed USB packets (as a host would) on D- and D+: NRZI, bit stuffing, EOP.
+
+    `bit` is cycles per bit; low-speed allows a 1.5% frequency error, which `bit` can model.
+    """
+
+    J = (0, 1)  # (D+, D-) for low speed
+    K = (1, 0)
+
+    def __init__(self, dm: int, dp: int, bit: float) -> None:
+        self.dm, self.dp, self.bit = dm, dp, bit
+        self.queue: deque[list[int]] = deque()
+        self._levels: list[tuple[int, int]] = []
+        self._t = 0.0
+        self.started = False
+
+    def send(self, bits: list[int]) -> None:
+        self.queue.append(bits)
+
+    @property
+    def idle(self) -> bool:
+        return not self.queue and not self._levels
+
+    def _line(self, bits: list[int]) -> list[tuple[int, int]]:
+        stuffed: list[int] = []
+        ones = 0
+        for b in [0, 0, 0, 0, 0, 0, 0, 1] + bits:  # SYNC, then the packet
+            stuffed.append(b)
+            ones = ones + 1 if b else 0
+            if ones == 6:
+                stuffed.append(0)
+                ones = 0
+        state = self.J
+        out = []
+        for b in stuffed:
+            if b == 0:
+                state = self.K if state == self.J else self.J
+            out.append(state)
+        return out + [(0, 0), (0, 0), self.J]  # EOP: two bits of SE0, then J
+
+    def _drive(self, bench: Bench, lv: tuple[int, int]) -> None:
+        bench.drive(self.dp, lv[0])
+        bench.drive(self.dm, lv[1])
+
+    def tick(self, bench: Bench) -> None:
+        if not self._levels:
+            self._drive(bench, self.J)
+            if not self.queue:
+                return
+            self._levels = self._line(self.queue.popleft())
+            self._t = 0.0
+        idx = int(self._t // self.bit)
+        if idx >= len(self._levels):
+            self._levels = []
+            self._drive(bench, self.J)
+            return
+        self._drive(bench, self._levels[idx])
+        self._t += 1
+
+
+class Ps2Device(Peripheral):
+    """A PS/2 keyboard sending scan codes: it drives CLK and DATA open-drain, `half` cycles a phase."""
+
+    def __init__(self, clk: int, data: int, half: int) -> None:
+        self.clk, self.data, self.half = clk, data, half
+        self.queue: deque[tuple[int, bool]] = deque()
+        self._bits: list[int] = []
+        self._t = 0
+
+    def send(self, codes: bytes, bad_parity: bool = False) -> None:
+        for c in codes:
+            self.queue.append((c, bad_parity))
+
+    @property
+    def idle(self) -> bool:
+        return not self.queue and not self._bits
+
+    def tick(self, bench: Bench) -> None:
+        if not self._bits:
+            bench.drive(self.clk, None)
+            bench.drive(self.data, None)
+            if not self.queue:
+                return
+            code, bad = self.queue.popleft()
+            parity = 1 ^ (code.bit_count() & 1) ^ int(bad)  # odd parity
+            self._bits = [0] + [(code >> i) & 1 for i in range(8)] + [parity, 1]
+            self._t = 0
+        # Each bit: DATA set while CLK is high, then CLK low (the host samples), then high.
+        bit, phase = divmod(self._t, 2 * self.half)
+        if bit >= len(self._bits):
+            self._bits = []
+            return
+        bench.drive(self.data, None if self._bits[bit] else 0)
+        bench.drive(self.clk, 0 if phase >= self.half else None)
+        self._t += 1
+
+
+class PulseTrain(Peripheral):
+    """Drives a pin through a list of (level, cycles) pulses, then holds the last level."""
+
+    def __init__(self, pin: int, pulses: list[tuple[int, int]], idle: int = 1) -> None:
+        self.pin, self.pulses, self.idle_level = pin, deque(pulses), idle
+        self._left = 0
+        self._level = idle
+
+    def tick(self, bench: Bench) -> None:
+        if self._left == 0 and self.pulses:
+            self._level, self._left = self.pulses.popleft()
+        if self._left:
+            self._left -= 1
+        bench.drive(self.pin, self._level)
+
+
+def nec_pulses(addr: int, cmd: int, unit: int) -> list[tuple[int, int]]:
+    """An NEC infrared remote frame as receiver output (active low), `unit` cycles per 562.5 us."""
+    out = [(0, 16 * unit), (1, 8 * unit)]  # 9 ms burst, 4.5 ms space
+    for byte in (addr, addr ^ 0xFF, cmd, cmd ^ 0xFF):
+        for i in range(8):
+            out += [(0, unit), (1, (3 if byte >> i & 1 else 1) * unit)]
+    return out + [(0, unit), (1, 10 * unit)]

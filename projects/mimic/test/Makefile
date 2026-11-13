@@ -11,7 +11,6 @@ ifneq ($(GATES),yes)
 
 SIM_BUILD = sim_build/rtl
 VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
-COMPILE_ARGS += -DMIMIC_IMEM_LATCH
 
 else
 

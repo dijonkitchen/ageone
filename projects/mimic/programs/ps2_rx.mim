@@ -1,0 +1,23 @@
+; PS/2 receiver (keyboard or mouse to host). The device clocks: data is valid on the falling
+; edge of CLK. Frame: start 0, 8 data bits LSB first, odd parity, stop 1.
+; The CRC unit set to the 1-bit polynomial is a parity checker: after the 8 data bits and
+; the parity bit its register holds 1 exactly when the parity is right.
+; Each frame pushes one word: bits 7:0 data, bit 8 the parity bit, bit 9 parity OK.
+.program ps2_rx
+.define DATA uio4
+.define CLK uio5
+.in_pins DATA
+.shift_in right
+.crc 1 reflect in               ; CRC-1: the parity of every bit IN shifts in
+start:
+    wait fall gpio CLK          ; start bit
+    mov crc, null
+    set x, 8                    ; 8 data bits and the parity bit
+bit:
+    wait fall gpio CLK
+    in pins, 1
+    jmp x--, bit
+    in crc, 1                   ; parity OK
+    in null, 22                 ; right-align the 10 bits
+    push
+    wait fall gpio CLK          ; stop bit

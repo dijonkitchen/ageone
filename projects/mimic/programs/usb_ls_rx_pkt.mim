@@ -1,0 +1,45 @@
+; Low-speed USB receiver, packet layer: bytes from usb_ls_rx arrive through the FIFO route.
+; The bytes go on to the host packed four to a word, and the CRC unit checks the packet:
+; CRC16 for data packets, CRC5 for tokens, chosen from the PID.
+; RX FIFO per packet: full words (LSB first), the partial last word (its bits at the top), the
+; CRC register (0xB001 for a good CRC16, 0x06 for a good CRC5) and COUNT (bits 5:0: the bits
+; in the partial word); IRQ (0 + SM) is set after them. The same layout as eth_rx.
+.program usb_ls_rx_pkt
+.shift_out right
+.shift_in right autopush 32
+.crc 0xA001 reflect in
+pkt:
+    pull                        ; the PID (or the marker of an empty packet)
+    mov x, osr
+    jmp x0, pkt
+    out null, 24                ; each byte sits in bits 31:24
+    in osr, 8                   ; the PID, in one go (the CRC starts afresh below)
+    mov x, isr                  ; the PID is in ISR bits 31:24
+    shr x, 25                   ; X bit 0 = PID bit 1: 1 for data packets, 0 for tokens
+    jmp !x0, token
+    set poly, 0xA001            ; CRC16, reflected; it starts after the PID
+    set crc, 0xFFFF
+    jmp byte
+token:
+    set poly, 0x14              ; CRC5, reflected
+    set crc, 0x1F
+byte:
+    pull
+    mov x, osr
+    jmp x0, done                ; end of packet
+    out null, 24
+    set x, 7
+bit:
+    out y, 1
+    in y, 1                     ; the CRC sees the bit; autopush sends each full word on
+    jmp x--, bit
+    jmp byte
+done:
+    mov x, count
+    push                        ; the partial word
+    mov isr, crc
+    push
+    mov isr, x
+    push
+    irq set 0 rel
+    jmp pkt

@@ -467,7 +467,9 @@ class Assembler:
             pol, src_kind = int(kind), words[1]
             idx_s = words[2] if len(words) > 2 else "0"
             if src_kind == "irq":
-                return isa.enc_wait(pol, isa.WAIT_IRQ, evaluate(idx_s, symbols) & 7, absolute=rel, timeout=timeout, sd=sd)
+                return isa.enc_wait(
+                    pol, isa.WAIT_IRQ, evaluate(idx_s, symbols) & 7, absolute=rel, timeout=timeout, sd=sd
+                )
             src = isa.WAIT_LEVEL
         elif kind in ("rise", "fall", "change"):
             pol = 1 if kind == "rise" else 0

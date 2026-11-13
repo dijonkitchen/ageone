@@ -1,0 +1,70 @@
+; 10BASE-T style transmitter: preamble and SFD, Manchester data, CRC-32 FCS, end-of-frame idle.
+; A bit is 2*HALF ticks: at 60 MHz, HALF 3 and DIV 1 is 10 Mb/s. The CRC unit sees every
+; data bit as OUT shifts it, so the FCS costs no host work.
+; TX FIFO: a header word (data bits - 1), then the data, LSB first (the bytes of each word
+; in little-endian order). The host must keep the FIFO fed for the whole frame.
+; Manchester as IEEE 802.3: a 1 is low then high, a 0 high then low.
+.program eth_tx
+.define TXD uo2
+.define DIV 1
+.define HALF 3
+.side_set 1 opt
+.side_pins TXD
+.pindirs TXD
+.shift_out right autopull 32
+.crc 0xEDB88320 reflect out
+.fifo tx
+.clkdiv DIV
+start:
+    pull                   side 0   ; idle low until a frame header arrives
+    out x, 32                       ; X = data bits - 1
+    mov crc, ~null                  ; CRC-32 starts at all ones
+    set y, 30                       ; preamble: 31 times "1 0"...
+pre:
+    nop                    side 0 [HALF - 1]
+    nop                    side 1 [HALF - 1]
+    nop                    side 1 [HALF - 1]
+    jmp y--, pre           side 0 [HALF - 1]
+    nop                    side 0 [HALF - 1]   ; ...then "1 1" ends the SFD
+    nop                    side 1 [HALF - 1]
+    nop                    side 0 [HALF - 1]
+    nop                    side 1
+    out y, 1                        ; the first data bit (Y holds the bit being sent)
+dsend:                              ; each half bit is HALF ticks
+    jmp !y, d0
+d1:
+    jmp !x, dlast1         side 0       ; last data bit?
+    out y, 1                      [HALF - 2]   ; fetch the next bit during the first half
+    jmp x--, dsend         side 1 [HALF - 2]
+d0:
+    jmp !x, dlast0         side 1
+    out y, 1                      [HALF - 2]
+    jmp x--, dsend         side 0 [HALF - 2]
+dlast0:
+    mov osr, ~crc                   ; the FCS is the inverted CRC, sent LSB first
+    set x, 31
+    out y, 1               side 0
+    jmp fsend
+dlast1:
+    mov osr, ~crc
+    set x, 31
+    out y, 1               side 1 [HALF - 2]
+fsend:
+    jmp !y, f0
+f1:
+    jmp !x, end1           side 0
+    out y, 1                      [HALF - 2]
+    jmp x--, fsend         side 1 [HALF - 2]
+f0:
+    jmp !x, end0           side 1
+    out y, 1                      [HALF - 2]
+    jmp x--, fsend         side 0 [HALF - 2]
+end1:
+    nop                           [HALF - 2]   ; finish the low half
+    nop                    side 1 [5 * HALF + 1]  ; high half, then hold high: end of frame
+    jmp start              side 0
+end0:
+    nop                           [HALF - 2]
+    nop                    side 0 [HALF - 1]
+    nop                    side 1 [5 * HALF - 1]
+    jmp start              side 0

@@ -2,9 +2,10 @@
  * Shared instruction memory: 64 x 32-bit words, one write port (host) and four
  * asynchronous read ports (one per state machine), so every SM fetches every cycle.
  *
- * MIMIC_IMEM_LATCH (set in info.yaml's build and the tests) stores words in latches behind a
- * per-word clock gate, less than half the area of flip-flops with enables; without it the
- * memory is plain flip-flops. See docs/decisions/2026-11-13-mimic-imem.md.
+ * Words are stored in latches behind a per-word clock gate, less than half the area of
+ * flip-flops with enables. Define MIMIC_IMEM_FF for plain flip-flops instead (for FPGAs,
+ * where latches and gated clocks are a poor fit); writes then land one cycle sooner.
+ * See docs/decisions/2026-11-13-mimic-imem.md.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -26,7 +27,7 @@ module mimic_imem (
     output wire [31:0] rdata3
 );
 
-`ifdef MIMIC_IMEM_LATCH
+`ifndef MIMIC_IMEM_FF
   // Each word is 32 latches behind its own clock gate, a negative latch holding the enable
   // and an AND with clk (the structure of an integrated clock gate). A host write at cycle T
   // opens word waddr's latches for the high half of cycle T+2, capturing wdata_q, which holds

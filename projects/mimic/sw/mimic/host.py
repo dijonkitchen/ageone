@@ -108,7 +108,9 @@ class Loader:
         )
         # No join while we pass setup values through the TX FIFO; the real value goes last.
         ops.append(write(isa.sm_reg(sm, isa.SM_SHIFTCTRL), shiftctrl & ~(3 << 16)))
-        ops.append(write(isa.sm_reg(sm, isa.SM_CRCCFG), isa.pack_crccfg(cfg.crc_reflect, cfg.crc_feed_out, cfg.crc_feed_in)))
+        ops.append(
+            write(isa.sm_reg(sm, isa.SM_CRCCFG), isa.pack_crccfg(cfg.crc_reflect, cfg.crc_feed_out, cfg.crc_feed_in))
+        )
         ops.append(self.ctrl(tx_clear=bit, rx_clear=bit))
 
         # Values the program expects in registers, passed through the TX FIFO.
