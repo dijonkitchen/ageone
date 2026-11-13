@@ -1,0 +1,24 @@
+; UART receiver: 8N1, LSB first, 8 ticks per bit, framing errors flagged on IRQ (0 + SM).
+; Each good byte is pushed right-aligned. Baud = clk / (8 * DIV).
+.program uart_rx
+.define RX ui0
+.define DIV 1
+.in_pins RX
+.clkdiv DIV
+.shift_in right
+.fifo rx
+start:
+    wait 0 pin 0              ; start bit
+    set x, 7           [10]   ; to the middle of bit 0: 1.5 bits after the edge
+bit:
+    in pins, 1
+    jmp x--, bit       [6]
+    jmp !pin 0, bad           ; the stop bit must be high
+    in null, 24               ; right-align the byte
+    push
+    jmp start
+bad:
+    irq set 0 rel             ; framing error
+    mov isr, null             ; drop the byte
+    wait 1 pin 0              ; wait for the line to go idle
+    jmp start

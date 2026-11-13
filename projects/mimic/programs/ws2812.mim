@@ -1,0 +1,21 @@
+; WS2812 ("NeoPixel") LED chain driver: one 24-bit GRB value per TX FIFO word (bits 31:8).
+; A bit is T1+T2+T3 = 10 ticks: 800 kHz needs 8 MHz ticks, DIV 7.5 at 60 MHz.
+; When the FIFO runs dry the line rests low, which latches the LEDs.
+.program ws2812
+.define DOUT uo1
+.define DIV 7.5
+.define T1 2
+.define T2 5
+.define T3 3
+.side_set 1
+.side_pins DOUT
+.pindirs DOUT
+.shift_out left autopull 24
+.fifo tx
+.clkdiv DIV
+bit:
+    out x, 1        side 0 [T3 - 1]  ; low; stalls here between frames
+    jmp !x, zero    side 1 [T1 - 1]  ; every bit starts high
+    jmp bit         side 1 [T2 - 1]  ; a 1 stays high longer
+zero:
+    nop             side 0 [T2 - 1]  ; a 0 goes low early

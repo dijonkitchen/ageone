@@ -1,0 +1,29 @@
+; SPI target, mode 0, MSB first. Bytes from MOSI go to the RX FIFO (bits 7:0); replies come
+; from the TX FIFO (byte in bits 31:24), or 0xFF when the host has queued none.
+; CS high at any time resynchronizes to a byte boundary.
+.program spi_target
+.define SCK uio3
+.define MOSI uio1
+.define MISO uio2
+.define CS uio0
+.in_pins MOSI
+.out_pins MISO 1
+.pindirs MISO
+.shift_in left autopush 8
+.shift_out left 8               ; a reply byte is used up after 8 bits
+.x 0xFFFFFFFF                  ; reply when the TX FIFO is empty
+start:
+    mov isr, null              ; drop a partial byte
+    out null, 32               ; and a partial reply
+    wait 0 gpio CS
+bit:
+    pull ifempty noblock       ; next reply byte, or X
+    out pins, 1                ; MISO before the rising edge
+rise:
+    jmp gpio CS, start
+    jmp !gpio SCK, rise
+    in pins, 1                 ; sample MOSI
+fall:
+    jmp gpio CS, start
+    jmp gpio SCK, fall
+    jmp bit

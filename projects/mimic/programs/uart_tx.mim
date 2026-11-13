@@ -1,0 +1,17 @@
+; UART transmitter: 8N1, LSB first, 8 state machine ticks per bit.
+; The host writes one byte per TX FIFO word (low 8 bits). Baud = clk / (8 * DIV).
+.program uart_tx
+.define TX uo0            ; any output pin
+.define DIV 1             ; clock divider (may be fractional when written as a number here)
+.side_set 1 opt
+.side_pins TX
+.out_pins TX 1
+.pindirs TX
+.initial TX=1
+.clkdiv DIV
+.fifo tx                  ; 4-deep TX FIFO
+    pull         side 1 [7]   ; stop bit, then idle high until a byte arrives
+    set x, 7     side 0 [7]   ; start bit
+bit:
+    out pins, 1
+    jmp x--, bit       [6]

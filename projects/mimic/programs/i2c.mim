@@ -1,0 +1,46 @@
+; I2C controller with clock stretching, on open-drain pins.
+; Each TX FIFO word is one byte slot: bit 31 START (or repeated START) first, bit 30 STOP after,
+; bits 29:21 the nine bits to put on SDA, MSB first (1 releases SDA).
+;   write byte b:   (b << 1) | 1     the ninth bit releases SDA for the target's ACK
+;   read a byte:    0x1FE | nack     eight released bits, then our ACK (0) or NACK (1)
+; Each slot pushes the nine bits seen on SDA: bit 0 is the ACK, bits 8:1 the data.
+; A bit takes about 9 ticks: 100 kHz at 60 MHz is DIV 66, 400 kHz is DIV 16.
+.program i2c
+.define SCL uio2
+.define SDA uio3
+.define DIV 16
+.side_set 1 opt
+.side_pins SCL
+.out_pins SDA 1
+.set_pins SDA 1
+.in_pins SDA
+.opendrain SDA SCL
+.initial SDA=1 SCL=1
+.shift_out left
+.shift_in left
+.clkdiv DIV
+next:
+    pull                       ; between bytes SCL stays low; after a STOP the bus is idle
+    out x, 1                   ; START?
+    jmp !x, slot
+    set pins, 1                ; release SDA (for a repeated START)
+    nop             side 1 [1] ; release SCL
+    wait 1 gpio SCL            ; let a target stretch
+    set pins, 0            [1] ; START: SDA falls while SCL is high
+    nop             side 0 [1]
+slot:
+    out x, 1                   ; X = STOP after this byte
+    set y, 8                   ; nine bits
+bit:
+    out pins, 1            [1] ; SDA changes while SCL is low
+    nop             side 1     ; release SCL
+    wait 1 gpio SCL            ; clock stretching
+    in pins, 1             [1] ; sample SDA while SCL is high
+    jmp y--, bit    side 0 [1]
+    push
+    jmp !x, next
+    set pins, 0            [1] ; STOP: SDA low, release SCL, then SDA rises while SCL is high
+    nop             side 1
+    wait 1 gpio SCL        [1]
+    set pins, 1            [1]
+    jmp next

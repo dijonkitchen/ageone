@@ -1,0 +1,33 @@
+; SPI controller, any mode (CPOL, CPHA), MSB first, chip select framed by the program.
+; TX FIFO: a header word (number of bits - 1), then one word per byte (byte in bits 31:24).
+; RX FIFO: one word per byte read from MISO (byte in bits 7:0).
+; SCK = clk / (4 * DIV). MISO is sampled two ticks after the edge that shifts it.
+.program spi_ctrl
+.define SCK uio3
+.define MOSI uio1
+.define MISO uio2
+.define CS uio0
+.define CPOL 0
+.define CPHA 0
+.define DIV 2
+.define A CPOL ^ CPHA         ; SCK level while MOSI changes
+.define B CPOL ^ CPHA ^ 1     ; SCK level while MISO is sampled
+.side_set 1
+.side_pins SCK
+.out_pins MOSI 1
+.set_pins CS 1
+.in_pins MISO
+.pindirs SCK MOSI CS
+.initial CS=1 SCK=CPOL
+.shift_out left autopull 8
+.shift_in left autopush 8
+.clkdiv DIV
+start:
+    pull            side CPOL      ; header
+    out x, 32       side CPOL      ; X = bits - 1
+    set pins, 0     side CPOL [1]  ; CS low
+bit:
+    out pins, 1     side A    [1]
+    in pins, 1      side B
+    jmp x--, bit    side B
+    set pins, 1     side CPOL [1]  ; CS high, SCK idle
