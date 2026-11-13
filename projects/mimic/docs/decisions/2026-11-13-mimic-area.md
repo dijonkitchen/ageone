@@ -32,7 +32,7 @@ Cutting features that make the chip flexible (the competition's first criterion)
 
 ## Decision
 
-The first synthesis was 711,000 µm². These changes brought it to about 510,000 µm² with every ISA feature kept:
+The first synthesis was 711,000 µm². These changes brought it to about 510,000 µm² with every ISA feature kept (520,000 after the routing fix below):
 
 | Change | Saved (µm²) |
 |---|---|

@@ -39,7 +39,7 @@ Words are stored in **latches**, each word written through its own clock gate ma
 | Choice | Area (µm², IHP SG13CMOS5L, synthesized) |
 |---|---|
 | Flip-flops with enables, 64 words | 241,000 |
-| Latches with clock gates, 64 words | 149,000 |
+| Latches with clock gates, 64 words | 149,000 (158,000 with the two-level read decode below) |
 | of which the four 64:1 read multiplexers | about 100,000 |
 
 ### Choices and Tradeoffs/Risks

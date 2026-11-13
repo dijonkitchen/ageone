@@ -34,6 +34,9 @@
   "//": "corner, where the chip runs; sign-off STA still reports all three.",
   "RSZ_CORNERS": ["nom_typ_1p20V_25C"],
 
+  "//": "CTS_CORNERS - Clock tree synthesis loads every corner too and peaked at 12 GB; typical only.",
+  "CTS_CORNERS": ["nom_typ_1p20V_25C"],
+
   "//": "GRT_LAYER_ADJUSTMENTS - Metal1 to TopMetal1. Metal3 is the only horizontal layer a project",
   "//": "may route on, so it sets the limit; the global router reserves 20% of it instead of 30%",
   "//": "(Metal2 and Metal4 keep 30%) and leaves the rest to the detailed router.",

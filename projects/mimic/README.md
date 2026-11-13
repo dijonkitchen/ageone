@@ -13,7 +13,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 
 | | |
 |---|---|
-| Process, area | IHP SG13CMOS5L, 8x4 Tiny Tapeout tiles (1.22 mm²), about 510,000 µm² of cells |
+| Process, area | IHP SG13CMOS5L, 8x4 Tiny Tapeout tiles (1.22 mm²), about 520,000 µm² of cells |
 | Clock | 60 MHz (one clock domain) |
 | State machines | 4, each with X, Y, ISR, OSR, CRC/LFSR, clock divider, 2+2-word FIFOs |
 | Program memory | 64 x 32-bit instructions, shared |
