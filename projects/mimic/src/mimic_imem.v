@@ -62,9 +62,36 @@ module mimic_imem (
   end
 `endif
 
-  assign rdata0 = mem[raddr0];
-  assign rdata1 = mem[raddr1];
-  assign rdata2 = mem[raddr2];
-  assign rdata3 = mem[raddr3];
+  // Each read port selects in two levels: eight one-hot lines from raddr[2:0] pick a word in
+  // every group of eight, then eight lines from raddr[5:3] pick the group. The kept nets stop
+  // synthesis from flattening this into 64 word lines per port, each running to all 32 bits:
+  // those 256 lines were a third of the placed wiring and made the chip unroutable on its one
+  // horizontal routing layer (see docs/decisions/2026-11-13-mimic-area.md).
+  wire [5:0]  raddr [0:3];
+  wire [31:0] rdata [0:3];
+  assign raddr[0] = raddr0;
+  assign raddr[1] = raddr1;
+  assign raddr[2] = raddr2;
+  assign raddr[3] = raddr3;
+  genvar p, k, b;
+  generate
+    for (p = 0; p < 4; p = p + 1) begin : port
+      (* keep *) wire [7:0] lo = 8'd1 << raddr[p][2:0];
+      (* keep *) wire [7:0] hi = 8'd1 << raddr[p][5:3];
+      for (b = 0; b < 32; b = b + 1) begin : column
+        wire [7:0] grp;
+        for (k = 0; k < 8; k = k + 1) begin : group
+          (* keep *) wire sel = |(lo & {mem[8*k+7][b], mem[8*k+6][b], mem[8*k+5][b], mem[8*k+4][b],
+                                      mem[8*k+3][b], mem[8*k+2][b], mem[8*k+1][b], mem[8*k][b]});
+          assign grp[k] = sel;
+        end
+        assign rdata[p][b] = |(hi & grp);
+      end
+    end
+  endgenerate
+  assign rdata0 = rdata[0];
+  assign rdata1 = rdata[1];
+  assign rdata2 = rdata[2];
+  assign rdata3 = rdata[3];
 
 endmodule

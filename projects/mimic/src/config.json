@@ -34,6 +34,11 @@
   "//": "corner, where the chip runs; sign-off STA still reports all three.",
   "RSZ_CORNERS": ["nom_typ_1p20V_25C"],
 
+  "//": "GRT_LAYER_ADJUSTMENTS - Metal1 to TopMetal1. Metal3 is the only horizontal layer a project",
+  "//": "may route on, so it sets the limit; the global router reserves 20% of it instead of 30%",
+  "//": "(Metal2 and Metal4 keep 30%) and leaves the rest to the detailed router.",
+  "GRT_LAYER_ADJUSTMENTS": [0, 0.3, 0.2, 0.3, 0],
+
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
   "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,

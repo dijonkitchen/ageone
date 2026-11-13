@@ -60,6 +60,32 @@ The first synthesis was 711,000 µm². These changes brought it to about 510,000
   so repairing against three corners ran out of a 16 GB machine (Tiny Tapeout's GitHub runners have
   16 GB too). Sign-off STA still checks all three.
 
+**Routing.** The first layout did not route.
+A project may route only on Metal2 to Metal4 (TopMetal1 belongs to the chip's power grid), so
+Metal3 is its only horizontal layer, and on an 8x4 die, more than twice as wide as tall, most
+long wires run horizontally.
+The global router needed 128% of Metal3's capacity (84% of its raw tracks) against 61% of the two
+vertical layers', and after two hours of overflow repair it still had not converged.
+Spreading the cells did not help: target densities from 52% to 60% and cell padding all left
+Metal3 at 108% before buffering.
+The wiring came from the memory's read multiplexers: synthesis decoded each port's address into
+64 word lines, and each line ran to its word's 32 bits wherever the placer put them.
+Those 256 lines and their buffers were a third of the placed wiring.
+Two changes fixed it:
+
+- Each read port decodes in two levels: eight one-hot lines from the low three address bits
+  pick a word in every group of eight, and eight lines from the high three bits pick the group.
+  `(* keep *)` stops synthesis from flattening the levels back into word lines.
+  The same function in 1,000 more cells (+9,000 µm²) cut the wiring by 19% and Metal3's
+  demand from 108% to 86% before buffering.
+- `GRT_LAYER_ADJUSTMENTS` reserves 20% of Metal3 in global routing instead of 30% (Metal2 and
+  Metal4 keep 30%), leaving the difference to the detailed router, which sees real tracks.
+  Global routing of the buffered placement then converges to 2,600 overflow in ten passes, against
+  111,000 before.
+
+Neither the library's fanout limit (8, which overrides a looser `MAX_FANOUT_CONSTRAINT`) nor
+the placement settings changed anything, so they stay at Tiny Tapeout's defaults.
+
 ### Choices and Tradeoffs/Risks
 
 Two-word FIFOs make the host keep up sooner: at full rate a protocol that streams data needs the host's SPI port at 10 MHz (about 9 Mb/s). Joining a FIFO doubles one direction, and SM-to-SM routing keeps pipelines on chip.

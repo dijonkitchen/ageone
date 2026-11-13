@@ -54,6 +54,8 @@ Words are stored in **latches**, each word written through its own clock gate ma
 
 **Latch write timing.** A host write at cycle T lands in cycle T+2 (one later than flip-flops); the golden model models this so lockstep holds. Host writes are at least 32 SCK edges apart, so the write data register never changes while a gate is open.
 
+**Two-level read decode.** Each read port picks a word with eight one-hot lines from the low address bits and then a group of eight with eight lines from the high bits, instead of 64 word lines. It costs 1,000 cells and removes most of the chip's routing congestion; the [area decision](2026-11-13-mimic-area.md) has the measurements.
+
 **Static timing.** The clock gates are clock-derived, so STA times the latches' setup (half a cycle from the data register) and the gates' enable; the latch read paths are ordinary data paths into the SMs.
 
 ### Dependencies
