@@ -1,0 +1,8 @@
+{
+  "id": "mock-retry",
+  "mode": "direct",
+  "title": "Mock upstream fails once, then answers; pi retries within the one allowed turn",
+  "prompt": "MOCK-FAIL-ONCE: 503\nMOCK-REPLY: 42",
+  "timeoutSec": 60,
+  "maxTurns": 1
+}

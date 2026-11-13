@@ -55,6 +55,7 @@ OpenRouter's billed cost doesn't include its 5.5% fee on buying credits.
 
 Runs that could not be graded go to the matching `.infra.jsonl` with a `status` of `infra_error`, `timeout`, `truncated`, `refused`, or `model_mismatch` (the served model differs from the requested one), and never count as model failures.
 Running out of turns is a model failure.
+A turn that ends in an API error doesn't count toward the limit, so pi can retry it; a run whose last call failed is an `infra_error`.
 
 `evals/report` prints pass rate with its range across repetitions, cost per completed task (total cost over passes), mean tokens, turns, and time.
 Each route gets its own rows, and a cost marked `*` includes a harness's estimate; `evals/report --pool-routes` combines one model's runs across gateways.
