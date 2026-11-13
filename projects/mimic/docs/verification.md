@@ -62,6 +62,8 @@ computed independently:
 - **Timing**: side-set with delay, a `WAIT` that times out (X + 1 ticks), and the fractional
   clock divider, measured in cycles on the pins against the timing rules in the ISA.
 - **EXEC and IRQs**: `OUT EXEC` running a word from the FIFO; an IRQ handshake between two SMs.
+- **Waits and pin priority**: an edge wait re-arms on every `WAIT`; side-set beats `SET` on the
+  same pin; the higher-numbered SM wins a shared pin (added after the mutation test, below).
 
 They drive a stopped SM through the debug path (`INSTR` writes and `X` reads over SPI), so the
 same tests exercise the host port and the debugger.
@@ -112,7 +114,24 @@ protocols' bread and butter (section 4).
 runs the lockstep suite (random and directed tests) against the RTL; a bug the suite misses is a
 gap in the tests.
 
-MUTATION_RESULTS
+| Mutant (one line of the model changed) | First run | After the fix |
+|---|---|---|
+| `xor` computes `or` | caught | |
+| `x==y` false when both are 0 | caught (missed by an earlier generator, until FIFO data favoured 0, 1 and all ones) | |
+| `x<y` reads the wrong carry bit | caught | |
+| ISR count saturates at 31 | caught | |
+| autopull waits for one bit too many | caught | |
+| `wait rise` forgets to re-arm on a new WAIT | **survived** | caught |
+| `OUT`/`SET` beats side-set on the same pin | **survived** | caught |
+| reflected CRC feeds back the wrong bit | caught | |
+| `irq rel` subtracts the SM number | caught | |
+| a FIFO holds one word too many | caught | |
+| `OUT EXEC`'s delay not ignored | caught | |
+| byte swap computes bit reverse | caught | |
+
+The two survivors were real gaps: random programs almost never put two edge waits in a row with
+the line held at the new level, or side-set and a `SET` on the same pin in one instruction.
+The directed test `isa_wait_and_pins` now covers both (and SM priority), and catches both mutants.
 
 ## 4. Protocols against independent device models
 

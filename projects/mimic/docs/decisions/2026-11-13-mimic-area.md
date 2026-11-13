@@ -49,6 +49,17 @@ The first synthesis was 711,000 µm². These changes brought it to about 510,000
 - Pin writes have their own value multiplexer: sharing the write-back value with the ALU put the adder on every pin path, the slow corner's worst path.
 - The adder is a Kogge-Stone tree (5 levels) instead of a ripple chain (32), for 2,000 µm².
 
+**Hardening settings** (`src/config.json`), each found by a failed run:
+
+- `SYNTH_STRATEGY` `AREA 0`, as above.
+- `CLOCK_PERIOD` 20 ns for the flow. The RTL meets 60 MHz at the typical corner; repairing every
+  corner against 16.6 ns left thousands of slow-corner endpoints and a repair that did not finish.
+- `PL_RESIZER_SETUP_SLACK_MARGIN` 0. The 2048 memory latches time-borrow, which STA reports as slack
+  exactly 0; the default 0.05 ns margin made the resizer try to "fix" every one of them.
+- `RSZ_CORNERS` typical only. OpenROAD's timing analysis of this design needs about 5 GB per corner,
+  so repairing against three corners ran out of a 16 GB machine (Tiny Tapeout's GitHub runners have
+  16 GB too). Sign-off STA still checks all three.
+
 ### Choices and Tradeoffs/Risks
 
 Two-word FIFOs make the host keep up sooner: at full rate a protocol that streams data needs the host's SPI port at 10 MHz (about 9 Mb/s). Joining a FIFO doubles one direction, and SM-to-SM routing keeps pipelines on chip.

@@ -23,7 +23,11 @@ PDK_CELL_PREFIX = $(patsubst ihp-%,%,$(PDK))
 PDK_LIBS_REF = $(PDK_ROOT)/$(PDK)/libs.ref
 VERILOG_SOURCES += $(PDK_LIBS_REF)/$(PDK_CELL_PREFIX)_io/verilog/$(PDK_CELL_PREFIX)_io.v
 VERILOG_SOURCES += $(wildcard $(PDK_LIBS_REF)/$(PDK_CELL_PREFIX)_stdcell/verilog/$(PDK_CELL_PREFIX)_udp.v)
-VERILOG_SOURCES += $(PDK_LIBS_REF)/$(PDK_CELL_PREFIX)_stdcell/verilog/$(PDK_CELL_PREFIX)_stdcell.v
+# The cell models drive their flip-flops' inputs from nets that $setuphold timing checks
+# delay; Icarus does not run timing checks, which leaves those nets undriven (every flop X).
+# The delays are zero, so a copy that uses the inputs directly is functionally exact.
+GL_CELLS = $(SIM_BUILD)/$(PDK_CELL_PREFIX)_stdcell_functional.v
+VERILOG_SOURCES += $(GL_CELLS)
 VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 
 endif
@@ -52,3 +56,10 @@ override COCOTB_TEST_FILTER := '$(COCOTB_TEST_FILTER)'
 endif
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
+
+ifeq ($(GATES),yes)
+# After the include, so cocotb's default target stays the default.
+$(GL_CELLS): $(PDK_LIBS_REF)/$(PDK_CELL_PREFIX)_stdcell/verilog/$(PDK_CELL_PREFIX)_stdcell.v
+	mkdir -p $(SIM_BUILD)
+	sed -E 's/\bdelayed_([A-Za-z0-9_]+)/\1/g' $< > $@
+endif

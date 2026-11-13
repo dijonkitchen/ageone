@@ -818,3 +818,57 @@ async def jtag(b: Bench) -> None:
     tdo = protocols.jtag_tdo(await b.get(0, len(words) // 2), len(cycles))
     assert tdo[first] == 0  # BYPASS captures 0
     assert tdo[first + 1 : first + 8] == pattern[:-1], tdo[first : first + 10]
+
+
+@scenario
+async def isa_wait_and_pins(b: Bench) -> None:
+    """Edge waits re-arm on every WAIT, and pin writes resolve in the documented order."""
+    # Two `wait rise` in a row with one rising edge: the first ends, the second must wait for a
+    # new edge even though the line is still high.
+    prog = assemble(
+        """
+        .set_pins uo1 2
+            wait rise gpio ui4
+            set pins, 1
+            wait rise gpio ui4
+            set pins, 3
+        end:
+            jmp end
+        """
+    )
+    b.drive(20, 0)
+    await b.load(prog, 0, start=True)
+    await b.step(20)
+    b.drive(20, 1)  # one rising edge, then high for good
+    await b.step(40)
+    assert (b.uo >> 1) & 3 == 1, f"uo={b.uo:08b}: the second wait rise ended without an edge"
+    b.drive(20, 0)
+    await b.step(10)
+    b.drive(20, 1)
+    await b.step(20)
+    assert (b.uo >> 1) & 3 == 3, f"uo={b.uo:08b}"
+    await b.stop(1)
+
+    # Within an SM, side-set beats SET on the same pin; between SMs, the higher number wins.
+    side = assemble(
+        """
+        .side_set 1
+        .side_pins uo4
+        .set_pins uo4 1
+            set pins, 0 side 1
+        end:
+            jmp end side 1
+        """
+    )
+    await b.load(side, 1, start=True)
+    await b.step(20)
+    assert (b.uo >> 4) & 1 == 1, f"uo={b.uo:08b}: SET won over side-set"
+    await b.stop(1 << 1)
+    lo = assemble(".set_pins uo5 1\nloop:\n    set pins, 0\n    jmp loop\n")
+    hi = assemble(".set_pins uo5 1\nloop:\n    set pins, 1\n    jmp loop\n")
+    await b.load(lo, 1, origin=16)
+    await b.load(hi, 2, origin=24)
+    await b.start(0b110)
+    await b.step(20)
+    assert (b.uo >> 5) & 1 == 1, f"uo={b.uo:08b}: SM1 won over SM2"
+    await b.stop(0b110)
