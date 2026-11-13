@@ -607,3 +607,66 @@ class Wire(Peripheral):
             low = any(bench.uio_oe >> p & 1 and not bench.uio_out >> p & 1 for p in (a, b))
             for p in (a, b):
                 bench.drive(p, 0 if low else None)
+
+
+class JtagTap(Peripheral):
+    """An IEEE 1149.1 TAP: the 16-state controller, a 4-bit IR, IDCODE (0b0001), BYPASS (0b1111).
+
+    TMS and TDI are sampled on rising TCK; TDO changes on falling TCK (the LSB of the shift
+    register in Shift-IR/Shift-DR, else held).
+    """
+
+    NEXT = {  # state: (next if TMS=0, next if TMS=1)
+        "reset": ("idle", "reset"),
+        "idle": ("idle", "select_dr"),
+        "select_dr": ("capture_dr", "select_ir"),
+        "capture_dr": ("shift_dr", "exit1_dr"),
+        "shift_dr": ("shift_dr", "exit1_dr"),
+        "exit1_dr": ("pause_dr", "update_dr"),
+        "pause_dr": ("pause_dr", "exit2_dr"),
+        "exit2_dr": ("shift_dr", "update_dr"),
+        "update_dr": ("idle", "select_dr"),
+        "select_ir": ("capture_ir", "reset"),
+        "capture_ir": ("shift_ir", "exit1_ir"),
+        "shift_ir": ("shift_ir", "exit1_ir"),
+        "exit1_ir": ("pause_ir", "update_ir"),
+        "pause_ir": ("pause_ir", "exit2_ir"),
+        "exit2_ir": ("shift_ir", "update_ir"),
+        "update_ir": ("idle", "select_dr"),
+    }
+
+    def __init__(self, tck: int, tms: int, tdi: int, tdo: int, idcode: int) -> None:
+        self.tck, self.tms, self.tdi, self.tdo = tck, tms, tdi, tdo
+        self.idcode = idcode
+        self.state = "reset"
+        self.ir = 0b0001  # IDCODE after reset
+        self.shift = 0
+        self.width = 0
+        self._prev = 0
+        self._out = 0
+
+    def tick(self, bench: Bench) -> None:
+        tck = bench.level(self.tck)
+        if tck and not self._prev:  # rising: sample, then move
+            tms, tdi = bench.level(self.tms), bench.level(self.tdi)
+            st = self.state
+            if st in ("shift_dr", "shift_ir"):
+                self.shift = (self.shift >> 1) | (tdi << (self.width - 1))
+            nxt = self.NEXT[st][tms]
+            if nxt == "reset":
+                self.ir = 0b0001
+            elif nxt == "capture_ir":
+                self.shift, self.width = 0b0101, 4  # IR capture value ends in 01, as 1149.1 requires
+            elif nxt == "capture_dr":
+                if self.ir == 0b0001:
+                    self.shift, self.width = self.idcode, 32
+                else:
+                    self.shift, self.width = 0, 1  # BYPASS
+            elif nxt == "update_ir":
+                self.ir = self.shift & 0xF
+            self.state = nxt
+        elif self._prev and not tck:  # falling: TDO
+            if self.state in ("shift_dr", "shift_ir"):
+                self._out = self.shift & 1
+        bench.drive(self.tdo, self._out)
+        self._prev = tck

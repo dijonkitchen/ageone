@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 584 130" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<rect width="584" height="130" fill="#fff"/>
+<text x="8" y="50">TXD</text>
+<polyline points="60,60 66,60 66,60 72,60 72,60 78,60 78,30 84,30 84,30 90,30 90,30 96,30 96,30 102,30 102,30 108,30 108,30 114,30 114,60 120,60 120,60 126,60 126,60 132,60 132,60 138,60 138,60 144,60 144,60 150,60 150,30 156,30 156,30 162,30 162,30 168,30 168,30 174,30 174,30 180,30 180,30 186,30 186,60 192,60 192,60 198,60 198,60 204,60 204,60 210,60 210,60 216,60 216,60 222,60 222,30 228,30 228,30 234,30 234,30 240,30 240,60 246,60 246,60 252,60 252,60 258,60 258,30 264,30 264,30 270,30 270,30 276,30 276,60 282,60 282,60 288,60 288,60 294,60 294,30 300,30 300,30 306,30 306,30 312,30 312,30 318,30 318,30 324,30 324,30 330,30 330,60 336,60 336,60 342,60 342,60 348,60 348,60 354,60 354,60 360,60 360,60 366,60 366,30 372,30 372,30 378,30 378,30 384,30 384,30 390,30 390,30 396,30 396,30 402,30 402,60 408,60 408,60 414,60 414,60 420,60 420,30 426,30 426,30 432,30 432,30 438,30 438,60 444,60 444,60 450,60 450,60 456,60 456,60 462,60 462,60 468,60 468,60 474,60 474,30 480,30 480,30 486,30 486,30 492,30 492,30 498,30 498,30 504,30 504,30 510,30 510,60 516,60 516,60 522,60 522,60 528,60 528,60 534,60 534,60 540,60 540,60 546,60 546,30 552,30 552,30 558,30 558,30 564,30" fill="none" stroke="#1f4e79" stroke-width="2"/>
+<line x1="60" y1="22" x2="60" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="78" y="84" text-anchor="middle">1</text>
+<line x1="96" y1="22" x2="96" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="114" y="84" text-anchor="middle">0</text>
+<line x1="132" y1="22" x2="132" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="150" y="84" text-anchor="middle">1</text>
+<line x1="168" y1="22" x2="168" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="186" y="84" text-anchor="middle">0</text>
+<line x1="204" y1="22" x2="204" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="222" y="84" text-anchor="middle">1</text>
+<line x1="240" y1="22" x2="240" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="258" y="84" text-anchor="middle">1</text>
+<line x1="276" y1="22" x2="276" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="294" y="84" text-anchor="middle">1</text>
+<line x1="312" y1="22" x2="312" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="330" y="84" text-anchor="middle">0</text>
+<line x1="348" y1="22" x2="348" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="366" y="84" text-anchor="middle">1</text>
+<line x1="384" y1="22" x2="384" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="402" y="84" text-anchor="middle">0</text>
+<line x1="420" y1="22" x2="420" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="438" y="84" text-anchor="middle">0</text>
+<line x1="456" y1="22" x2="456" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="474" y="84" text-anchor="middle">1</text>
+<line x1="492" y1="22" x2="492" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="510" y="84" text-anchor="middle">0</text>
+<line x1="528" y1="22" x2="528" y2="68" stroke="#bbb" stroke-dasharray="2,2"/>
+<text x="546" y="84" text-anchor="middle">1</text>
+<text x="60" y="122" fill="#555">One bit = 6 cycles at 60 MHz (10 Mb/s); first half the inverse, second half the bit. Cycles 1199-1283 after load.</text>
+</svg>

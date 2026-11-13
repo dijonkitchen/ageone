@@ -1,0 +1,22 @@
+; JTAG host: a bit engine for TCK, TMS, TDI and TDO. Each TX FIFO word is 16 TCK cycles, two
+; bits per cycle from bit 0 up: TDI, then TMS. Each RX FIFO word is the 32 TDO bits of two TX
+; words, the first TDO bit in bit 0. The host walks the TAP state machine with TMS; idle
+; cycles (TMS 0 in Run-Test/Idle) pad transfers to whole words.
+; TCK = clk / (4 * DIV). TDO is sampled two ticks after the falling edge that changed it.
+.program jtag
+.define TCK uio3
+.define TDI uio0                ; TMS must be TDI + 1 (uio1)
+.define TDO uio2
+.define DIV 2
+.side_set 1
+.side_pins TCK
+.out_pins TDI 2
+.in_pins TDO
+.pindirs TCK TDI TDI+1
+.shift_out right autopull 32
+.shift_in right autopush 32
+.clkdiv DIV
+.wrap_target
+    out pins, 2    side 0 [1]   ; TDI and TMS change while TCK is low
+    in pins, 1     side 1 [1]   ; TCK rises: the TAP samples TDI and TMS; we sample TDO
+.wrap

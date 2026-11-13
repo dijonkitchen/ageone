@@ -36,7 +36,7 @@ runs on three targets through one `Device` interface:
 | Target | Runner | Time |
 |---|---|---|
 | Golden model | `pytest` (`make test`) | ~1.5 min for all |
-| RTL, Icarus Verilog, model in lockstep | cocotb (`make rtl`) | ~10 min for all |
+| RTL, Icarus Verilog, model in lockstep | cocotb (`make rtl`) | ~12 min for all |
 | Gate-level netlist (post-layout, IHP cell models) | cocotb (`make gl`) | see below |
 
 In lockstep ([`test/test.py`](../test/test.py)) the RTL and the model take the same inputs every
@@ -81,9 +81,30 @@ random words exercise every encoding, including the ones no assembler emits. Eac
   clear, debug reads, forced instructions, configuration and instruction-memory writes while the
   SMs run, single steps, restarts, FIFO clears.
 
-Six seeds run in the suite, about 30,000 cycles each, with registers compared every cycle.
-A coverage count on the model showed the first generator spent most ticks stalled on
-edge waits and IRQ waits; reshaping it raised every opcode to thousands of executions per run.
+Eight seeds run in the suite, about 35,000 cycles each, with registers compared every cycle.
+A coverage count on the model showed the first generator spent most ticks stalled on edge waits,
+IRQ waits and FIFOs, and that two `JMP` conditions never ran: each seed had only 64 static
+instructions. The generator now rewrites eight-word blocks of the memory while the SMs run,
+rarely uses long delays or blocking `PUSH`/`PULL`, and enables autopush and autopull a third of
+the time. Over the eight seeds (279,000 cycles):
+
+| Opcode | Executed | Stalled ticks |
+|---|---|---|
+| `JMP` | 7,560 | |
+| `WAIT` | 603 | 22,809 |
+| `IN` | 2,120 | 12,846 |
+| `OUT` | 1,901 | 19,545 |
+| `PUSH`/`PULL` | 1,526 | 45,591 |
+| `MOV` | 2,984 | |
+| `IRQ` | 901 | 4,183 |
+| `SET` | 1,391 | |
+| `ALU`/`ALUI` | 2,230 | |
+| reserved | 1,452 | |
+
+Every `JMP` condition (and undefined ones), every defined `IN` source, every `OUT` and `SET`
+destination, all eight ALU operations, and all four `WAIT` sources ran; 49 of the 256 `MOV`
+destination and source pairs did. Waits that end without a timeout, rare here, are the
+protocols' bread and butter (section 4).
 
 ### Do the tests catch bugs?
 
@@ -105,6 +126,7 @@ from that protocol's specification, not from the program ([`periph.py`](../sw/mi
 | `spi_target` | Against a controller; replies from the FIFO and the `0xFF` default |
 | `i2c`, `i2c_stretch` | Against an EEPROM-like target: writes, repeated START and reads, ACK/NACK, an absent address, and a target that stretches every clock (checked to have stretched) |
 | `i2c_loopback` | The I2C controller on one SM writing to the I2C target on another, over board wires: ACKs, data, STOP, an address nobody answers |
+| `jtag` | Against an IEEE 1149.1 TAP model (all 16 states, IR, IDCODE, BYPASS): IDCODE read, an IR scan, BYPASS's one-bit delay |
 | `ws2812` | Pulse widths decoded by a WS2812 model |
 | `eth_tx`, `eth_tx_line_rate` | A Manchester decoder recovers the frame; FCS compared with `zlib.crc32`; at 10 Mb/s (6 cycles a bit) and slower |
 | `eth_rx`, `eth_rx_line_rate` | Frames from a Manchester encoder with its clock 0.3-0.5% off and its phase unrelated to the chip's; data and CRC residue checked |

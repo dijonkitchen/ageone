@@ -6,7 +6,7 @@ Every instruction can also set up to 8 pins (side-set) and delay up to 255 ticks
 Each state machine has a CRC/LFSR unit (any polynomial up to 32 bits) fed by its shifts, two FIFOs to the host, and can route its pushes to the next state machine.
 The 24 pins and 8 internal pins form one GPIO space that every state machine can use; the bidirectional pins can be open-drain.
 
-Example programs cover UART, SPI (modes 0-3, controller and target), I2C with clock stretching, WS2812, 10BASE-T Manchester transmit and receive with CRC-32 at 10 Mb/s, low-speed USB receive (NRZI, bit stuffing, CRC5/CRC16), PS/2, infrared remotes, and PWM.
+Example programs cover UART, SPI (modes 0-3, controller and target), I2C (controller with clock stretching, and target), JTAG, WS2812, 10BASE-T Manchester transmit and receive with CRC-32 at 10 Mb/s, low-speed USB receive (NRZI, bit stuffing, CRC5/CRC16), PS/2, infrared remotes, and PWM.
 
 Full documentation: [architecture](architecture.md), [instruction set](isa.md), [host port](host.md), [protocols](protocols.md), [verification](verification.md).
 

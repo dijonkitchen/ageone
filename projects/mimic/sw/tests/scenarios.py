@@ -97,7 +97,7 @@ def random_instr(rng: random.Random) -> int:
     """A random instruction word, shaped so programs keep moving (most waits time out)."""
     op = rng.choices(range(16), weights=[7, 3, 6, 6, 4, 7, 2, 6, 5, 5, 1, 1, 1, 1, 1, 1])[0]
     junk = rng.getrandbits(20) if rng.random() < 0.3 else 0  # set unused bits sometimes
-    sd = rng.getrandbits(8) if rng.random() < 0.1 else rng.getrandbits(2)
+    sd = rng.getrandbits(8) if rng.random() < 0.03 else rng.getrandbits(2)
     r = rng.getrandbits
     if op == isa.OP_JMP:
         cond = rng.randrange(18) if rng.random() < 0.9 else rng.randrange(32)
@@ -109,7 +109,7 @@ def random_instr(rng: random.Random) -> int:
     elif op in (isa.OP_IN, isa.OP_OUT):
         args = (r(4) << 16) | (r(5) << 4) | r(4) | (junk & 0xFE00)
     elif op == isa.OP_PUSHPULL:
-        args = (r(1) << 19) | (r(1) << 18) | (int(rng.random() < 0.5) << 17) | (junk & 0x1FFFF)
+        args = (r(1) << 19) | (r(1) << 18) | (int(rng.random() < 0.3) << 17) | (junk & 0x1FFFF)
     elif op == isa.OP_IRQ:
         wait = int(rng.random() < 0.15)
         args = (r(1) << 19) | (wait << 18) | (r(1) << 14) | (r(3) << 9) | (junk & 0x31FF)
@@ -125,7 +125,20 @@ def random_config(rng: random.Random, sm: int) -> list[tuple[int, int]]:
     regs = [
         (isa.SM_CLKDIV, (rng.choice([1, 1, 1, 2, 3]) << 16) | (rng.choice([0, 0, 0x40, 0x80]) << 8)),
         (isa.SM_EXECCTRL, rng.getrandbits(28)),
-        (isa.SM_SHIFTCTRL, rng.getrandbits(23) & ~(3 << 16) | (rng.choice([0, 0, 1, 2]) << 16)),
+        (
+            isa.SM_SHIFTCTRL,
+            isa.pack_shiftctrl(
+                in_right=bool(rng.getrandbits(1)),
+                out_right=bool(rng.getrandbits(1)),
+                autopush=rng.random() < 0.3,
+                autopull=rng.random() < 0.3,
+                push_thresh=rng.randrange(32),
+                pull_thresh=rng.randrange(32),
+                join_tx=rng.random() < 0.2,
+                join_rx=rng.random() < 0.2,
+                route=rng.random() < 0.2,
+            ),
+        ),
         (isa.SM_PINCTRL, rng.getrandbits(26)),
         (isa.SM_CRCCFG, rng.getrandbits(3)),
     ]
@@ -169,9 +182,10 @@ async def random_isa(b: Bench, seed: int, cycles: int = 6000) -> None:
         elif r < 0.77:
             addr, v = rng.choice(random_config(rng, sm))
             await b.write(addr, v)
-        elif r < 0.80:
-            await b.write(isa.REG_IMEM + rng.randrange(64), random_instr(rng))
-        elif r < 0.83:
+        elif r < 0.84:
+            at = rng.randrange(0, 64, 8)  # rewrite a block while the SMs run: more distinct instructions
+            await b.write(isa.REG_IMEM + at, *[random_instr(rng) for _ in range(8)])
+        elif r < 0.87:
             ctrl = isa.pack_ctrl(
                 enable=rng.getrandbits(4) | rng.getrandbits(4),
                 restart=rng.getrandbits(4) & rng.getrandbits(4),
@@ -181,7 +195,7 @@ async def random_isa(b: Bench, seed: int, cycles: int = 6000) -> None:
                 rx_clear=rng.getrandbits(4) & rng.getrandbits(4),
             )
             await b.write(isa.REG_CTRL, ctrl)
-        elif r < 0.85:
+        elif r < 0.89:
             await b.write(isa.REG_FDEBUG, rng.getrandbits(20))
         else:
             await b.step(rng.randint(1, 60))
@@ -195,7 +209,7 @@ def _random_scenario(seed: int) -> Scenario:
     return run
 
 
-for _seed in range(6):
+for _seed in range(8):
     ALL[f"random_isa_{_seed}"] = _random_scenario(_seed)
 
 
@@ -773,3 +787,34 @@ async def i2c_loopback(b: Bench) -> None:
     assert [protocols.i2c_acked(r) for r in results] == [True] * 4 + [False, False], [hex(r) for r in results]
     got = await b.get(1, 4)
     assert got == [*data, 0x100], [hex(g) for g in got]
+
+
+@scenario
+async def jtag(b: Bench) -> None:
+    """Read a TAP's IDCODE, then load BYPASS and check the one-bit delay through it."""
+    idcode = 0x4BA00477  # an ARM debug port's IDCODE, as an example
+    b.add(periph.JtagTap(tck=3, tms=1, tdi=0, tdo=2, idcode=idcode))
+    await b.load(programs.load("jtag", TCK=3, TDI=0, TDO=2), 0, start=True)
+    # Test-Logic-Reset, Run-Test/Idle, Select-DR, Capture-DR, Shift-DR; 32 bits; Exit1, Update, Idle.
+    cycles = [(1, 0)] * 5 + [(0, 0), (1, 0), (0, 0), (0, 0)]
+    first = len(cycles)
+    cycles += [(0, 0)] * 31 + [(1, 0)] + [(1, 0), (0, 0)]
+    words = protocols.jtag_words(cycles)
+    await b.put(0, *words)
+    tdo = protocols.jtag_tdo(await b.get(0, len(words) // 2), len(cycles))
+    # TDO changes on the falling edge after each shift and is sampled on the next rising edge,
+    # so IDCODE bit 0 arrives in the first Shift-DR cycle.
+    got = sum(bit << i for i, bit in enumerate(tdo[first : first + 32]))
+    assert got == idcode, hex(got)
+    # IR scan of BYPASS (1111), then a DR scan: what goes in comes out one cycle later.
+    cycles = [(0, 0), (1, 0), (1, 0), (0, 0), (0, 0)]  # Idle, Select-DR, Select-IR, Capture-IR, Shift-IR
+    cycles += [(0, 1)] * 3 + [(1, 1)] + [(1, 0), (0, 0)]  # 1111, Exit1-IR, Update-IR, Idle
+    cycles += [(1, 0), (0, 0), (0, 0)]  # Select-DR, Capture-DR, Shift-DR
+    first = len(cycles)
+    pattern = [1, 0, 1, 1, 0, 0, 1, 0]
+    cycles += [(0, bit) for bit in pattern[:-1]] + [(1, pattern[-1]), (1, 0), (0, 0)]
+    words = protocols.jtag_words(cycles)
+    await b.put(0, *words)
+    tdo = protocols.jtag_tdo(await b.get(0, len(words) // 2), len(cycles))
+    assert tdo[first] == 0  # BYPASS captures 0
+    assert tdo[first + 1 : first + 8] == pattern[:-1], tdo[first : first + 10]

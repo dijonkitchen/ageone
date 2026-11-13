@@ -1,6 +1,6 @@
 # Protocols
 
-Fourteen programs in [`programs/`](../programs), each tested on the golden model and on the RTL
+Fifteen programs in [`programs/`](../programs), each tested on the golden model and on the RTL
 against an independent model of the device at the other end ([`periph.py`](../sw/mimic/periph.py)),
 written from the protocol's specification. Each program's comments explain its timing.
 
@@ -12,6 +12,7 @@ written from the protocol's specification. Each program's comments explain its t
 | [`spi_target`](../programs/spi_target.mim) | 11 | SPI target, mode 0 | Replies from the TX FIFO, `0xFF` when the host has queued none (`pull ifempty noblock` from X); CS resynchronizes |
 | [`i2c`](../programs/i2c.mim) | 22 | I2C controller | Open-drain pins; clock stretching; START, repeated START, STOP, ACK/NACK as a nine-bit slot per FIFO word |
 | [`i2c_target`](../programs/i2c_target.mim) | 36 | I2C target (writes) | Address match with `x!=y`; ACK on open-drain SDA; STOP and repeated START detected mid-byte; tested against the `i2c` controller on another SM |
+| [`jtag`](../programs/jtag.mim) | 2 | JTAG host | A two-instruction bit engine: TDI and TMS from the FIFO (16 cycles a word), TDO to the RX FIFO; the host walks the TAP |
 | [`ws2812`](../programs/ws2812.mim) | 4 | WS2812 LEDs | 800 kHz from a 7.5 divider |
 | [`eth_tx`](../programs/eth_tx.mim) | 41 | 10BASE-T transmit | Manchester at 6 cycles a bit (10 Mb/s at 60 MHz); preamble, SFD; the CRC unit computes the FCS as bits go out |
 | [`eth_rx`](../programs/eth_rx.mim) | 19 | 10BASE-T receive | Clock recovery from transitions; SFD search; CRC-32 check; end of frame by timeout |
@@ -31,7 +32,10 @@ RX together (60), and the USB receiver's two SMs (all 64).
 changes pins in the same tick as the instruction's work, and `.wrap` loops back for free. The
 Ethernet transmitter counts every tick: each half bit is three, and the program interleaves
 fetching the next bit (`out y, 1`), branching on it and counting down in the slots between level
-changes.
+changes. The end of its preamble, the SFD's closing `1 1`, and the first data byte (`0xA5`, LSB
+first), from the golden model ([`sw/tools/waves.py`](../sw/tools/waves.py)):
+
+![Ethernet transmitter output at 10 Mb/s](eth_tx_wave.svg)
 
 **Clock recovery.** Receivers without a clock line re-time themselves on transitions:
 `wait change pin 0 timeout` ends at a transition, or at the timeout (X reaches 0) when there was

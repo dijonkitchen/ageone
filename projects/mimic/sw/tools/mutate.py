@@ -10,6 +10,7 @@ mutant that survives marks behaviour the tests do not reach.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -57,6 +58,21 @@ MUTANTS = {
 FILTER = "test_[ri][as][na_]"  # random_isa_* and isa_* (the cocotb Makefile cannot take "|")
 
 
+def make(*args: str) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ, PATH=f"{ROOT / '.venv' / 'bin'}:{os.environ['PATH']}")
+    return subprocess.run(
+        ["make", "-s", *args], cwd=ROOT / "test", env=env, capture_output=True, text=True, check=False
+    )
+
+
+def summary(res: subprocess.CompletedProcess[str]) -> str:
+    """The cocotb summary line (TESTS=.. PASS=.. FAIL=..); a run without one did not run."""
+    lines = [line for line in (res.stdout + res.stderr).splitlines() if "TESTS=" in line]
+    if not lines:
+        raise RuntimeError(f"the suite did not run:\n{res.stdout[-2000:]}{res.stderr[-2000:]}")
+    return lines[-1]
+
+
 def run(name: str) -> bool:
     """True if the suite caught the mutant."""
     old, new = MUTANTS[name]
@@ -66,21 +82,20 @@ def run(name: str) -> bool:
     shutil.copy(MODEL, backup)
     try:
         MODEL.write_text(source.replace(old, new))
-        subprocess.run(["make", "-s", "clean"], cwd=ROOT / "test", check=False, capture_output=True)
-        res = subprocess.run(
-            ["make", "-s", f"COCOTB_TEST_FILTER={FILTER}"],
-            cwd=ROOT / "test",
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        caught = "FAIL=0" not in res.stdout + res.stderr
+        make("clean")
+        caught = "FAIL=0" not in summary(make(f"COCOTB_TEST_FILTER={FILTER}"))
     finally:
         shutil.move(backup, MODEL)
     return caught
 
 
 def main(names: list[str]) -> int:
+    # The unmutated suite must pass, or a "caught" mutant means nothing.
+    make("clean")
+    baseline = summary(make(f"COCOTB_TEST_FILTER={FILTER}"))
+    if "FAIL=0" not in baseline:
+        print(f"the suite fails without mutants: {baseline}")
+        return 1
     results = {n: run(n) for n in (names or MUTANTS)}
     for n, caught in results.items():
         print(f"{n:24s} {'caught' if caught else 'SURVIVED'}")

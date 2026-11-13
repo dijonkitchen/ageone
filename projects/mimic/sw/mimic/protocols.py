@@ -112,3 +112,23 @@ def nec_decode(pulse_list: list[tuple[int, int]], unit: float) -> tuple[int, int
     if data[0] ^ data[1] != 0xFF or data[2] ^ data[3] != 0xFF:
         return None
     return data[0], data[2]
+
+
+# ---- jtag ---------------------------------------------------------------------
+
+
+def jtag_words(cycles: list[tuple[int, int]]) -> list[int]:
+    """TX FIFO words for (TMS, TDI) cycles, padded with idle cycles (TMS 0) to whole RX words."""
+    cycles = cycles + [(0, 0)] * (-len(cycles) % 32)
+    words = []
+    for i in range(0, len(cycles), 16):
+        w = 0
+        for k, (tms, tdi) in enumerate(cycles[i : i + 16]):
+            w |= (tdi | (tms << 1)) << (2 * k)
+        words.append(w)
+    return words
+
+
+def jtag_tdo(words: list[int], n: int) -> list[int]:
+    """The first n TDO bits from RX FIFO words."""
+    return [(words[k // 32] >> (k % 32)) & 1 for k in range(n)]
