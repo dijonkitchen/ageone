@@ -272,7 +272,7 @@ module mimic_sm #(
   wire [31:0] alu_b  = (op == OP_ALUI) ? {16'd0, imm16} : srcv;
   wire [31:0] add_b  = is_alu ? alu_b : (((op == OP_JMP) & (cond == 5'd7)) ? y : 32'd1);
   wire        add_sub = ~(is_alu & (aluop == ALU_ADD));
-  wire [32:0] sum    = {1'b0, alu_a} + {1'b0, add_sub ? ~add_b : add_b} + {32'd0, add_sub};
+  wire [32:0] sum    = ks_add(alu_a, add_sub ? ~add_b : add_b, add_sub);
   wire        x_lt_y = ~sum[32];  // borrow out of x - y
 
   wire        do_autopull = autopull & (osr_cnt >= pull_thr_eff);
@@ -321,6 +321,36 @@ module mimic_sm #(
       default: alu_res = rot_out;
     endcase
   end
+
+  // 32-bit Kogge-Stone adder with carry in and out: five prefix levels instead of a 32-stage
+  // ripple, which was the critical path (PC -> instruction -> adder -> register) at the slow corner.
+  function [32:0] ks_add;
+    input [31:0] a;
+    input [31:0] b;
+    input cin;
+    reg [31:0] p, g, gg, pp, gn, pn;
+    integer i, d;
+    begin
+      p = a ^ b;
+      g = a & b;
+      gg = g;
+      pp = p;
+      gg[0] = g[0] | (p[0] & cin);
+      for (d = 1; d < 32; d = d * 2) begin
+        gn = gg;
+        pn = pp;
+        for (i = d; i < 32; i = i + 1) begin
+          gn[i] = gg[i] | (pp[i] & gg[i-d]);
+          pn[i] = pp[i] & pp[i-d];
+        end
+        gg = gn;
+        pp = pn;
+      end
+      ks_add[0] = p[0] ^ cin;
+      for (i = 1; i < 32; i = i + 1) ks_add[i] = p[i] ^ gg[i-1];
+      ks_add[32] = gg[31];
+    end
+  endfunction
 
   // CRC/LFSR step on one bit: left-aligned MSB-first, or right-aligned reflected.
   function [31:0] crc_step;
@@ -543,7 +573,17 @@ module mimic_sm #(
   // ---------------------------------------------------------------------------
   wire [4:0]  main_base  = wb_set ? set_base : out_base;
   wire [5:0]  main_count = wb_set ? {1'b0, set_count} : out_count;
-  wire [31:0] main_vrot  = rotl(wb_val, main_base);
+  // Pin writes get their own value mux (OUT data, MOV value, SET immediate): the ALU never
+  // writes pins, and sharing wb_val put the adder on the pin path.
+  reg [31:0] pin_wb_val;
+  always @(*) begin
+    case (op)
+      OP_OUT:  pin_wb_val = out_data;
+      OP_SET:  pin_wb_val = {16'd0, imm16};
+      default: pin_wb_val = movv;
+    endcase
+  end
+  wire [31:0] main_vrot  = rotl(pin_wb_val, main_base);
   wire [31:0] main_mrot  = rotl(lomask(main_count), main_base);
   wire [31:0] side_vrot  = rotl({24'd0, side_data}, side_base);
   wire [31:0] side_mrot  = rotl(lomask({2'd0, sbits}), side_base);

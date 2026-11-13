@@ -517,3 +517,241 @@ async def pwm_capture_loopback(b: Bench) -> None:
     high, low = highs.pop(), lows.pop()
     # 3 ticks a count; high for duty+1 counts plus the 7-tick reload, low for the rest.
     assert (high, low) == (40 * (3 * (duty + 1) + 7), 40 * 3 * (period - duty)), (high, low)
+
+
+# ---------------------------------------------------------------------------
+# Directed ISA tests: expected values come from the spec (docs/isa.md), computed here
+# independently of the model, and the host drives a stopped SM through INSTR (debug).
+# ---------------------------------------------------------------------------
+
+M32 = isa.M32
+SM_DBG = 3
+
+
+async def _set(b: Bench, sm: int, dst: str, value: int) -> None:
+    """Load a 32-bit value into an SM register through the TX FIFO."""
+    await b.write(isa.sm_reg(sm, isa.SM_TXF), value, inc=False)
+    await b.exec(sm, isa.enc_pull(block=False))
+    await b.exec(sm, isa.enc_mov(isa.DST[dst], isa.SRC["osr"]))
+
+
+async def _x(b: Bench, sm: int) -> int:
+    return (await b.read(isa.sm_reg(sm, isa.SM_X)))[0]
+
+
+@scenario
+async def isa_alu(b: Bench) -> None:
+    def ref(op: str, a: int, c: int) -> int:
+        k = c & 31
+        return {
+            "add": (a + c) & M32,
+            "sub": (a - c) & M32,
+            "and": a & c,
+            "or": a | c,
+            "xor": a ^ c,
+            "shl": (a << k) & M32,
+            "shr": a >> k,
+            "rol": ((a << k) | (a >> (32 - k))) & M32 if k else a,
+        }[op]
+
+    pairs = [(0x12345678, 0x0F0F0F0F), (0xFFFFFFFF, 1), (5, 37), (0x80000001, 0x1F)]
+    for a, c in pairs:
+        for op in isa.ALU:
+            await _set(b, SM_DBG, "x", a)
+            await _set(b, SM_DBG, "y", c)
+            await b.exec(SM_DBG, isa.enc_alu(False, isa.ALU[op], isa.SRC["y"]))
+            assert await _x(b, SM_DBG) == ref(op, a, c), (op, hex(a), hex(c))
+    # The immediate form, writing Y.
+    await _set(b, SM_DBG, "y", 1000)
+    await b.exec(SM_DBG, isa.enc_alui(True, isa.ALU["sub"], 1001))
+    assert (await b.read(isa.sm_reg(SM_DBG, isa.SM_Y)))[0] == M32
+
+
+@scenario
+async def isa_shifts(b: Bench) -> None:
+    word, src = 0x8D2C_6B4F, 0x1234_5679
+    for right in (True, False):
+        await b.write(isa.sm_reg(SM_DBG, isa.SM_SHIFTCTRL), isa.pack_shiftctrl(in_right=right, out_right=right))
+        for n in (1, 3, 8, 17, 31, 32):
+            mask = (1 << n) - 1
+            # OUT: the n bits that leave OSR first, and what remains.
+            await _set(b, SM_DBG, "osr", word)
+            await b.exec(SM_DBG, isa.enc_out(isa.DST["x"], n))
+            want = word & mask if right else word >> (32 - n)
+            assert await _x(b, SM_DBG) == want, ("out", right, n)
+            await b.exec(SM_DBG, isa.enc_mov(isa.DST["x"], isa.SRC["osr"]))
+            rest = (word >> n if right else (word << n) & M32) if n < 32 else 0
+            assert await _x(b, SM_DBG) == rest, ("osr", right, n)
+            # IN: n bits of Y enter ISR.
+            await _set(b, SM_DBG, "isr", word)
+            await _set(b, SM_DBG, "y", src)
+            await b.exec(SM_DBG, isa.enc_in(isa.SRC["y"], n))
+            await b.exec(SM_DBG, isa.enc_mov(isa.DST["x"], isa.SRC["isr"]))
+            if right:
+                want = ((word >> n) | ((src & mask) << (32 - n))) & M32 if n < 32 else src
+            else:
+                want = ((word << n) | (src & mask)) & M32 if n < 32 else src
+            assert await _x(b, SM_DBG) == want, ("in", right, n)
+    # MOV operations: invert, bit reverse, byte swap.
+    for op, want in ((1, ~word & M32), (2, int(f"{word:032b}"[::-1], 2)), (3, 0x4F6B_2C8D)):
+        await _set(b, SM_DBG, "y", word)
+        await b.exec(SM_DBG, isa.enc_mov(isa.DST["x"], isa.SRC["y"], op))
+        assert await _x(b, SM_DBG) == want, ("mov", op)
+
+
+@scenario
+async def isa_jmp(b: Bench) -> None:
+    cases = [  # (cond, x, y, taken)
+        ("always", 0, 0, True),
+        ("!x", 0, 5, True),
+        ("!x", 1, 5, False),
+        ("x--", 0, 0, False),
+        ("x--", 7, 0, True),
+        ("!y", 3, 0, True),
+        ("y--", 0, 1, True),
+        ("x!=y", 4, 4, False),
+        ("x!=y", 4, 5, True),
+        ("x==y", 0, 0, True),
+        ("x<y", 3, 4, True),
+        ("x<y", 4, 4, False),
+        ("x<y", 0xFFFFFFFF, 1, False),  # unsigned
+        ("x0", 6, 0, False),
+        ("!x0", 6, 0, True),
+    ]
+    for cond, x, y, taken in cases:
+        await _set(b, SM_DBG, "x", x)
+        await _set(b, SM_DBG, "y", y)
+        await b.exec(SM_DBG, isa.enc_jmp(0, 10))
+        await b.exec(SM_DBG, isa.enc_jmp(isa.COND[cond], 40))
+        pc = (await b.read(isa.sm_reg(SM_DBG, isa.SM_PC)))[0]
+        # A forced instruction does not advance the PC; a taken jump moves it.
+        assert pc == (40 if taken else 10), (cond, x, y, pc)
+        if cond == "x--":
+            assert await _x(b, SM_DBG) == (x - 1) & M32
+
+
+async def _crc_of(b: Bench, data: bytes, poly: int, init: int, reflect: bool) -> int:
+    """Feed `data` bit by bit through OUT (LSB first if reflect, else MSB first); return CRC."""
+    prog = assemble(
+        f"""
+        .crc {poly} {"reflect" if reflect else ""} out init {init}
+        .shift_out {"right" if reflect else "left"} autopull 8
+        .fifo tx
+            out null, 1
+        """
+    )
+    await b.load(prog, 2, start=True)
+    await b.put(2, *[(c if reflect else c << 24) for c in data])
+    await b.step(64)
+    while (await b.levels(2))[0]:
+        await b.step(64)
+    await b.step(32)
+    await b.stop(1 << 2)
+    return await b.peek(2, "crc")
+
+
+@scenario
+async def isa_crc(b: Bench) -> None:
+    check = b"123456789"
+    # CRC-32 (Ethernet): reflected, init all ones, final XOR all ones.
+    crc = await _crc_of(b, check, 0xEDB88320, M32, reflect=True)
+    assert crc ^ M32 == zlib.crc32(check) == 0xCBF43926, hex(crc)
+    # CRC-16/CCITT-FALSE: MSB first, left-aligned in the register: check value 0x29B1.
+    crc = await _crc_of(b, check, 0x1021 << 16, 0xFFFF << 16, reflect=False)
+    assert crc >> 16 == 0x29B1, hex(crc)
+    # CRC-16/USB data CRC (the program uses the reflected form): check value 0xB4C8.
+    crc = await _crc_of(b, check, 0xA001, 0xFFFF, reflect=True)
+    assert crc ^ 0xFFFF == 0xB4C8, hex(crc)
+
+
+async def _pulse_width(b: Bench, pin: int, src: str, setup: list[tuple[int, int]] | None = None) -> list[int]:
+    """Load `src`, run it, and return the lengths of the high pulses seen on `pin`."""
+    widths: list[int] = []
+    state = {"prev": 0, "start": 0}
+
+    def watch(bb: Bench) -> None:
+        lv = bb.level(pin)
+        if lv and not state["prev"]:
+            state["start"] = bb.cycle
+        if not lv and state["prev"]:
+            widths.append(bb.cycle - state["start"])
+        state["prev"] = lv
+
+    await b.load(assemble(src), 0)
+    for addr, v in setup or []:
+        await b.write(addr, v)
+    b.monitors.append(watch)
+    await b.start(1)
+    await b.step(400)
+    await b.stop(1)
+    b.monitors.remove(watch)
+    return widths
+
+
+@scenario
+async def isa_timing(b: Bench) -> None:
+    # Side-set and delay: high for 1+5 ticks, low for 1+2.
+    widths = await _pulse_width(
+        b,
+        9,
+        """
+        .side_set 1
+        .side_pins uo1
+            nop side 1 [5]
+            nop side 0 [2]
+        """,
+    )
+    assert set(widths[1:]) == {6}, widths
+    # A WAIT that times out takes X + 1 ticks; set + set + wait(11) + set = high for 13.
+    widths = await _pulse_width(
+        b,
+        9,
+        """
+        .set_pins uo1 1
+            set pins, 1
+            set x, 10
+            wait 1 gpio ui4 timeout
+            set pins, 0 [20]
+        """,
+    )
+    assert set(widths[1:]) == {13}, widths
+    # The clock divider: 2.5 cycles a tick on average, so the 6-tick high pulse lasts 15.
+    widths = await _pulse_width(
+        b,
+        9,
+        """
+        .side_set 1
+        .side_pins uo1
+        .clkdiv 2.5
+            nop side 1 [5]
+            nop side 0 [5]
+        """,
+    )
+    assert set(widths[1:]) <= {15} and widths, widths
+
+
+@scenario
+async def isa_exec_irq(b: Bench) -> None:
+    # OUT EXEC runs a word from the FIFO as the next instruction.
+    prog = assemble(
+        """
+            pull
+            out exec, 32
+            push
+        """
+    )
+    await b.load(prog, 0, start=True)
+    await b.put(0, isa.enc_mov(isa.DST["isr"], isa.SRC["osr"]))  # runs as the next instruction
+    # ...then `push` sends ISR = OSR (empty after the OUT: 0)...
+    assert await b.get(0, 1) == [0]
+    # IRQ handshake: SM2 raises flag 5 and waits until it is cleared; SM1 waits for the flag,
+    # which clears it, so both go on.
+    waiter = assemble("    wait 1 irq 5\n    set x, 77\nend:\n    jmp end\n")
+    setter = assemble("    irq wait 5\n    set x, 88\nend:\n    jmp end\n")
+    await b.load(waiter, 1, origin=8)
+    await b.load(setter, 2, origin=16)
+    await b.write(isa.REG_IRQ, 0xFF)
+    await b.start(0b110)
+    await b.step(100)
+    assert await _x(b, 1) == 77 and await _x(b, 2) == 88
+    assert (await b.read(isa.REG_IRQ))[0] == 0

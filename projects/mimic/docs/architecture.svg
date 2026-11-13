@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="860" height="470" fill="#ffffff"/>
+
+  <!-- Host -->
+  <rect x="20" y="40" width="130" height="90" rx="6" fill="#eef3fb" stroke="#4a6fa5"/>
+  <text x="85" y="66" text-anchor="middle" font-weight="bold">Host (RP2350)</text>
+  <text x="85" y="86" text-anchor="middle">SPI mode 0</text>
+  <text x="85" y="104" text-anchor="middle" font-size="11">ui[5..7], uo[7]</text>
+  <text x="85" y="120" text-anchor="middle" font-size="11">up to 10 MHz</text>
+
+  <rect x="190" y="40" width="150" height="90" rx="6" fill="#fdf6e3" stroke="#b58900"/>
+  <text x="265" y="66" text-anchor="middle" font-weight="bold">Host port</text>
+  <text x="265" y="86" text-anchor="middle">32-bit register bus</text>
+  <text x="265" y="104" text-anchor="middle" font-size="11">load, configure, debug,</text>
+  <text x="265" y="120" text-anchor="middle" font-size="11">FIFO data</text>
+  <line x1="150" y1="85" x2="188" y2="85" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <!-- IMEM -->
+  <rect x="390" y="30" width="270" height="70" rx="6" fill="#eaf5ea" stroke="#3a7d44"/>
+  <text x="525" y="56" text-anchor="middle" font-weight="bold">Instruction memory</text>
+  <text x="525" y="76" text-anchor="middle">64 x 32-bit latches, 4 read ports</text>
+  <text x="525" y="92" text-anchor="middle" font-size="11">every SM fetches every cycle</text>
+  <line x1="340" y1="70" x2="388" y2="70" stroke="#333" marker-end="url(#a)"/>
+
+  <!-- SMs -->
+  <g>
+    <rect x="390" y="130" width="270" height="200" rx="6" fill="#f7f7f7" stroke="#555"/>
+    <text x="525" y="150" text-anchor="middle" font-weight="bold">State machines SM0-SM3</text>
+    <rect x="405" y="162" width="115" height="70" rx="4" fill="#fff" stroke="#888"/>
+    <text x="462" y="180" text-anchor="middle" font-size="12">PC, X, Y</text>
+    <text x="462" y="196" text-anchor="middle" font-size="12">ISR, OSR</text>
+    <text x="462" y="212" text-anchor="middle" font-size="12">clock divider</text>
+    <text x="462" y="226" text-anchor="middle" font-size="12">side-set, delay</text>
+    <rect x="530" y="162" width="115" height="70" rx="4" fill="#fff" stroke="#888"/>
+    <text x="587" y="180" text-anchor="middle" font-size="12">ALU (add .. rol)</text>
+    <text x="587" y="196" text-anchor="middle" font-size="12">CRC/LFSR unit</text>
+    <text x="587" y="212" text-anchor="middle" font-size="12">edge, change,</text>
+    <text x="587" y="226" text-anchor="middle" font-size="12">timeout waits</text>
+    <rect x="405" y="244" width="240" height="72" rx="4" fill="#fff" stroke="#888"/>
+    <text x="525" y="262" text-anchor="middle" font-size="12">TX FIFO in, RX FIFO out (2+2 words, joinable)</text>
+    <text x="525" y="280" text-anchor="middle" font-size="12">ROUTE: pushes go to the next SM's TX FIFO</text>
+    <text x="525" y="298" text-anchor="middle" font-size="12">SM0 → SM1 → SM2 → SM3 → SM0</text>
+  </g>
+  <line x1="525" y1="100" x2="525" y2="128" stroke="#333" marker-end="url(#a)"/>
+  <path d="M265,130 L265,280 L388,280" fill="none" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
+  <text x="272" y="210" font-size="11">config, INSTR,</text>
+  <text x="272" y="224" font-size="11">TXF, RXF, debug</text>
+
+  <!-- IRQ -->
+  <rect x="190" y="350" width="150" height="50" rx="6" fill="#fbeeee" stroke="#b03a3a"/>
+  <text x="265" y="372" text-anchor="middle" font-weight="bold">8 IRQ flags</text>
+  <text x="265" y="390" text-anchor="middle" font-size="11">SMs and host</text>
+  <path d="M340,375 L460,375 L460,332" fill="none" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <!-- Pin fabric -->
+  <rect x="700" y="130" width="140" height="200" rx="6" fill="#eef3fb" stroke="#4a6fa5"/>
+  <text x="770" y="152" text-anchor="middle" font-weight="bold">32-pin GPIO space</text>
+  <text x="770" y="176" text-anchor="middle" font-size="12">0-7 uio (bidir,</text>
+  <text x="770" y="192" text-anchor="middle" font-size="12">open-drain option)</text>
+  <text x="770" y="214" text-anchor="middle" font-size="12">8-14 uo (out)</text>
+  <text x="770" y="236" text-anchor="middle" font-size="12">16-23 ui (in)</text>
+  <text x="770" y="258" text-anchor="middle" font-size="12">24-31 internal</text>
+  <text x="770" y="274" text-anchor="middle" font-size="12">(SM to SM)</text>
+  <text x="770" y="300" text-anchor="middle" font-size="11">in: 2-FF sync</text>
+  <text x="770" y="316" text-anchor="middle" font-size="11">out: registered</text>
+  <line x1="660" y1="205" x2="698" y2="205" stroke="#333" marker-end="url(#a)"/>
+  <line x1="698" y1="255" x2="662" y2="255" stroke="#333" marker-end="url(#a)"/>
+  <text x="679" y="198" font-size="10" text-anchor="middle">writes</text>
+  <text x="679" y="270" font-size="10" text-anchor="middle">reads</text>
+
+  <text x="770" y="365" text-anchor="middle" font-size="12">Pmods: UART, SPI,</text>
+  <text x="770" y="381" text-anchor="middle" font-size="12">I2C, USB, Ethernet ...</text>
+  <line x1="770" y1="330" x2="770" y2="350" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <text x="430" y="440" text-anchor="middle" font-size="12" fill="#555">Mimic: 8x4 tiles of IHP SG13CMOS5L, one 60 MHz clock from the demo board</text>
+</svg>

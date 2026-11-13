@@ -12,6 +12,8 @@
 
 2026-09-27: Amended by Claude, at JC's request: devenv is installed from the pinned nixpkgs, after a local run with a newer devenv rewrote the lock.
 
+2026-11-13: Amended by Claude, at JC's request: the environment adds Icarus Verilog and Verilator for hardware projects ([mimic](../../projects/mimic/docs/decisions/2026-11-13-mimic-stack.md)), whose `make check` simulates Verilog.
+
 ## Objective Context
 
 ### Simple, lovable, complete must haves

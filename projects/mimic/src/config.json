@@ -20,8 +20,9 @@
   "SYNTH_STRATEGY": "AREA 0",
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
-  "//": "The value is in nanoseconds, so 20ns == 50MHz. Mimic targets 60 MHz.",
-  "CLOCK_PERIOD": 16.6,
+  "//": "The value is in nanoseconds, so 20ns == 50MHz. Mimic runs at 60 MHz at the typical",
+  "//": "corner; the flow repairs against 20 ns at every corner (see docs/verification.md).",
+  "CLOCK_PERIOD": 20,
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,

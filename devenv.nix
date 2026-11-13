@@ -7,6 +7,9 @@
     pkgs.curl
     pkgs.git
     pkgs.jq
+    # Verilog simulation and lint for hardware projects (projects/mimic's cocotb tests).
+    pkgs.iverilog
+    pkgs.verilator
   ];
 
   # Node.js LTS: nixpkgs points `nodejs` at the current LTS line, so `make update` moves to the next LTS.
@@ -33,6 +36,7 @@
   env.UV_PROJECT_ENVIRONMENT = lib.mkForce ".venv";
 
   enterTest = ''
+    iverilog -V 2>&1 | head -1
     python --version
     uv --version
     uv run --no-project --python "$(command -v python)" python -c 'print("uv runs python")'
