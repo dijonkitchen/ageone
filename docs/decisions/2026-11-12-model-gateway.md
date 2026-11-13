@@ -76,7 +76,7 @@ Checked on 2026-11-12:
 - Catalog: Vercel lists 323 language models (507 counting image, video, speech, and embedding models) and OpenRouter 447 text models.
   The gap is older and niche models, not ones we would pick.
 - Both keep a session on one host so the prompt cache holds: OpenRouter's sticky routing ([caching](https://openrouter.ai/docs/guides/features/prompt-caching)) and Vercel's session affinity, on by default ([routing](https://vercel.com/docs/ai-gateway/models-and-providers/provider-options)).
-  The pinned pi (1.0.1) adds cache markers on both and lists all eight of our models in its Vercel catalog.
+  pi (1.0.1 when this was decided, 1.5.2 since 2026-11-13) adds cache markers on both and lists all eight of our models in its Vercel catalog.
 
 ### The gateway is one setting
 
