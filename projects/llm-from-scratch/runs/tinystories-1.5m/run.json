@@ -1,0 +1,129 @@
+{
+  "seed": 0,
+  "dataset": {
+    "url": "https://huggingface.co/datasets/roneneldan/TinyStories/resolve/f54c09fd23315a6f9c86f9dc80f725de7d8f9c64/TinyStoriesV2-GPT4-valid.txt",
+    "revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64",
+    "sha256": "6874bae9a4c1a4e7edcf0e53b86c17817e9cf881fc75ff2368da457b80c0585d",
+    "val_fraction": 0.05
+  },
+  "model": {
+    "vocab_size": 2048,
+    "context": 256,
+    "layers": 6,
+    "heads": 4,
+    "dim": 128,
+    "dropout": 0.0
+  },
+  "train": {
+    "steps": 3000,
+    "batch": 32,
+    "lr": 0.003,
+    "warmup": 100,
+    "weight_decay": 0.1,
+    "clip": 1.0,
+    "eval_every": 250,
+    "eval_batches": 20,
+    "seed": 0,
+    "bpb_stories": 200
+  },
+  "parameters": 1484800,
+  "tokens": {
+    "train": 5727647,
+    "val": 299051
+  },
+  "tokens_seen": 24576000,
+  "environment": {
+    "python": "3.12.3",
+    "torch": "2.14.1+cpu",
+    "device": "cpu",
+    "machine": "x86_64",
+    "threads": 4
+  },
+  "history": [
+    {
+      "step": 0,
+      "val_loss": 7.638,
+      "minutes": 0.26
+    },
+    {
+      "step": 250,
+      "val_loss": 3.4617,
+      "minutes": 3.7
+    },
+    {
+      "step": 500,
+      "val_loss": 2.9142,
+      "minutes": 6.08
+    },
+    {
+      "step": 750,
+      "val_loss": 2.6452,
+      "minutes": 8.47
+    },
+    {
+      "step": 1000,
+      "val_loss": 2.4783,
+      "minutes": 10.78
+    },
+    {
+      "step": 1250,
+      "val_loss": 2.355,
+      "minutes": 13.1
+    },
+    {
+      "step": 1500,
+      "val_loss": 2.2701,
+      "minutes": 15.62
+    },
+    {
+      "step": 1750,
+      "val_loss": 2.1954,
+      "minutes": 17.97
+    },
+    {
+      "step": 2000,
+      "val_loss": 2.1341,
+      "minutes": 20.23
+    },
+    {
+      "step": 2250,
+      "val_loss": 2.086,
+      "minutes": 22.55
+    },
+    {
+      "step": 2500,
+      "val_loss": 2.0505,
+      "minutes": 24.77
+    },
+    {
+      "step": 2750,
+      "val_loss": 2.0244,
+      "minutes": 26.88
+    },
+    {
+      "step": 3000,
+      "val_loss": 2.0106,
+      "minutes": 29.11
+    }
+  ],
+  "val_bits_per_byte": 0.755,
+  "bpb_stories": 200,
+  "minutes": 29.2,
+  "samples": [
+    {
+      "prompt": "Once upon a time, there was a little girl named Lily.",
+      "seed": 0,
+      "text": "Once upon a time, there was a little girl named Lily. Lily was always sad and alone. She wanted to find a modern toy. She asked her friend, Sam, for help.\n\"Sam, can you help me find a modern toy?\" asked Lily. Sam looked and looked, but a big, shiny thing could talk. He thought about it and decided to take a box. He found a big, shiny ball in the front of Lily.\nWhen Sam came home, Lily asked Sam, \"Can I have my ball, please?\" Sam said, \"Yes, I can have my ball.\" Lily was happy and they both started to play. They played every day. At the end of the day, Lily and Sam learned a new toy."
+    },
+    {
+      "prompt": "Tom and his dog went to the park.",
+      "seed": 0,
+      "text": "Tom and his dog went to the park. They saw a big tree with a dict on it. Tom wanted to climb the tree and see what was on the ground. He thought, \"I can climb the tree and get the dictionary.\"\nTom and Lily went to the tree. They saw a sign that said, \"Can I climb the tree?\" The sign replied, \"Yes, I can climb the tree. Let's climb the tree.\"\nThey climbed the tree as they climbed, but then they reached the top of the tree. The dictionary was too close to the tree. The tree was gone. Tom and Lily were sad that their dictionary was gone to the ground."
+    },
+    {
+      "prompt": "The sun was hot, so Ben",
+      "seed": 0,
+      "text": "The sun was hot, so Ben wanted to try to go home. He tried to climb the tree, but it was too hot. Mom saw him looking for the red apples. She tried to reach the red apples, but it was too hard. She tried and tried, but he was too big for the red apples.\nMom heard the apple and came to the tree. She saw the red apples and the apples on the ground. She was so happy and said, \"Thank you, Ben! You soh shared the apples, but be careful, it's ok.\" Ben learned to listen to his mom and never came back to the tree again."
+    }
+  ]
+}
