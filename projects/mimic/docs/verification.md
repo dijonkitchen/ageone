@@ -24,7 +24,7 @@ will work. The verification is built around that.
 ## 1. A golden model that runs the same tests
 
 [`sw/mimic/model.py`](../sw/mimic/model.py) is a cycle-accurate model of the whole chip at the
-pin level: input synchronizers, the SPI host port bit by bit, the four state machines, FIFOs,
+pin level: input synchronizers, the SPI host port bit by bit, the three state machines, FIFOs,
 routing, IRQs, the latch memory's write latency. It is written the way the RTL is (compute all
 next-state values from the current registers, then commit), so a difference between them is a
 bug in one of them, never a modelling convention.
@@ -78,7 +78,7 @@ random words exercise every encoding, including the ones no assembler emits. Eac
 - gives each SM a random configuration (dividers with fractions, side-set, shift directions and
   thresholds, autopush/autopull, FIFO joins, routing, pin bases and counts, CRC modes) and
   open-drain pads;
-- runs all four SMs together while random pins toggle and the host does random things: FIFO
+- runs all three SMs together while random pins toggle and the host does random things: FIFO
   writes (biased toward 0, 1 and all ones so equal operands happen), FIFO reads, IRQ set and
   clear, debug reads, forced instructions, configuration and instruction-memory writes while the
   SMs run, single steps, restarts, FIFO clears.

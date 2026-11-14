@@ -34,9 +34,9 @@ Word addresses.
 |---|---|---|---|
 | `0x00`-`0x3F` | `IMEM` | W | Instruction memory (write only) |
 | `0x40` | `ID` | R | `0x4D494D31` ("MIM1") |
-| `0x41` | `CTRL` | RW | `[3:0]` SM enable; write-1 pulses: `[7:4]` restart, `[11:8]` clock-divider restart, `[15:12]` single step, `[19:16]` clear TX FIFO, `[23:20]` clear RX FIFO |
-| `0x42` | `FLEVEL` | R | Per SM n: `[8n+3:8n]` TX level, `[8n+7:8n+4]` RX level |
-| `0x43` | `FDEBUG` | R/W1C | Sticky per SM: `[3:0]` push dropped (full), `[7:4]` host write dropped (TX full), `[11:8]` host read of an empty RX FIFO, `[15:12]` stalled on an empty TX FIFO, `[19:16]` stalled on a full push destination |
+| `0x41` | `CTRL` | RW | `[2:0]` SM enable; write-1 pulses: `[6:4]` restart, `[10:8]` clock-divider restart, `[14:12]` single step, `[18:16]` clear TX FIFO, `[22:20]` clear RX FIFO (bit 3 of each field is reserved for a fourth SM and reads 0) |
+| `0x42` | `FLEVEL` | R | Per SM n (0-2): `[8n+3:8n]` TX level, `[8n+7:8n+4]` RX level; `[31:24]` read 0 |
+| `0x43` | `FDEBUG` | R/W1C | Sticky, bit n of each field for SM n (bit 3 reads 0): `[3:0]` push dropped (full), `[7:4]` host write dropped (TX full), `[11:8]` host read of an empty RX FIFO, `[15:12]` stalled on an empty TX FIFO, `[19:16]` stalled on a full push destination |
 | `0x44` | `IRQ` | R/W1C | `[7:0]` IRQ flags |
 | `0x45` | `IRQ_FORCE` | W1S | Set IRQ flags |
 | `0x46` | `PADCTRL` | RW | `[7:0]` open-drain mode for GPIO 0-7 |
@@ -45,7 +45,7 @@ Word addresses.
 | `0x49` | `PINOE` | R | `[7:0]` output enables of GPIO 0-7 |
 | `0x80 + 0x10n` | SM n block | | |
 
-State machine block (`n` = 0-3, base `0x80 + 0x10n`):
+State machine block (`n` = 0-2, base `0x80 + 0x10n`; the fourth block, `0xB0`-`0xBF`, reads 0 and ignores writes):
 
 | Offset | Name | Access | |
 |---|---|---|---|

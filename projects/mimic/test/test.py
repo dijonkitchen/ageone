@@ -15,6 +15,7 @@ import cocotb
 import scenarios
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge
+from mimic import isa
 from mimic.bench import Bench
 from mimic.model import Mimic
 
@@ -53,7 +54,7 @@ class Lockstep:
         self.dut = dut
         self.cycle = 0
         self.check_every = 16  # scenarios may lower this to compare registers more often
-        self.cores = [dut.user_project.sm[i].core for i in range(4)] if not GATES else []
+        self.cores = [dut.user_project.sm[i].core for i in range(isa.NUM_SM)] if not GATES else []
 
     async def clock(self, ui_in: int, uio_in: int) -> tuple[int, int, int]:
         got = await self.rtl.clock(ui_in, uio_in)

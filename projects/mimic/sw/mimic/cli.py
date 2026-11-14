@@ -20,7 +20,7 @@ from .host import Loader
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="mimic-load", description=__doc__.split("\n\n")[0])
     ap.add_argument("source")
-    ap.add_argument("--sm", type=int, default=0, help="state machine 0-3")
+    ap.add_argument("--sm", type=int, default=0, choices=range(isa.NUM_SM), help="state machine 0-2")
     ap.add_argument("--origin", type=int, help="load address (default: the program's .origin)")
     ap.add_argument("--start", action="store_true", help="enable the SM after loading")
     ap.add_argument("-D", action="append", default=[], metavar="NAME=VALUE", help="define (pins by name)")

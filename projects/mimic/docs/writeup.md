@@ -7,7 +7,7 @@ SG13CMOS5L shuttle.*
 
 A protocol emulator earns its keep on the protocols nobody planned for. So rather than
 hard-wiring UART, SPI and I2C and adding a programmable escape hatch, Mimic is only the escape
-hatch: four small processors built for bit-banging, and nothing else that knows what a protocol
+hatch: three small processors built for bit-banging, and nothing else that knows what a protocol
 is. UART, SPI, I2C, Ethernet and USB are all programs.
 
 The RP2040's PIO shows how good such processors can be: every instruction takes one cycle, sets

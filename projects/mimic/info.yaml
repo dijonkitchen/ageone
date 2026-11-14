@@ -3,7 +3,7 @@ project:
   title:        "Mimic protocol emulator"
   author:       "dijonkitchen"
   discord:      ""
-  description:  "Four programmable state machines that bit-bang UART, SPI, I2C, WS2812 and protocols they were not designed for"
+  description:  "Three programmable state machines that bit-bang UART, SPI, I2C, WS2812 and protocols they were not designed for"
   language:     "Verilog"
   clock_hz:     60000000
 

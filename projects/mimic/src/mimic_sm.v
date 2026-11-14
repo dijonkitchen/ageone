@@ -1,5 +1,5 @@
 /*
- * Mimic state machine: one of four programmable bit-banging engines.
+ * Mimic state machine: one of three programmable bit-banging engines.
  *
  * Every instruction takes one tick unless it stalls (WAIT, a full or empty FIFO,
  * IRQ WAIT), then the SM idles for the instruction's delay. Side-set pins are

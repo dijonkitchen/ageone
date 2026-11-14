@@ -152,17 +152,17 @@ async def random_isa(b: Bench, seed: int, cycles: int = 6000) -> None:
     await b.write(isa.REG_IMEM, *words)
     if hasattr(b.dev, "check_every"):
         b.dev.check_every = 1  # compare SM registers with the model every cycle
-    for sm in range(4):
+    for sm in range(isa.NUM_SM):
         for addr, v in random_config(rng, sm):
             await b.write(addr, v)
         await b.exec(sm, isa.enc_set(isa.DST["x"], rng.randrange(64)))
         await b.exec(sm, isa.enc_jmp(0, rng.randrange(64)))
     await b.write(isa.REG_PADCTRL, rng.getrandbits(8))
-    await b.write(isa.REG_CTRL, isa.pack_ctrl(enable=15, div_restart=15))
+    await b.write(isa.REG_CTRL, isa.pack_ctrl(enable=isa.SM_MASK, div_restart=isa.SM_MASK))
     end = b.cycle + cycles
     while b.cycle < end:
         r = rng.random()
-        sm = rng.randrange(4)
+        sm = rng.randrange(4)  # including SM3's empty register block, which must stay inert
         if r < 0.25:
             # Small and special values make equal operands and zeros likely.
             v = rng.choice([0, 1, 2, 3, isa.M32, 0x80000000, rng.getrandbits(32), rng.getrandbits(32)])
@@ -285,11 +285,11 @@ def _spi_ctrl(mode: int) -> Scenario:
         reply = bytes([0x5A, 0x01, 0xFE, 0x80])
         dev = b.add(periph.SpiTarget(SPI_SCK, SPI_MOSI, SPI_MISO, SPI_CS, mode=mode, reply=reply))
         prog = programs.load("spi_ctrl", CPOL=mode >> 1, CPHA=mode & 1, DIV=4)
-        await b.load(prog, 3, start=True)
+        await b.load(prog, 2, start=True)
         data = bytes([0xA5, 0x3C, 0x00, 0xFF])
         for chunk in (data[:1], data[1:]):
-            await b.put(3, *protocols.spi_words(chunk))
-        got = await b.get(3, 4)
+            await b.put(2, *protocols.spi_words(chunk))
+        got = await b.get(2, 4)
         await b.until(lambda: len(dev.transactions) == 2, what="CS deasserted")
         assert dev.transactions == [data[:1], data[1:]], dev.transactions
         assert bytes(got) == reply, [hex(g) for g in got]
@@ -430,9 +430,9 @@ USB_DM, USB_DP = 18, 19  # ui2, ui3
 
 async def _usb_rx(b: Bench, bit_scale: float) -> None:
     host = b.add(periph.UsbLsHost(USB_DM, USB_DP, bit=40 * bit_scale))
-    await b.load(programs.load("usb_ls_rx", DM=USB_DM), 2, origin=0)
-    await b.load(programs.load("usb_ls_rx_pkt"), 3, origin=34)  # 34 + 30 = all 64 words
-    await b.start(0b1100)
+    await b.load(programs.load("usb_ls_rx", DM=USB_DM), 1, origin=0)
+    await b.load(programs.load("usb_ls_rx_pkt"), 2, origin=34)  # 34 + 30 = all 64 words
+    await b.start(0b110)
     pid = protocols.USB_PID
     packets = [
         (pid["SETUP"], b"", (0x00, 0)),
@@ -446,11 +446,11 @@ async def _usb_rx(b: Bench, bit_scale: float) -> None:
         start = b.cycle
         while True:
             assert b.cycle - start < 40_000, f"packet not received; words so far {[hex(w) for w in words]}"
-            n = (await b.levels(3))[1]
+            n = (await b.levels(2))[1]
             if n:
-                words += await b.read(isa.sm_reg(3, isa.SM_RXF), n, inc=False)
-            elif (await b.read(isa.REG_IRQ))[0] & (1 << 3):
-                await b.write(isa.REG_IRQ, 1 << 3)
+                words += await b.read(isa.sm_reg(2, isa.SM_RXF), n, inc=False)
+            elif (await b.read(isa.REG_IRQ))[0] & (1 << 2):
+                await b.write(isa.REG_IRQ, 1 << 2)
                 break
         got, crc = protocols.eth_rx_frame(words)  # the same layout
         pid_byte = p | ((~p & 0xF) << 4)
@@ -539,7 +539,7 @@ async def pwm_capture_loopback(b: Bench) -> None:
 # ---------------------------------------------------------------------------
 
 M32 = isa.M32
-SM_DBG = 3
+SM_DBG = 2
 
 
 async def _set(b: Bench, sm: int, dst: str, value: int) -> None:

@@ -4,7 +4,7 @@ A reprogrammable protocol emulator ASIC for [Tiny Tapeout](https://tinytapeout.c
 130 nm SG13CMOS5L process, entered in Jane Street's
 [protocol emulator ASIC competition](https://blog.janestreet.com/protocol-emulator-asic-competition/).
 
-Four programmable state machines bit-bang serial protocols with cycle-exact timing from a shared
+Three programmable state machines bit-bang serial protocols with cycle-exact timing from a shared
 64-word program memory, which the demo board's RP2350 loads over SPI. The design starts from the
 RP2040's PIO and adds what PIO programs most often have to work around: an ALU, a CRC unit per
 state machine, edge and timeout waits, 16-bit immediates, open-drain pins, internal pins, and
@@ -15,7 +15,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 |---|---|
 | Process, area | IHP SG13CMOS5L, 8x4 Tiny Tapeout tiles (1.22 mm²), about 520,000 µm² of cells |
 | Clock | 60 MHz (one clock domain) |
-| State machines | 4, each with X, Y, ISR, OSR, CRC/LFSR, clock divider, 2+2-word FIFOs |
+| State machines | 3, each with X, Y, ISR, OSR, CRC/LFSR, clock divider, 2+2-word FIFOs |
 | Program memory | 64 x 32-bit instructions, shared |
 | Pins | 8 bidirectional (open-drain capable), 7 outputs, 5 inputs, 8 internal; the host port uses 4 |
 | Host | SPI target, mode 0, up to 10 MHz; load, configure, debug, data |
@@ -42,7 +42,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 - [Protocols](docs/protocols.md): the example programs and their techniques.
 - [Verification](docs/verification.md): golden model in lockstep, tests from the spec, random
   programs, mutation testing, protocol models, gate level, hardening results.
-- [Decisions](docs/decisions/): the stack, the instruction memory, area and timing.
+- [Decisions](docs/decisions/): the stack, the instruction memory, area and timing, three state machines.
 - [Datasheet page](docs/info.md) for Tiny Tapeout.
 
 ## Layout

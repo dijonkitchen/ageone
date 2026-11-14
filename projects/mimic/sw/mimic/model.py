@@ -779,6 +779,8 @@ class Mimic:
             return 0
         if (addr >> 6) == 0b10:
             n, reg = (addr >> 4) & 3, addr & 15
+            if n >= isa.NUM_SM:
+                return 0
             if reg == isa.SM_RXF:
                 return 0 if views[n]["rx_empty"] else int(views[n]["rx_head"])
             return self.sms[n].cfg_read(reg, self.imem)
@@ -797,7 +799,7 @@ class Mimic:
 
         pins_in = self.pins_in()
         views = self._views()
-        host_tx_wr = [bus_we and a_sm and a_smn == i and a_reg == isa.SM_TXF for i in range(4)]
+        host_tx_wr = [bus_we and a_sm and a_smn == i and a_reg == isa.SM_TXF for i in range(isa.NUM_SM)]
 
         # Push requests do not depend on push_full; evaluate once to get them, then for real.
         pre = [
@@ -809,7 +811,7 @@ class Mimic:
         push_full = []
         for i, sm in enumerate(self.sms):
             if sm.route_en:
-                j = (i + 1) % 4
+                j = (i + 1) % isa.NUM_SM
                 push_full.append(bool(views[j]["tx_full"]) or host_tx_wr[j])
             else:
                 push_full.append(bool(views[i]["rx_full"]))
@@ -829,18 +831,18 @@ class Mimic:
             assert a.push_req == b.push_req and a.push_data == b.push_data
 
         # FIFOs.
-        rx_rd = [bus_rd_done and a_sm and a_smn == i and a_reg == isa.SM_RXF for i in range(4)]
+        rx_rd = [bus_rd_done and a_sm and a_smn == i and a_reg == isa.SM_RXF for i in range(isa.NUM_SM)]
         tx_wr, tx_wdata = [], []
-        for i in range(4):
-            p = (i + 3) % 4
+        for i in range(isa.NUM_SM):
+            p = (i + isa.NUM_SM - 1) % isa.NUM_SM
             routed = self.sms[p].route_en and outs[p].push_req and not push_full[p]
             tx_wr.append(host_tx_wr[i] or routed)
             tx_wdata.append(bus_wdata if host_tx_wr[i] else outs[p].push_data)
-        rx_wr = [outs[i].push_req and not self.sms[i].route_en and not views[i]["rx_full"] for i in range(4)]
+        rx_wr = [outs[i].push_req and not self.sms[i].route_en and not views[i]["rx_full"] for i in range(isa.NUM_SM)]
 
         # FDEBUG.
-        host_tx_drop = [host_tx_wr[i] and bool(views[i]["tx_full"]) for i in range(4)]
-        host_rx_under = [rx_rd[i] and bool(views[i]["rx_empty"]) for i in range(4)]
+        host_tx_drop = [host_tx_wr[i] and bool(views[i]["tx_full"]) for i in range(isa.NUM_SM)]
+        host_rx_under = [rx_rd[i] and bool(views[i]["rx_empty"]) for i in range(isa.NUM_SM)]
 
         def bits(lst: list[bool]) -> int:
             return sum(int(b) << k for k, b in enumerate(lst))
@@ -897,12 +899,12 @@ class Mimic:
             )
         self.p_restart = self.p_divrst = self.p_step = self.p_txclr = self.p_rxclr = 0
         if g_we and a_reg == 1:
-            self.sm_en = bus_wdata & 15
-            self.p_restart = (bus_wdata >> 4) & 15
-            self.p_divrst = (bus_wdata >> 8) & 15
-            self.p_step = (bus_wdata >> 12) & 15
-            self.p_txclr = (bus_wdata >> 16) & 15
-            self.p_rxclr = (bus_wdata >> 20) & 15
+            self.sm_en = bus_wdata & isa.SM_MASK
+            self.p_restart = (bus_wdata >> 4) & isa.SM_MASK
+            self.p_divrst = (bus_wdata >> 8) & isa.SM_MASK
+            self.p_step = (bus_wdata >> 12) & isa.SM_MASK
+            self.p_txclr = (bus_wdata >> 16) & isa.SM_MASK
+            self.p_rxclr = (bus_wdata >> 20) & isa.SM_MASK
         if g_we and a_reg == 6:
             self.od_en = bus_wdata & 0xFF
         self.pin_out, self.pin_oe = pin_out_n, pin_oe_n
@@ -911,7 +913,7 @@ class Mimic:
         self.fdebug = (self.fdebug & ~fd_clr & 0xFFFFF) | fdebug_set
 
         # A host write to the instruction memory is visible after this edge (flip-flops) or
-        # after the next one (latches: the word's gate opens in the cycle after next).
+        # after the next one (latches: the word's enable pulse comes in the cycle after next).
         if self.imem_delay == 1:
             landed = imem_write
         else:

@@ -1,6 +1,6 @@
 ## How it works
 
-Mimic is a protocol emulator: four small programmable state machines that bit-bang serial protocols with cycle-exact timing, reprogrammed over SPI after fabrication.
+Mimic is a protocol emulator: three small programmable state machines that bit-bang serial protocols with cycle-exact timing, reprogrammed over SPI after fabrication.
 Each state machine runs 32-bit instructions from a shared 64-word memory: `JMP`, `WAIT` (levels, edges, changes, IRQs, with a timeout), `IN`/`OUT` shifts with autopush and autopull, `PUSH`/`PULL`, `MOV`, `IRQ`, `SET` with 16-bit immediates, and an `ALU`.
 Every instruction can also set up to 8 pins (side-set) and delay up to 255 ticks.
 Each state machine has a CRC/LFSR unit (any polynomial up to 32 bits) fed by its shifts, two FIFOs to the host, and can route its pushes to the next state machine.

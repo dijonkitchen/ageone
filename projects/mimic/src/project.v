@@ -1,7 +1,7 @@
 /*
  * Mimic: a reprogrammable protocol emulator for Tiny Tapeout.
  *
- * Four state machines run programs from a shared 64-word instruction memory and drive a
+ * Three state machines run programs from a shared 64-word instruction memory and drive a
  * 32-pin GPIO space; a host (the demo board's RP2350) loads programs, configures the state
  * machines, and moves data through FIFOs over an SPI port.
  *
@@ -28,6 +28,9 @@ module tt_um_dijonkitchen_mimic (
 
   localparam [31:0] ID = 32'h4D494D31;  // "MIM1"
   localparam FIFO_DEPTH = 2;
+  // Three state machines. The register map keeps room for four: SM3's bits in CTRL, FLEVEL and
+  // FDEBUG read as zero, and its register block (0xB0-0xBF) reads as zero and ignores writes.
+  localparam N_SM = 3;
 
   // ---------------------------------------------------------------------------
   // Input synchronizers
@@ -67,8 +70,8 @@ module tt_um_dijonkitchen_mimic (
   // ---------------------------------------------------------------------------
   // Global registers
   // ---------------------------------------------------------------------------
-  reg  [3:0]  sm_en;
-  reg  [3:0]  p_restart, p_divrst, p_step, p_txclr, p_rxclr;  // one-cycle pulses
+  reg  [N_SM-1:0] sm_en;
+  reg  [N_SM-1:0] p_restart, p_divrst, p_step, p_txclr, p_rxclr;  // one-cycle pulses
   reg  [7:0]  irq;
   reg  [7:0]  od_en;
   reg  [19:0] fdebug;
@@ -79,18 +82,20 @@ module tt_um_dijonkitchen_mimic (
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      sm_en <= 4'd0;
-      p_restart <= 4'd0; p_divrst <= 4'd0; p_step <= 4'd0; p_txclr <= 4'd0; p_rxclr <= 4'd0;
+      sm_en <= {N_SM{1'b0}};
+      p_restart <= {N_SM{1'b0}}; p_divrst <= {N_SM{1'b0}}; p_step <= {N_SM{1'b0}};
+      p_txclr <= {N_SM{1'b0}}; p_rxclr <= {N_SM{1'b0}};
       od_en <= 8'd0;
     end else begin
-      p_restart <= 4'd0; p_divrst <= 4'd0; p_step <= 4'd0; p_txclr <= 4'd0; p_rxclr <= 4'd0;
+      p_restart <= {N_SM{1'b0}}; p_divrst <= {N_SM{1'b0}}; p_step <= {N_SM{1'b0}};
+      p_txclr <= {N_SM{1'b0}}; p_rxclr <= {N_SM{1'b0}};
       if (g_we && a_reg == 4'h1) begin
-        sm_en <= bus_wdata[3:0];
-        p_restart <= bus_wdata[7:4];
-        p_divrst <= bus_wdata[11:8];
-        p_step <= bus_wdata[15:12];
-        p_txclr <= bus_wdata[19:16];
-        p_rxclr <= bus_wdata[23:20];
+        sm_en <= bus_wdata[N_SM-1:0];
+        p_restart <= bus_wdata[4+:N_SM];
+        p_divrst <= bus_wdata[8+:N_SM];
+        p_step <= bus_wdata[12+:N_SM];
+        p_txclr <= bus_wdata[16+:N_SM];
+        p_rxclr <= bus_wdata[20+:N_SM];
       end
       if (g_we && a_reg == 4'h6) od_en <= bus_wdata[7:0];
     end
@@ -113,49 +118,50 @@ module tt_um_dijonkitchen_mimic (
   // ---------------------------------------------------------------------------
   // Instruction memory
   // ---------------------------------------------------------------------------
-  wire [5:0]  im_a [0:3];
-  wire [31:0] im_d [0:3];
+  wire [5:0]  im_a [0:N_SM-1];
+  wire [31:0] im_d [0:N_SM-1];
 
   mimic_imem imem (
       .clk(clk),
       .we(bus_we & a_imem), .waddr(bus_addr[5:0]), .wdata(bus_wdata),
-      .raddr0(im_a[0]), .raddr1(im_a[1]), .raddr2(im_a[2]), .raddr3(im_a[3]),
-      .rdata0(im_d[0]), .rdata1(im_d[1]), .rdata2(im_d[2]), .rdata3(im_d[3])
+      .raddr0(im_a[0]), .raddr1(im_a[1]), .raddr2(im_a[2]),
+      .rdata0(im_d[0]), .rdata1(im_d[1]), .rdata2(im_d[2])
   );
 
   // ---------------------------------------------------------------------------
   // State machines and their FIFOs
   // ---------------------------------------------------------------------------
-  wire [31:0] cfg_rd [0:3];
-  wire [31:0] pmask [0:3], pval [0:3], dmask [0:3], dval [0:3];
-  wire [7:0]  irq_s [0:3], irq_c [0:3];
-  wire [3:0]  tx_empty, tx_full, rx_empty, rx_full, tx_pop;
-  wire [31:0] tx_head [0:3], rx_head [0:3];
-  wire [3:0]  tx_level [0:3], rx_level [0:3];
-  wire [3:0]  push_req, push_drop, tx_stall, rx_stall, fjoin_tx, fjoin_rx, route_en;
-  wire [31:0] push_data [0:3];
-  reg  [3:0]  push_full;
-  reg  [3:0]  tx_wr;
-  reg  [31:0] tx_wdata [0:3];
-  wire [3:0]  rx_wr;
+  wire [31:0] cfg_rd [0:N_SM-1];
+  wire [31:0] pmask [0:N_SM-1], pval [0:N_SM-1], dmask [0:N_SM-1], dval [0:N_SM-1];
+  wire [7:0]  irq_s [0:N_SM-1], irq_c [0:N_SM-1];
+  wire [N_SM-1:0] tx_empty, tx_full, rx_empty, rx_full, tx_pop;
+  wire [31:0] tx_head [0:N_SM-1], rx_head [0:N_SM-1];
+  wire [3:0]  tx_level [0:N_SM-1], rx_level [0:N_SM-1];
+  wire [N_SM-1:0] push_req, push_drop, tx_stall, rx_stall, fjoin_tx, fjoin_rx, route_en;
+  wire [31:0] push_data [0:N_SM-1];
+  reg  [N_SM-1:0] push_full;
+  reg  [N_SM-1:0] tx_wr;
+  reg  [31:0] tx_wdata [0:N_SM-1];
+  wire [N_SM-1:0] rx_wr;
 
   // TX FIFO writers: the host, else a push routed from the previous SM in the ring
-  // (SM3 -> SM0 -> SM1 -> SM2 -> SM3). A routed push sees "full" while the host writes.
-  wire [3:0] host_tx_wr;
+  // (SM2 -> SM0 -> SM1 -> SM2). A routed push sees "full" while the host writes.
+  wire [N_SM-1:0] host_tx_wr;
   integer s;
   always @(*) begin
-    for (s = 0; s < 4; s = s + 1) begin
-      push_full[s] = route_en[s] ? (tx_full[(s + 1) % 4] | host_tx_wr[(s + 1) % 4]) : rx_full[s];
+    for (s = 0; s < N_SM; s = s + 1) begin
+      push_full[s] = route_en[s] ? (tx_full[(s + 1) % N_SM] | host_tx_wr[(s + 1) % N_SM]) : rx_full[s];
     end
-    for (s = 0; s < 4; s = s + 1) begin
-      tx_wr[s] = host_tx_wr[s] | (route_en[(s + 3) % 4] & push_req[(s + 3) % 4] & ~push_full[(s + 3) % 4]);
-      tx_wdata[s] = host_tx_wr[s] ? bus_wdata : push_data[(s + 3) % 4];
+    for (s = 0; s < N_SM; s = s + 1) begin
+      tx_wr[s] = host_tx_wr[s] | (route_en[(s + N_SM - 1) % N_SM] & push_req[(s + N_SM - 1) % N_SM]
+                 & ~push_full[(s + N_SM - 1) % N_SM]);
+      tx_wdata[s] = host_tx_wr[s] ? bus_wdata : push_data[(s + N_SM - 1) % N_SM];
     end
   end
 
   genvar gs;
   generate
-    for (gs = 0; gs < 4; gs = gs + 1) begin : sm
+    for (gs = 0; gs < N_SM; gs = gs + 1) begin : sm
       wire cfg_we = bus_we & a_sm & (a_smn == gs);
 
       assign host_tx_wr[gs] = cfg_we & (a_reg == 4'h0);
@@ -199,7 +205,7 @@ module tt_um_dijonkitchen_mimic (
   always @(*) begin
     pin_out_n = pin_out;
     pin_oe_n = pin_oe;
-    for (m = 0; m < 4; m = m + 1) begin
+    for (m = 0; m < N_SM; m = m + 1) begin
       pin_out_n = (pin_out_n & ~pmask[m]) | (pval[m] & pmask[m]);
       pin_oe_n = (pin_oe_n & ~dmask[m][7:0]) | (dval[m][7:0] & dmask[m][7:0]);
     end
@@ -218,22 +224,24 @@ module tt_um_dijonkitchen_mimic (
   // ---------------------------------------------------------------------------
   // IRQ flags and FIFO debug flags
   // ---------------------------------------------------------------------------
-  wire [7:0] irq_set_all = irq_s[0] | irq_s[1] | irq_s[2] | irq_s[3]
+  wire [7:0] irq_set_all = irq_s[0] | irq_s[1] | irq_s[2]
                          | ((g_we && a_reg == 4'h5) ? bus_wdata[7:0] : 8'd0);
-  wire [7:0] irq_clr_all = irq_c[0] | irq_c[1] | irq_c[2] | irq_c[3]
+  wire [7:0] irq_clr_all = irq_c[0] | irq_c[1] | irq_c[2]
                          | ((g_we && a_reg == 4'h4) ? bus_wdata[7:0] : 8'd0);
 
-  wire [3:0] host_tx_drop;
-  wire [3:0] host_rx_under;
+  wire [N_SM-1:0] host_tx_drop;
+  wire [N_SM-1:0] host_rx_under;
   genvar gf;
   generate
-    for (gf = 0; gf < 4; gf = gf + 1) begin : fdbg
+    for (gf = 0; gf < N_SM; gf = gf + 1) begin : fdbg
       assign host_tx_drop[gf]  = host_tx_wr[gf] & tx_full[gf];
       assign host_rx_under[gf] = bus_rd_done & a_sm & (a_smn == gf) & (a_reg == 4'h1) & rx_empty[gf];
     end
   endgenerate
 
-  wire [19:0] fdebug_set = {rx_stall, tx_stall, host_rx_under, host_tx_drop, push_drop};
+  // Four bits a field, one an SM; bit 3 of each field is SM3's and stays zero.
+  wire [19:0] fdebug_set = {1'b0, rx_stall, 1'b0, tx_stall, 1'b0, host_rx_under, 1'b0, host_tx_drop,
+                            1'b0, push_drop};
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -248,7 +256,7 @@ module tt_um_dijonkitchen_mimic (
   // ---------------------------------------------------------------------------
   // Register reads
   // ---------------------------------------------------------------------------
-  wire [31:0] flevel = {rx_level[3], tx_level[3], rx_level[2], tx_level[2],
+  wire [31:0] flevel = {8'd0, rx_level[2], tx_level[2],
                         rx_level[1], tx_level[1], rx_level[0], tx_level[0]};
 
   always @(*) begin
@@ -256,7 +264,7 @@ module tt_um_dijonkitchen_mimic (
     if (a_glob) begin
       case (a_reg)
         4'h0: bus_rdata = ID;
-        4'h1: bus_rdata = {28'd0, sm_en};
+        4'h1: bus_rdata = {{(32 - N_SM){1'b0}}, sm_en};
         4'h2: bus_rdata = flevel;
         4'h3: bus_rdata = {12'd0, fdebug};
         4'h4: bus_rdata = {24'd0, irq};
@@ -266,7 +274,7 @@ module tt_um_dijonkitchen_mimic (
         4'h9: bus_rdata = {24'd0, pin_oe};
         default: bus_rdata = 32'd0;
       endcase
-    end else if (a_sm) begin
+    end else if (a_sm && a_smn < N_SM) begin
       if (a_reg == 4'h1) bus_rdata = rx_empty[a_smn] ? 32'd0 : rx_head[a_smn];
       else bus_rdata = cfg_rd[a_smn];
     end

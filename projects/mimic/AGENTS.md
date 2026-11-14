@@ -1,6 +1,6 @@
 # mimic
 
-Mimic, a reprogrammable protocol emulator ASIC for Jane Street's Tiny Tapeout competition: four programmable state machines in 8x4 IHP SG13CMOS5L tiles, with a Python toolchain, golden model and tests.
+Mimic, a reprogrammable protocol emulator ASIC for Jane Street's Tiny Tapeout competition: three programmable state machines in 8x4 IHP SG13CMOS5L tiles, with a Python toolchain, golden model and tests.
 The root [`AGENTS.md`](../../AGENTS.md) applies here too; this file adds only what is specific to this project.
 
 ## Read first
@@ -8,7 +8,7 @@ The root [`AGENTS.md`](../../AGENTS.md) applies here too; this file adds only wh
 - [Spec](specs/SPEC-2026-11-13-mimic.md): what to build and the definition of done.
 - [README](README.md): what it is and how to run everything.
 - [ISA](docs/isa.md): the specification the RTL and the model are held to.
-- Decisions: [stack](docs/decisions/2026-11-13-mimic-stack.md), [instruction memory](docs/decisions/2026-11-13-mimic-imem.md), [area and timing](docs/decisions/2026-11-13-mimic-area.md).
+- Decisions: [stack](docs/decisions/2026-11-13-mimic-stack.md), [instruction memory](docs/decisions/2026-11-13-mimic-imem.md), [area and timing](docs/decisions/2026-11-13-mimic-area.md), [three state machines](docs/decisions/2026-11-14-mimic-three-sms.md).
 
 ## Commands
 

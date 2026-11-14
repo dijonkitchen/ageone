@@ -1,6 +1,6 @@
 # Mimic instruction set
 
-Each of Mimic's four state machines (SMs) runs 32-bit instructions from a shared 64-word memory.
+Each of Mimic's three state machines (SMs) runs 32-bit instructions from a shared 64-word memory.
 An instruction takes one *tick* unless it stalls; then the SM idles for the instruction's delay.
 A tick is one clock cycle, or fewer when the SM's clock divider slows it down.
 
@@ -275,7 +275,7 @@ After reset: `CLKDIV` 1, `WRAP_TOP` 63, shifts to the right, thresholds 32, ever
 
 FIFOs hold two words each way; `FJOIN_TX` or `FJOIN_RX` gives one direction all four (and
 empties both). With `ROUTE`, pushes go to the TX FIFO of the next SM in the ring
-SM0 → SM1 → SM2 → SM3 → SM0, so SMs form pipelines without the host.
+SM0 → SM1 → SM2 → SM0, so SMs form pipelines without the host.
 
 ## Assembler
 

@@ -2,7 +2,7 @@
 
 ![Block diagram](architecture.svg)
 
-Mimic is four small processors built for bit-banging, sharing an instruction memory, a pin
+Mimic is three small processors built for bit-banging, sharing an instruction memory, a pin
 space, and a host port. Its starting point is the RP2040's PIO, whose idea holds up well:
 single-cycle instructions with free side-set and delay make cycle-exact waveforms easy.
 Mimic keeps that model and adds what PIO programs most often have to work around, aiming at the
@@ -46,10 +46,10 @@ to explain: what an instruction writes, the next one sees.
 
 ## Memory
 
-64 words of 32 bits, written by the host and read by all four SMs every cycle. Storage is
+64 words of 32 bits, written by the host and read by all three SMs every cycle. Storage is
 2048 latches (31 µm² each) rather than flip-flops with enables (67 µm²); each word's latches
 open for one cycle on a pulse from a flip-flop, so the enables are data signals rather than 64
-gated clocks. Four 64:1 read multiplexers cost more than the storage; that, not storage, is why
+gated clocks. Three 64:1 read multiplexers cost more than the storage; that, not storage, is why
 the memory has 64 words. Each decodes its address in two levels (eight lines pick a word in every
 group of eight, eight more pick the group) instead of 64 word lines, which the chip's routing
 needed.
@@ -82,7 +82,7 @@ protocols. [Host port](host.md) has the frames and registers.
 
 | Block | Synthesized area (µm²) |
 |---|---|
-| Instruction memory (latches, write gates, four read ports) | 158,000 |
+| Instruction memory (latches, write enables, three read ports) | 158,000 |
 | Four state machines | 4 x 80,000 |
 | Four FIFO pairs | 4 x 14,500 |
 | Host port, pins, IRQs, registers | 32,000 |

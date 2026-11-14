@@ -1,5 +1,5 @@
 /*
- * Shared instruction memory: 64 x 32-bit words, one write port (host) and four
+ * Shared instruction memory: 64 x 32-bit words, one write port (host) and three
  * asynchronous read ports (one per state machine), so every SM fetches every cycle.
  *
  * Words are stored in latches, less than half the area of flip-flops with enables. Define
@@ -20,11 +20,9 @@ module mimic_imem (
     input  wire [5:0]  raddr0,
     input  wire [5:0]  raddr1,
     input  wire [5:0]  raddr2,
-    input  wire [5:0]  raddr3,
     output wire [31:0] rdata0,
     output wire [31:0] rdata1,
-    output wire [31:0] rdata2,
-    output wire [31:0] rdata3
+    output wire [31:0] rdata2
 );
 
 `ifndef MIMIC_IMEM_FF
@@ -66,15 +64,14 @@ module mimic_imem (
   // synthesis from flattening this into 64 word lines per port, each running to all 32 bits:
   // those 256 lines were a third of the placed wiring and made the chip unroutable on its one
   // horizontal routing layer (see docs/decisions/2026-11-13-mimic-area.md).
-  wire [5:0]  raddr [0:3];
-  wire [31:0] rdata [0:3];
+  wire [5:0]  raddr [0:2];
+  wire [31:0] rdata [0:2];
   assign raddr[0] = raddr0;
   assign raddr[1] = raddr1;
   assign raddr[2] = raddr2;
-  assign raddr[3] = raddr3;
   genvar p, k, b;
   generate
-    for (p = 0; p < 4; p = p + 1) begin : port
+    for (p = 0; p < 3; p = p + 1) begin : port
       (* keep *) wire [7:0] lo = 8'd1 << raddr[p][2:0];
       (* keep *) wire [7:0] hi = 8'd1 << raddr[p][5:3];
       for (b = 0; b < 32; b = b + 1) begin : column
@@ -91,6 +88,5 @@ module mimic_imem (
   assign rdata0 = rdata[0];
   assign rdata1 = rdata[1];
   assign rdata2 = rdata[2];
-  assign rdata3 = rdata[3];
 
 endmodule

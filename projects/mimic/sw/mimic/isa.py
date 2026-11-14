@@ -9,7 +9,8 @@ from __future__ import annotations
 
 M32 = 0xFFFF_FFFF
 IMEM_WORDS = 64
-NUM_SM = 4
+NUM_SM = 3  # the register map has room for four; SM3's bits and block read as zero
+SM_MASK = (1 << NUM_SM) - 1
 FIFO_DEPTH = 2
 CHIP_ID = 0x4D494D31  # "MIM1"
 
@@ -290,7 +291,7 @@ def pack_crccfg(reflect: bool = False, feed_out: bool = False, feed_in: bool = F
 def pack_ctrl(
     enable: int = 0, restart: int = 0, div_restart: int = 0, step: int = 0, tx_clear: int = 0, rx_clear: int = 0
 ) -> int:
-    """CTRL value; each argument is a 4-bit mask of state machines."""
+    """CTRL value; each argument is a mask of state machines (bit n is SMn, bit 3 is unused)."""
     return (
         (enable & 15)
         | ((restart & 15) << 4)
