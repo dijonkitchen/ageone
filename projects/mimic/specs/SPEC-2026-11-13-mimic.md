@@ -14,7 +14,7 @@ The judges weigh flexibility most (protocols the chip was not designed for), the
 
 ## Non-functional requirements
 
-- Fits 8x4 tiles with room to place and route on five metal layers; one clock domain; 60 MHz target.
+- Fits 8x4 tiles with room to place and route on the three layers a project may route on (Metal2 to Metal4 of five); one clock domain; 60 MHz target.
 - Verified to a standard a judge can rerun: a golden model, tests from the ISA specification, random differential tests, protocol tests against independent device models, gate-level simulation, and a write-up of how and why.
 - Everything runs from `make check` in the pinned environment; the hardening flow runs with Tiny Tapeout's tools.
 

@@ -52,13 +52,11 @@ The first synthesis was 711,000 µm². These changes brought it to about 510,000
 **Hardening settings** (`src/config.json`), each found by a failed run:
 
 - `SYNTH_STRATEGY` `AREA 0`, as above.
-- `CLOCK_PERIOD` 20 ns for the flow. The RTL meets 60 MHz at the typical corner; repairing every
-  corner against 16.6 ns left thousands of slow-corner endpoints and a repair that did not finish.
-- `PL_RESIZER_SETUP_SLACK_MARGIN` 0. The 2048 memory latches time-borrow, which STA reports as slack
-  exactly 0; the default 0.05 ns margin made the resizer try to "fix" every one of them.
-- `RSZ_CORNERS` typical only. OpenROAD's timing analysis of this design needs about 5 GB per corner,
-  so repairing against three corners ran out of a 16 GB machine (Tiny Tapeout's GitHub runners have
-  16 GB too). Sign-off STA still checks all three.
+- `CLOCK_PERIOD` 16.6 ns (60 MHz), repaired at all three corners. Earlier the memory's gated
+  clocks made timing analysis cost 5 GB per corner, which forced repair at the typical corner
+  only, at 20 ns, with a zero setup margin for the latches' time borrowing; with the enables
+  below, repair at every corner takes seven minutes in under 1 GB, and the slow corner misses
+  60 MHz by 0.16 ns on 12 endpoints.
 
 **Routing.** The first layout did not route.
 A project may route only on Metal2 to Metal4 (TopMetal1 belongs to the chip's power grid), so
@@ -66,28 +64,46 @@ Metal3 is its only horizontal layer, and on an 8x4 die, more than twice as wide 
 long wires run horizontally.
 The global router needed 128% of Metal3's capacity (84% of its raw tracks) against 61% of the two
 vertical layers', and after two hours of overflow repair it still had not converged.
-Spreading the cells did not help: target densities from 52% to 60% and cell padding all left
-Metal3 at 108% before buffering.
+Lower placement density did not help at first: the placer's routability mode raised every target
+from 52% to 60% back to about 67%, and Metal3 stayed at 108% before buffering.
 The wiring came from the memory's read multiplexers: synthesis decoded each port's address into
 64 word lines, and each line ran to its word's 32 bits wherever the placer put them.
 Those 256 lines and their buffers were a third of the placed wiring.
-Three changes fixed it:
+These changes, each measured on the layout, followed:
 
 - Each read port decodes in two levels: eight one-hot lines from the low three address bits
   pick a word in every group of eight, and eight lines from the high three bits pick the group.
   `(* keep *)` stops synthesis from flattening the levels back into word lines.
   The same function in 1,000 more cells (+9,000 µm²) cut the wiring by 19% and Metal3's
   demand from 108% to 86% before buffering.
+- The memory's latches open on a one-cycle pulse from a flip-flop instead of 64 gated clocks.
+  Each gated clock reached its word in all 32 bit columns, so clock tree synthesis built 64 trees
+  across the memory: 600 of the chip's 860 clock buffers, which packed it to 100% local density
+  (36 placement bins over 80%; none after). Clock tree synthesis went from 7 minutes and 4 to
+  12 GB to 19 seconds and 340 MB.
+- `PL_TARGET_DENSITY_PCT` 55 leaves room for the buffers the memory's select lines get after
+  placement.
 - `GRT_LAYER_ADJUSTMENTS` reserves 15% of Metal3 in global routing instead of 30% (Metal2 and
   Metal4 keep 30%), leaving the difference to the detailed router, which sees real tracks.
 - `CTS_APPLY_NDR` `none`: the clock tree's double-spaced wires took Metal3 tracks, and while any
   overflow remained, the global router dropped them about ten nets at a time and reran 20 passes
-  each time, for hours. A 60 MHz clock does not need them.
-  Global routing then takes two minutes and leaves 4,400 overflow (0.8% of the wiring, in local
-  spots), against 111,000 before and a run that never finished.
+  each time, for hours. A 60 MHz clock does not need them. `GRT_OVERFLOW_ITERS` 20 stops the
+  passes that no longer help.
 
-Neither the library's fanout limit (8, which overrides a looser `MAX_FANOUT_CONSTRAINT`) nor
-the placement settings changed anything, so they stay at Tiny Tapeout's defaults.
+Global routing now takes two and a half minutes and leaves 0.7% overflow (5,200), against
+111,000 and a run that never finished. The library's fanout limit (8) overrides a looser
+`MAX_FANOUT_CONSTRAINT`, so the fanout buffers stay.
+
+**Detailed routing still does not converge**: 106,793 violations after the first pass, mostly
+shorts on Metal2 (where every cell pin is reached) and Metal3, and about 12% fewer per
+45-minute pass after that. Global routing's small overflow understates how hard three thin layers
+are to wire at half the core in cells. The remaining options trade more:
+
+- Harden the memory as its own block, placed in the middle of the die, so the state machines'
+  instruction buses split both ways; keeps every feature, at the cost of a hierarchical flow.
+- Three state machines: a fifth fewer cells and a quarter fewer read ports, every feature kept in
+  each.
+- Narrower state machines (the CRC unit, side-set and pin rotators are each 5,000 to 7,000 µm²).
 
 ### Choices and Tradeoffs/Risks
 
@@ -100,3 +116,5 @@ Ring routing loses arbitrary fan-in (two SMs feeding one), which no example need
 ### Interfaces
 
 ## Key Results and retrospective feedback
+
+2026-11-14: synthesis 521,000 µm² with every feature; timing repaired for 60 MHz at every corner (slow corner −0.16 ns on 12 endpoints); global routing converges; detailed routing does not, so the design is not yet routable on three layers.

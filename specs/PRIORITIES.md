@@ -1,6 +1,6 @@
 # Priorities
 
-updated_at: 2026-11-13
+updated_at: 2026-11-14
 
 Table of specs, listing their ID, dependency (if any), priority, description, difficulty, and status.
 Priority 1 is the highest.
@@ -17,7 +17,7 @@ Project specs live in `projects/<slug>/specs/` and use the template and per-proj
 | [SPEC-2026-09-30-projects-scaffold](SPEC-2026-09-30-projects-scaffold.md) | None | 2 | Projects scaffold: `projects/`, per-project specs and decision records, Bun and uv in devenv, a project template, and CI per changed project | Low | Done |
 | [SPEC-2026-11-12-model-gateway](SPEC-2026-11-12-model-gateway.md) | None | 2 | Model gateway: Vercel AI Gateway for every role, with OpenRouter one setting away, and cost recorded and estimated per passed task (billed cost, cache reads, effort per role) | Medium | Blocked (needs an AI_GATEWAY_API_KEY with purchased credits for definition of done items 3, 4, 5, and 8) |
 | [SPEC-2026-09-26-vendor-neutral-ai-harness](SPEC-2026-09-26-vendor-neutral-ai-harness.md) | SPEC-2026-09-25-agent-todo-repo | 2 | Vendor-neutral AI harness: pi + model roles config + web search + private open-weight models + evals on our own tasks, with a runner that swaps harnesses or calls models directly | Medium | Blocked (needs an AI_GATEWAY_API_KEY to run definition of done items 1-3, 5, and 6) |
-| [SPEC-2026-11-13-mimic](../projects/mimic/specs/SPEC-2026-11-13-mimic.md) | SPEC-2026-09-30-projects-scaffold | 2 | Mimic: a reprogrammable protocol emulator ASIC for Jane Street's Tiny Tapeout competition (due 2027-01-18): four PIO-like state machines with an ALU, CRC units and FIFO routing on IHP SG13CMOS5L, a Python toolchain and golden model, UART, SPI, I2C, 10BASE-T, low-speed USB and more, verified in lockstep and hardened | High | In progress (Claude, project thread) |
+| [SPEC-2026-11-13-mimic](../projects/mimic/specs/SPEC-2026-11-13-mimic.md) | SPEC-2026-09-30-projects-scaffold | 2 | Mimic: a reprogrammable protocol emulator ASIC for Jane Street's Tiny Tapeout competition (due 2027-01-18): four PIO-like state machines with an ALU, CRC units and FIFO routing on IHP SG13CMOS5L, a Python toolchain and golden model, UART, SPI, I2C, 10BASE-T, low-speed USB and more, verified in lockstep and hardened | High | Blocked (detailed routing does not converge on the three routing layers; needs a floorplan or design-size decision, see the write-up) |
 | [SPEC-2026-09-30-prompt-injection-skill](SPEC-2026-09-30-prompt-injection-skill.md) | SPEC-2026-09-30-projects-scaffold | 3 | Prompt injection skill: shared CaMeL-style skill and library for projects that feed untrusted text to models, restarted from the skills repo | Low | Open |
 | [SPEC-2026-09-27-eval-benchmark-pages](SPEC-2026-09-27-eval-benchmark-pages.md) | SPEC-2026-09-26-vendor-neutral-ai-harness | 3 | Eval and benchmark pages: static site of our experiments comparing ways to do things (output formats like TOON vs CSV vs JSON, tool interfaces, harnesses) across models | Medium | Blocked (needs an AI_GATEWAY_API_KEY for definition of done items 2, 3, and 5, and GitHub Pages enabled for publishing) |
 | [SPEC-2026-10-05-eval-hillclimbing](SPEC-2026-10-05-eval-hillclimbing.md) | None | 3 | Eval hill-climbing: held-out test cases, transcripts kept for every run, and a failures view, so prompts and harnesses can be tuned without overfitting | Medium | Open |

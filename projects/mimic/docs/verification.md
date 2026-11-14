@@ -175,34 +175,50 @@ sample point drifted when slowed with the clock divider (now slowed with ticks p
 ## Hardening
 
 Tiny Tapeout's flow (LibreLane 3.1.0.dev4, IHP SG13CMOS5L, 8x4 tiles: 1724 x 711 µm) on this
-design, with the settings in `src/config.json` and the [area and timing decision](decisions/2026-11-13-mimic-area.md):
+design, with the settings in `src/config.json` and the [area and timing decision](decisions/2026-11-13-mimic-area.md).
+**The chip does not route yet**: every step up to detailed routing completes, and detailed
+routing does not converge.
 
 | Stage | Result |
 |---|---|
-| Synthesis (Yosys, `AREA 0`) | 37,492 cells, 511,881 µm²: 2,344 flip-flops, 2,048 memory latches, 64 clock-gate latches |
-| Placement | 42% utilization, 50% after buffering |
-| Clock tree | 865 clock buffers; the 64 memory-word clock gates are leaves of the tree |
-| Timing repair (typical corner) | No setup violations at 20 ns; 1,631 hold buffers, then hold slack +0.10 ns |
-| After repair | 46,677 cells, 618,721 µm², 51% utilization |
-| Static timing at 60 MHz (16.6 ns), before layout | Typical corner met; slow corner (1.08 V, 125 °C) −1.10 ns |
-ROUTING_RESULTS
+| Synthesis (Yosys, `AREA 0`) | 38,503 cells, 521,151 µm²: 2,408 flip-flops, 2,048 memory latches |
+| Placement (target density 55%) | 43% utilization, 47% after fanout buffering (the library allows a fanout of 8) |
+| Clock tree | 271 clock buffers, one tree |
+| Timing repair, all three corners, 16.6 ns (60 MHz) | 48,494 cells, 625,333 µm², 52% utilization; 204 setup and 186 hold buffers |
+| Static timing at 60 MHz after clock tree synthesis, placement parasitics | Typical (1.20 V, 25 °C) setup +5.95 ns, hold +0.28 ns; fast (1.32 V, −40 °C) hold +0.10 ns; slow (1.08 V, 125 °C) setup −0.16 ns on 12 endpoints, hold +0.59 ns |
+| Global routing (Metal2-Metal4) | 2.5 minutes; 0.7% overflow (5,210 of 550,179), in one strip between the state machines and the memory |
+| Detailed routing | Does not converge: 106,793 violations after the first pass (mostly Metal2 and Metal3 shorts), 94,297 two-thirds through the second, about 45 minutes a pass |
 
-Three things only a real flow shows, each now a setting with a comment in `src/config.json`:
+Precheck needs a routed GDS, so it has not run, and gate level ran on the synthesized netlist
+rather than a routed one.
+
+What the flow showed, each now a setting with a comment in `src/config.json` or a change to the
+RTL (the [area and timing decision](decisions/2026-11-13-mimic-area.md) has the measurements):
 
 - The default delay-oriented synthesis buffered every multiplexer select (38,000 buffers) and even
   used I/O pad cells as buffers: 1.25 mm², more than the die. Area-oriented mapping halves it.
-- The memory latches time-borrow, which static timing reports as slack exactly 0; with the
-  resizer's default 0.05 ns margin, all 2,048 of them counted as violations.
-- OpenROAD's timing analysis of the design takes about 5 GB per corner; repairing against three
-  corners exhausted the 16 GB machine (twice taking the whole container down), so repair runs at
-  the typical corner, where the chip will run, and sign-off still reports all three.
+- A project may route only on Metal2 to Metal4, so Metal3 is its one horizontal layer, and on a
+  die 2.4 times as wide as tall it is the limit. The first layout needed 128% of it; spreading
+  cells did not help. The memory's read ports had become 256 word lines each running to all 32
+  bits, a third of the wiring; a two-level decode cut the wiring by a fifth.
+- The memory's 64 per-word gated clocks each spanned all 32 bit columns: clock tree synthesis
+  gave them 600 buffers, packed the memory to 100% local density, and made timing analysis cost
+  5 GB per corner (twice taking the 16 GB container down). Latches enabled by a pulse from a
+  flip-flop removed all three problems, which in turn let repair run at every corner at 60 MHz.
+- With clock wires on double spacing, the global router dropped the spacing ten nets at a time
+  and reran, for hours; the clock tree no longer uses it.
+
+Detailed routing is the open problem. Global routing's overflow is small, but the detailed
+router finds far more conflicts than it implies, mostly shorts on Metal2, the layer every cell
+pin is reached from, and on Metal3. With three thin layers, half the core in cells is more than
+it can wire. The options are in the [write-up](writeup.md#limits-and-next-steps).
 
 ## Running it
 
 ```sh
 make test     # model: assembler, driver, every scenario (pytest)
 make rtl      # RTL in lockstep with the model (cocotb, Icarus Verilog)
-make gl       # gate-level netlist (after hardening; see test/Makefile)
+make gl       # gate-level netlist (copy it to test/gate_level_netlist.v; see test/Makefile)
 make lint     # ruff, mypy --strict, verilator -Wall
 uv run python sw/tools/mutate.py
 ```

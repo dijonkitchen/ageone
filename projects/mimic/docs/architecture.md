@@ -47,9 +47,12 @@ to explain: what an instruction writes, the next one sees.
 ## Memory
 
 64 words of 32 bits, written by the host and read by all four SMs every cycle. Storage is
-2048 latches (31 µm² each) rather than flip-flops with enables (67 µm²), each word written
-through its own clock gate built from a negative latch and an AND gate. Four 64:1 read
-multiplexers cost more than the storage; that, not storage, is why the memory has 64 words.
+2048 latches (31 µm² each) rather than flip-flops with enables (67 µm²); each word's latches
+open for one cycle on a pulse from a flip-flop, so the enables are data signals rather than 64
+gated clocks. Four 64:1 read multiplexers cost more than the storage; that, not storage, is why
+the memory has 64 words. Each decodes its address in two levels (eight lines pick a word in every
+group of eight, eight more pick the group) instead of 64 word lines, which the chip's routing
+needed.
 See [the decision](decisions/2026-11-13-mimic-imem.md).
 
 Programs share the memory freely: the loader relocates jumps and wrap points to wherever a

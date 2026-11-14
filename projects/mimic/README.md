@@ -82,8 +82,11 @@ export PDK_ROOT=~/ttsetup/pdk PDK=ihp-sg13cmos5l
 ./tt/tt_tool.py --pdk $PDK --create-user-config
 ./tt/tt_tool.py --pdk $PDK --harden
 ./tt/tt_tool.py --pdk $PDK --print-stats
-cp runs/wokwi/final/nl/tt_um_dijonkitchen_mimic.nl.v test/gate_level_netlist.v && make gl
+cp runs/wokwi/06-yosys-synthesis/tt_um_dijonkitchen_mimic.nl.v test/gate_level_netlist.v && make gl
 ```
+
+The flow stops in detailed routing today (see [Status](#status)); the synthesized netlist is
+the one gate level runs on until there is a routed one in `runs/wokwi/final/nl/`.
 
 Behind a TLS-intercepting proxy, fetch the PDK on the host first
 (`ciel enable --pdk-root $PDK_ROOT --pdk-family ihp-sg13 <version>` with `SSL_CERT_FILE` set);
@@ -92,5 +95,9 @@ Tiny Tapeout template) run the same flow, the tests, and precheck.
 
 ## Status
 
-Simulation and hardening only: the chip has not been fabricated. See the
-[verification write-up](docs/verification.md) for what has and has not been shown.
+Verified in simulation: every scenario passes on the golden model, on the RTL and on the
+synthesized gate-level netlist, each in lockstep with the model. Tiny Tapeout's flow runs through
+placement, clock tree synthesis, timing repair for 60 MHz and global routing, but **detailed
+routing does not converge yet**, so there is no GDS and precheck has not run. The
+[verification write-up](docs/verification.md#hardening) has the numbers and the
+[write-up](docs/writeup.md#limits-and-next-steps) the options.
