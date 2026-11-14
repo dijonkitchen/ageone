@@ -11,3 +11,6 @@ devenv.local.yaml
 
 # Built eval and benchmark pages (site/build)
 _site/
+
+# Packages pi installs for this project from .pi/settings.json (pi writes its own .gitignore there)
+.pi/npm/
