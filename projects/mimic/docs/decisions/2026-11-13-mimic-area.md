@@ -71,7 +71,7 @@ Metal3 at 108% before buffering.
 The wiring came from the memory's read multiplexers: synthesis decoded each port's address into
 64 word lines, and each line ran to its word's 32 bits wherever the placer put them.
 Those 256 lines and their buffers were a third of the placed wiring.
-Two changes fixed it:
+Three changes fixed it:
 
 - Each read port decodes in two levels: eight one-hot lines from the low three address bits
   pick a word in every group of eight, and eight lines from the high three bits pick the group.

@@ -2,9 +2,9 @@
  * Shared instruction memory: 64 x 32-bit words, one write port (host) and four
  * asynchronous read ports (one per state machine), so every SM fetches every cycle.
  *
- * Words are stored in latches behind a per-word clock gate, less than half the area of
- * flip-flops with enables. Define MIMIC_IMEM_FF for plain flip-flops instead (for FPGAs,
- * where latches and gated clocks are a poor fit); writes then land one cycle sooner.
+ * Words are stored in latches, less than half the area of flip-flops with enables. Define
+ * MIMIC_IMEM_FF for plain flip-flops instead (for FPGAs, where latches are a poor fit);
+ * writes then land one cycle sooner.
  * See docs/decisions/2026-11-13-mimic-imem.md.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -28,29 +28,28 @@ module mimic_imem (
 );
 
 `ifndef MIMIC_IMEM_FF
-  // Each word is 32 latches behind its own clock gate, a negative latch holding the enable
-  // and an AND with clk (the structure of an integrated clock gate). A host write at cycle T
-  // opens word waddr's latches for the high half of cycle T+2, capturing wdata_q, which holds
-  // still because host writes are at least 32 SCK edges apart.
+  // Each word is 32 latches enabled by a one-cycle pulse from a flip-flop: a host write at
+  // cycle T sets wen[waddr] for cycle T+2, when the word's latches pass wdata_q, which holds
+  // still because host writes are at least 32 SCK edges apart. The enables are data signals,
+  // not gated clocks, so clock tree synthesis leaves them alone; as 64 gated clocks, each
+  // reaching its word's latches in all 32 bit columns, they took 600 clock buffers.
   reg [31:0] wdata_q;
   reg        we_q;
   reg [5:0]  waddr_q;
+  reg [63:0] wen;
   always @(posedge clk) begin
     we_q <= we;
     waddr_q <= waddr;
     if (we) wdata_q <= wdata;
+    wen <= we_q ? 64'd1 << waddr_q : 64'd0;
   end
   wire [31:0] mem [0:63];
   /* verilator lint_off LATCH */
   genvar g;
   generate
     for (g = 0; g < 64; g = g + 1) begin : word
-      reg        en_l;
       reg [31:0] q;
-      wire       en = we_q & (waddr_q == g);
-      always @(*) if (!clk) en_l = en;
-      wire gclk = clk & en_l;
-      always @(*) if (gclk) q = wdata_q;
+      always @(*) if (wen[g]) q = wdata_q;
       assign mem[g] = q;
     end
   endgenerate
