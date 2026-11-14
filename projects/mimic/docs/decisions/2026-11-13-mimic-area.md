@@ -78,10 +78,13 @@ Two changes fixed it:
   `(* keep *)` stops synthesis from flattening the levels back into word lines.
   The same function in 1,000 more cells (+9,000 µm²) cut the wiring by 19% and Metal3's
   demand from 108% to 86% before buffering.
-- `GRT_LAYER_ADJUSTMENTS` reserves 20% of Metal3 in global routing instead of 30% (Metal2 and
+- `GRT_LAYER_ADJUSTMENTS` reserves 15% of Metal3 in global routing instead of 30% (Metal2 and
   Metal4 keep 30%), leaving the difference to the detailed router, which sees real tracks.
-  Global routing of the buffered placement then converges to 2,600 overflow in ten passes, against
-  111,000 before.
+- `CTS_APPLY_NDR` `none`: the clock tree's double-spaced wires took Metal3 tracks, and while any
+  overflow remained, the global router dropped them about ten nets at a time and reran 20 passes
+  each time, for hours. A 60 MHz clock does not need them.
+  Global routing then takes two minutes and leaves 4,400 overflow (0.8% of the wiring, in local
+  spots), against 111,000 before and a run that never finished.
 
 Neither the library's fanout limit (8, which overrides a looser `MAX_FANOUT_CONSTRAINT`) nor
 the placement settings changed anything, so they stay at Tiny Tapeout's defaults.

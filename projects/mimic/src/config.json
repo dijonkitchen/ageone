@@ -38,9 +38,18 @@
   "CTS_CORNERS": ["nom_typ_1p20V_25C"],
 
   "//": "GRT_LAYER_ADJUSTMENTS - Metal1 to TopMetal1. Metal3 is the only horizontal layer a project",
-  "//": "may route on, so it sets the limit; the global router reserves 20% of it instead of 30%",
-  "//": "(Metal2 and Metal4 keep 30%) and leaves the rest to the detailed router.",
-  "GRT_LAYER_ADJUSTMENTS": [0, 0.3, 0.2, 0.3, 0],
+  "//": "may route on, so it sets the limit; the global router reserves 15% of it instead of 30%",
+  "//": "(Metal2 and Metal4 keep 30%) and leaves the rest to the detailed router, which sees real tracks.",
+  "GRT_LAYER_ADJUSTMENTS": [0, 0.3, 0.15, 0.3, 0],
+
+  "//": "CTS_APPLY_NDR - Wide clock wires take tracks Metal3 does not have, and while any overflow",
+  "//": "remains the global router drops them about ten nets at a time, rerunning each time (hours).",
+  "//": "At 60 MHz the clock tree does not need them.",
+  "CTS_APPLY_NDR": "none",
+
+  "//": "GRT_OVERFLOW_ITERS - The little overflow left after 20 passes is for the detailed router",
+  "//": "(Tiny Tapeout allows congestion); more passes did not remove it.",
+  "GRT_OVERFLOW_ITERS": 20,
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
