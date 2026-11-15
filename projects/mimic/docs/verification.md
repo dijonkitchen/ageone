@@ -193,7 +193,7 @@ With four state machines the chip did not route; with three ([decision](decision
 | LVS (netgen) and overlaps | The layout matches the netlist; 0 errors, 0 illegal overlaps |
 | Power (typical, OpenSTA estimate) | 10.1 mW |
 | Gate level, routed netlist (fill, decap and antenna cells included) | All 41 scenarios pass in lockstep with the model |
-| Tiny Tapeout precheck (IHP's KLayout DRC deck, pins, boundary, layers) | Every check passed, 0 DRC violations, on the first routed GDS (before the post-routing repairs); the final GDS's run is in progress |
+| Tiny Tapeout precheck (IHP's KLayout DRC deck, pins, boundary, layers, cell names, Verilog) | **Passes**: every check, 0 DRC violations (2 h 15 min, most of it the DRC deck's connectivity) |
 
 The chip is rated for 60 MHz at the typical corner, where the demo board runs it, and LibreLane's
 setup check covers the typical and fast corners (`SETUP_VIOLATION_CORNERS`). At the slow corner

@@ -100,5 +100,5 @@ Tiny Tapeout template) run the same flow, the tests, and precheck.
 Every scenario passes on the golden model, on the RTL, and on the routed gate-level netlist, each
 in lockstep with the model. Tiny Tapeout's flow runs end to end: detailed routing with zero
 violations, a GDS, and timing at 60 MHz met at the typical corner (the slow corner needs about
-38 MHz). Tiny Tapeout's precheck passed on the first routed GDS. The chip has not been fabricated. The
+38 MHz). Tiny Tapeout's precheck passes. The chip has not been fabricated. The
 [verification write-up](docs/verification.md#hardening) has the numbers.

@@ -78,7 +78,7 @@ Mimic fills 8x4 Tiny Tapeout tiles on IHP SG13CMOS5L: 411,000 µm² of cells aft
 runs end to end: detailed routing with zero violations, zero antenna violations, LVS clean, and a
 GDS. All 41 scenarios pass at gate level on the routed netlist. Timing at 60 MHz is met at the
 typical corner (+0.13 ns) and the fast corner; the slow corner (1.08 V, 125 °C) needs about
-38 MHz. Tiny Tapeout's precheck passed on the first routed GDS (IHP's DRC deck: zero violations). [Verification](verification.md#hardening)
+38 MHz. Tiny Tapeout's precheck passes, with zero violations from IHP's DRC deck. [Verification](verification.md#hardening)
 has every number.
 
 Routing was the hard part. A project on this process may use only Metal2 to Metal4, so it has a
