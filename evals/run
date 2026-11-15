@@ -9,7 +9,7 @@ import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { ROOT, loadConfig, resolveModel } from "../harness/config.mjs";
 import { ADAPTERS } from "./lib/adapters.mjs";
-import { append, resultsFile, summarize, table } from "./lib/results.mjs";
+import { append, lastReps, resultsFile, summarize, table } from "./lib/results.mjs";
 import { loadCases, makeSandbox, repoCommit, scriptEnv } from "./lib/sandbox.mjs";
 
 const USAGE = `usage: evals/run [options]
@@ -102,8 +102,10 @@ async function runAll({ harness, models, reps, resultsDir, quiet }) {
   for (const modelArg of models) {
     const model = ["reference", "null"].includes(harness) ? { full: harness, id: harness, provider: "none", route: null, role: null, effort: null } : pickModel(modelArg);
     const file = resultsDir && resultsFile(resultsDir, date, harness, model.full, opt.variant);
+    const done = file ? lastReps(file) : new Map();
     for (const caseDef of runnable) {
-      for (let rep = 1; rep <= reps; rep++) {
+      const first = (done.get(caseDef.id) ?? 0) + 1;
+      for (let rep = first; rep < first + reps; rep++) {
         const box = { ...makeSandbox(runDir, caseDef, rep), rep };
         const started = Date.now();
         const r = await adapter.run({ caseDef, box, model, config, runDir, timeoutMs: caseDef.timeoutSec * 1000 });
