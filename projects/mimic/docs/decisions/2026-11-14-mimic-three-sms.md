@@ -61,3 +61,8 @@ share one map. The ring routes SM2 → SM0 → SM1 → SM2.
 The host's register map is unchanged; `isa.NUM_SM` is 3.
 
 ## Key Results and retrospective feedback
+
+2026-11-15: synthesis 29,572 cells and 410,952 µm² (from 38,503 and 521,151); 41% of the core after
+timing repair (from 52%); global routing 79 overflow (from 5,210); detailed routing reaches zero
+violations (four SMs: about 100,000 after two), in 19 passes and 69 minutes in the final run.
+Every scenario passes on the model, the RTL and the routed netlist.

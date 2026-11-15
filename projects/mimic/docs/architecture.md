@@ -82,12 +82,14 @@ protocols. [Host port](host.md) has the frames and registers.
 
 | Block | Synthesized area (µm²) |
 |---|---|
-| Instruction memory (latches, write enables, three read ports) | 158,000 |
-| Four state machines | 4 x 80,000 |
-| Four FIFO pairs | 4 x 14,500 |
-| Host port, pins, IRQs, registers | 32,000 |
-| **Total** | **520,000** of the 1.22 mm² 8x4 tile area (43% before buffering) |
+| Instruction memory (latches, write enables, three read ports) | 117,000 |
+| Three state machines | 3 x 75,600 |
+| Three FIFO pairs | 3 x 14,200 |
+| Host port, pins, IRQs, registers | 22,000 |
+| **Total** | **409,000** of the 1.22 mm² 8x4 tile area (34% before buffering) |
 
+There were four state machines until the first layouts: with four the chip did not route on the
+three layers a project may use, so the fourth went ([decision](decisions/2026-11-14-mimic-three-sms.md)).
 These are Yosys's numbers for IHP SG13CMOS5L standard cells with the area-oriented mapping the
 design uses (the default delay-oriented mapping added 38,000 buffers and even used I/O pad cells
 as buffers, more than doubling the area; see [the decision](decisions/2026-11-13-mimic-area.md)).

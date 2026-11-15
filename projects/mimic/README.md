@@ -13,7 +13,7 @@ Ethernet, NRZI, bit stuffing and CRC5/CRC16 for USB, clock recovery for both.
 
 | | |
 |---|---|
-| Process, area | IHP SG13CMOS5L, 8x4 Tiny Tapeout tiles (1.22 mm²), about 520,000 µm² of cells |
+| Process, area | IHP SG13CMOS5L, 8x4 Tiny Tapeout tiles (1.22 mm²), about 410,000 µm² of cells |
 | Clock | 60 MHz (one clock domain) |
 | State machines | 3, each with X, Y, ISR, OSR, CRC/LFSR, clock divider, 2+2-word FIFOs |
 | Program memory | 64 x 32-bit instructions, shared |
@@ -82,11 +82,13 @@ export PDK_ROOT=~/ttsetup/pdk PDK=ihp-sg13cmos5l
 ./tt/tt_tool.py --pdk $PDK --create-user-config
 ./tt/tt_tool.py --pdk $PDK --harden
 ./tt/tt_tool.py --pdk $PDK --print-stats
-cp runs/wokwi/06-yosys-synthesis/tt_um_dijonkitchen_mimic.nl.v test/gate_level_netlist.v && make gl
+cp runs/wokwi/final/nl/tt_um_dijonkitchen_mimic.nl.v test/gate_level_netlist.v && make gl
 ```
 
-The flow stops in detailed routing today (see [Status](#status)); the synthesized netlist is
-the one gate level runs on until there is a routed one in `runs/wokwi/final/nl/`.
+The flow takes about 90 minutes here (an hour of it detailed routing), the precheck
+(`tt/precheck/precheck.py --gds ...`) about two hours, most of it IHP's DRC deck. `make gl` runs
+on whichever netlist is copied there; the synthesized one (`runs/wokwi/06-yosys-synthesis/`) is
+quicker to get than a full hardening run.
 
 Behind a TLS-intercepting proxy, fetch the PDK on the host first
 (`ciel enable --pdk-root $PDK_ROOT --pdk-family ihp-sg13 <version>` with `SSL_CERT_FILE` set);
@@ -95,9 +97,8 @@ Tiny Tapeout template) run the same flow, the tests, and precheck.
 
 ## Status
 
-Verified in simulation: every scenario passes on the golden model, on the RTL and on the
-synthesized gate-level netlist, each in lockstep with the model. Tiny Tapeout's flow runs through
-placement, clock tree synthesis, timing repair for 60 MHz and global routing, but **detailed
-routing does not converge yet**, so there is no GDS and precheck has not run. The
-[verification write-up](docs/verification.md#hardening) has the numbers and the
-[write-up](docs/writeup.md#limits-and-next-steps) the options.
+Every scenario passes on the golden model, on the RTL, and on the routed gate-level netlist, each
+in lockstep with the model. Tiny Tapeout's flow runs end to end: detailed routing with zero
+violations, a GDS, and timing at 60 MHz met at the typical corner (the slow corner needs about
+38 MHz). Tiny Tapeout's precheck passed on the first routed GDS. The chip has not been fabricated. The
+[verification write-up](docs/verification.md#hardening) has the numbers.

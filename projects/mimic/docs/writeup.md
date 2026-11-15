@@ -73,20 +73,22 @@ the netlist (cocotb).
 
 ## The silicon
 
-Mimic fills 8x4 Tiny Tapeout tiles on IHP SG13CMOS5L: 521,000 µm² of cells after synthesis,
-625,000 µm² (52% of the core) after clock tree synthesis and timing repair. Tiny Tapeout's flow
-runs cleanly through placement, clock tree synthesis, timing repair at all three corners for
-60 MHz and global routing; at 60 MHz the typical and fast corners have margin and the slow corner
-(1.08 V, 125 °C) misses by 0.16 ns on 12 paths.
+Mimic fills 8x4 Tiny Tapeout tiles on IHP SG13CMOS5L: 411,000 µm² of cells after synthesis,
+515,000 µm² (43% of the core) after clock tree synthesis, repair and routing. Tiny Tapeout's flow
+runs end to end: detailed routing with zero violations, zero antenna violations, LVS clean, and a
+GDS. All 41 scenarios pass at gate level on the routed netlist. Timing at 60 MHz is met at the
+typical corner (+0.13 ns) and the fast corner; the slow corner (1.08 V, 125 °C) needs about
+38 MHz. Tiny Tapeout's precheck passed on the first routed GDS (IHP's DRC deck: zero violations). [Verification](verification.md#hardening)
+has every number.
 
-**It does not route yet.** A project on this process may use only Metal2 to Metal4, so it has a
-single horizontal routing layer, and the detailed router does not converge on this design (about
-100,000 conflicts after two passes). Getting this far took three changes the flow forced, each
-measured and recorded in the [area and timing decision](decisions/2026-11-13-mimic-area.md): a
-two-level read decode that cut the wiring by a fifth, memory latches enabled by flip-flops instead
-of 64 gated clocks (600 fewer clock buffers, and timing analysis in megabytes instead of
-gigabytes), and global-routing settings for a single horizontal layer. There is no GDS, so
-Tiny Tapeout's precheck has not run; [verification](verification.md#hardening) has every number.
+Routing was the hard part. A project on this process may use only Metal2 to Metal4, so it has a
+single horizontal routing layer, on a die 2.4 times as wide as tall. Four changes, each measured
+and recorded in the decisions, got it there: a two-level read decode that cut the wiring by a
+fifth, memory latches enabled by flip-flops instead of 64 gated clocks (600 fewer clock buffers,
+and timing analysis in megabytes instead of gigabytes), global-routing settings for a single
+horizontal layer ([area and timing](decisions/2026-11-13-mimic-area.md)), and three state
+machines instead of four ([decision](decisions/2026-11-14-mimic-three-sms.md)): with four, the
+detailed router never converged.
 
 ## Reprogramming it
 
@@ -103,24 +105,22 @@ settings, testing it on the model against a model of the device, and loading it.
 The design, RTL, toolchain, programs, tests and documents were written by Claude, Anthropic's AI
 model, as a coding agent: it chose the architecture, ran the simulators and the LibreLane flow,
 and changed the design on what they said. Several decisions came straight from measurements:
-the first synthesis was 0.71 mm² and became 0.52 mm² with every feature kept
+the first synthesis was 0.71 mm² and became 0.52 mm² with every feature kept (0.41 mm²
+with three state machines)
 ([area decision](decisions/2026-11-13-mimic-area.md)); the default synthesis strategy doubled
 the area with buffers; the slow corner's critical path ran through the adder into the pins until
 pin writes got their own multiplexer; and the layout's congestion maps traced the routing
-problem to the memory's read decode and clock gates, which were redesigned.
+problem to the memory's read decode and clock gates, which were redesigned, and then to the
+fourth state machine, which went.
 The verification is built so its conclusions rest on the specification and on independent
 models, not on trusting whoever wrote the RTL.
 
 ## Limits and next steps
 
-- **Routing.** The design needs less wiring, or wiring that crosses less, before it routes on
-  three layers. In order of how much they keep:
-  1. Floorplan the instruction memory as its own hardened block in the middle of the die, so the
-     state machines' instruction buses split both ways instead of all crossing one strip.
-  2. Three state machines instead of four: a fifth fewer cells and a quarter fewer memory read
-     ports, every feature kept in each; no example protocol uses more than two at once.
-  3. Fewer or narrower features per state machine (the CRC unit, side-set and pin rotators are
-     each 5,000 to 7,000 µm²).
+- Three state machines, not four: three protocols at once, or a two-SM pipeline (USB receive, a
+  UART baud converter) and one more. The register map keeps room for a fourth.
+- At the slow corner the chip needs about 38 MHz, too slow for 10BASE-T; a few long nets that
+  timing repair restructured after the repeaters went in carry the worst paths.
 - 64 words of program memory is the binding limit: a complete USB device does not fit. An IHP
   SRAM macro behind per-SM fetch buffers could hold several times more.
 - FIFOs of two words each way make the host keep up early; streaming at 10 Mb/s needs the host's

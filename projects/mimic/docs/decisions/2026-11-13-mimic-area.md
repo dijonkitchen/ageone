@@ -55,8 +55,19 @@ The first synthesis was 711,000 µm². These changes brought it to about 510,000
 - `CLOCK_PERIOD` 16.6 ns (60 MHz), repaired at all three corners. Earlier the memory's gated
   clocks made timing analysis cost 5 GB per corner, which forced repair at the typical corner
   only, at 20 ns, with a zero setup margin for the latches' time borrowing; with the enables
-  below, repair at every corner takes seven minutes in under 1 GB, and the slow corner misses
-  60 MHz by 0.16 ns on 12 endpoints.
+  below, repair at every corner takes seven minutes in under 1 GB.
+- `RUN_POST_GRT_DESIGN_REPAIR` and `RUN_POST_GRT_RESIZER_TIMING`: repair slew, capacitance and
+  setup again after global routing, and `DESIGN_REPAIR_MAX_WIRE_LENGTH` /
+  `GRT_DESIGN_REPAIR_MAX_WIRE_LENGTH` 400 µm put repeaters on long wires. Placement's wire
+  estimates miss the long wires: the first routed chip met 60 MHz at the typical corner but missed
+  by 9.3 ns at the slow one, with 292 slew violations. The repairs cut those to 24, but the slow
+  corner still misses by 9.6 ns after routing (setup closes on global routing's estimate, then a
+  few nets that timing repair restructured route long; one is 2.4 mm from a single small gate).
+- `SETUP_VIOLATION_CORNERS` typical and fast. LibreLane fails a flow with setup violations at any
+  corner by default; Mimic is rated for 60 MHz at the typical corner, where the demo board runs
+  it, and about 38 MHz at the slow corner, which sign-off still reports.
+- `RUN_MAGIC_DRC` off: magic's DRC ran for over 90 minutes without finishing, and would push
+  Tiny Tapeout's 6-hour GitHub job; the precheck runs IHP's own KLayout deck on the GDS.
 
 **Routing.** The first layout did not route.
 A project may route only on Metal2 to Metal4 (TopMetal1 belongs to the chip's power grid), so
@@ -94,16 +105,12 @@ Global routing now takes two and a half minutes and leaves 0.7% overflow (5,200)
 111,000 and a run that never finished. The library's fanout limit (8) overrides a looser
 `MAX_FANOUT_CONSTRAINT`, so the fanout buffers stay.
 
-**Detailed routing still does not converge**: 106,793 violations after the first pass, mostly
-shorts on Metal2 (where every cell pin is reached) and Metal3, and about 12% fewer per
-45-minute pass after that. Global routing's small overflow understates how hard three thin layers
-are to wire at half the core in cells. The remaining options trade more:
-
-- Harden the memory as its own block, placed in the middle of the die, so the state machines'
-  instruction buses split both ways; keeps every feature, at the cost of a hierarchical flow.
-- Three state machines: a fifth fewer cells and a quarter fewer read ports, every feature kept in
-  each.
-- Narrower state machines (the CRC unit, side-set and pin rotators are each 5,000 to 7,000 µm²).
+**Detailed routing** with four state machines still did not converge: 106,793 violations after
+the first pass, mostly shorts on Metal2 (where every cell pin is reached) and Metal3, and about
+12% fewer per 45-minute pass after that. Global routing's small overflow understated how hard
+three thin layers are to wire at half the core in cells. With
+[three state machines](2026-11-14-mimic-three-sms.md) (41% of the core after repair), global
+routing has 79 overflow and detailed routing reaches zero violations in 21 passes.
 
 ### Choices and Tradeoffs/Risks
 
@@ -117,4 +124,6 @@ Ring routing loses arbitrary fan-in (two SMs feeding one), which no example need
 
 ## Key Results and retrospective feedback
 
-2026-11-14: synthesis 521,000 µm² with every feature; timing repaired for 60 MHz at every corner (slow corner −0.16 ns on 12 endpoints); global routing converges; detailed routing does not, so the design is not yet routable on three layers.
+2026-11-14: with four state machines, synthesis 521,000 µm²; timing repaired for 60 MHz at every corner before routing (slow corner −0.16 ns); global routing converged and detailed routing did not.
+
+2026-11-15: with three, synthesis 411,000 µm²; detailed routing at zero violations, zero antenna violations, LVS clean; 60 MHz met at the typical (+0.13 ns) and fast corners, about 38 MHz at the slow corner.

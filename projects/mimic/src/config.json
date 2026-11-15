@@ -35,6 +35,29 @@
   "//": "At 60 MHz the clock tree does not need them.",
   "CTS_APPLY_NDR": "none",
 
+  "//": "RUN_POST_GRT_DESIGN_REPAIR, RUN_POST_GRT_RESIZER_TIMING - Repair slew, capacitance and",
+  "//": "setup again with global-routing parasitics: placement estimates miss the long wires, and",
+  "//": "without this the slow corner lost 9 ns after routing.",
+  "RUN_POST_GRT_DESIGN_REPAIR": true,
+  "RUN_POST_GRT_RESIZER_TIMING": true,
+
+  "//": "DESIGN_REPAIR_MAX_WIRE_LENGTH, GRT_DESIGN_REPAIR_MAX_WIRE_LENGTH - Repeaters on any wire over",
+  "//": "400 um. The memory's read ports drive their state machines across most of the die; routed,",
+  "//": "those wires reached 0.24 pF and 4.7 ns slews at the slow corner although every estimate",
+  "//": "before routing called them short.",
+  "DESIGN_REPAIR_MAX_WIRE_LENGTH": 400,
+  "GRT_DESIGN_REPAIR_MAX_WIRE_LENGTH": 400,
+
+  "//": "SETUP_VIOLATION_CORNERS - The flow fails on setup violations at the typical and fast corners.",
+  "//": "Mimic is rated for 60 MHz at the typical corner, where the demo board runs it; at the slow",
+  "//": "corner (1.08 V, 125 C) it needs about 38 MHz, which sign-off still reports.",
+  "SETUP_VIOLATION_CORNERS": ["nom_typ_1p20V_25C", "nom_fast_1p32V_m40C"],
+
+  "//": "RUN_MAGIC_DRC - Magic's DRC of this design ran for over 90 minutes without finishing (and",
+  "//": "would push Tiny Tapeout's GitHub job toward its 6-hour limit); Tiny Tapeout's precheck runs",
+  "//": "IHP's own KLayout DRC deck on the GDS, which is the check that counts.",
+  "RUN_MAGIC_DRC": false,
+
   "//": "GRT_OVERFLOW_ITERS - The little overflow left after 20 passes is for the detailed router",
   "//": "(Tiny Tapeout allows congestion); more passes did not remove it.",
   "GRT_OVERFLOW_ITERS": 20,

@@ -40,7 +40,7 @@ The first version opened them through 64 clock gates made of standard cells (a n
 | Choice | Area (µm², IHP SG13CMOS5L, synthesized) |
 |---|---|
 | Flip-flops with enables, 64 words | 241,000 |
-| Latches, 64 words | 149,000 (158,000 with the two-level read decode below) |
+| Latches, 64 words | 149,000 (158,000 with the two-level read decode below; 117,000 with three read ports) |
 | of which the four 64:1 read multiplexers | about 100,000 (three: about 75,000) |
 
 ### Choices and Tradeoffs/Risks

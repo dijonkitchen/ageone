@@ -165,8 +165,9 @@ sample point drifted when slowed with the clock divider (now slowed with ticks p
   marked).
 - Yosys synthesis for IHP SG13CMOS5L is checked for area at every architectural change; see
   [architecture](architecture.md#area-and-timing) for the numbers and the choices they drove.
-- **Gate level.** The scenarios run on the synthesized netlist with IHP's cell models, in lockstep
-  with the golden model (pins every cycle), at about 13,000 cycles a second: all 41 pass on the synthesized netlist.
+- **Gate level.** The scenarios run on the netlist with IHP's cell models, in lockstep with the
+  golden model (pins every cycle), at about 15,000 cycles a second: all 41 pass on the synthesized
+  netlist and on the routed one (with its fill, decap and antenna cells).
   The cell models feed their flip-flops from nets that `$setuphold` timing checks drive;
   Icarus Verilog does not run timing checks, so those nets stayed undriven and every flip-flop
   read X. `test/Makefile` builds a copy of the models that uses the inputs directly (the
@@ -176,21 +177,29 @@ sample point drifted when slowed with the clock divider (now slowed with ticks p
 
 Tiny Tapeout's flow (LibreLane 3.1.0.dev4, IHP SG13CMOS5L, 8x4 tiles: 1724 x 711 µm) on this
 design, with the settings in `src/config.json` and the [area and timing decision](decisions/2026-11-13-mimic-area.md).
-**The chip does not route yet**: every step up to detailed routing completes, and detailed
-routing does not converge.
+With four state machines the chip did not route; with three ([decision](decisions/2026-11-14-mimic-three-sms.md)) it does.
 
 | Stage | Result |
 |---|---|
-| Synthesis (Yosys, `AREA 0`) | 38,503 cells, 521,151 µm²: 2,408 flip-flops, 2,048 memory latches |
-| Placement (target density 55%) | 43% utilization, 47% after fanout buffering (the library allows a fanout of 8) |
-| Clock tree | 271 clock buffers, one tree |
-| Timing repair, all three corners, 16.6 ns (60 MHz) | 48,494 cells, 625,333 µm², 52% utilization; 204 setup and 186 hold buffers |
-| Static timing at 60 MHz after clock tree synthesis, placement parasitics | Typical (1.20 V, 25 °C) setup +5.95 ns, hold +0.28 ns; fast (1.32 V, −40 °C) hold +0.10 ns; slow (1.08 V, 125 °C) setup −0.16 ns on 12 endpoints, hold +0.59 ns |
-| Global routing (Metal2-Metal4) | 2.5 minutes; 0.7% overflow (5,210 of 550,179), in one strip between the state machines and the memory |
-| Detailed routing | Does not converge: 106,793 violations after the first pass (mostly Metal2 and Metal3 shorts), 94,297 two-thirds through the second, about 45 minutes a pass |
+| Synthesis (Yosys, `AREA 0`) | 29,572 cells, 410,952 µm²: 1,880 flip-flops, 2,048 memory latches |
+| Placement (target density 55%) | 34% utilization; 38% after fanout buffers (the library allows a fanout of 8) and repeaters on wires over 400 µm |
+| Clock tree | 221 clock buffers, one tree |
+| Timing repair after the clock tree, all three corners at 16.6 ns (60 MHz) | 38,367 cells, 504,438 µm², 42% utilization |
+| Global routing (Metal2-Metal4) | 53 seconds; Metal3 57% used, about 100 overflow (four SMs: 5,210) |
+| Repair after global routing: slew, capacitance, long wires, setup with routing parasitics | 720 repeaters on 613 long wires; setup met at every corner on the estimate; 39,164 cells, 514,898 µm², 43% |
+| Detailed routing | **0 violations** after 19 passes (37,215 after the first), 1 h 9 min; 0 antenna violations after one repair round; 2.69 m of wire |
+| Sign-off timing at 60 MHz, extracted parasitics | Typical (1.20 V, 25 °C): setup +0.13 ns, hold +0.29 ns. Fast (1.32 V, −40 °C): setup +5.86 ns, hold +0.11 ns. Slow (1.08 V, 125 °C): setup −9.63 ns on 1,184 endpoints (about 38 MHz), hold +0.60 ns |
+| Electrical | 24 max-slew and 3 max-capacitance violations at the slow corner (272 and 29 before the post-routing repairs) |
+| LVS (netgen) and overlaps | The layout matches the netlist; 0 errors, 0 illegal overlaps |
+| Power (typical, OpenSTA estimate) | 10.1 mW |
+| Gate level, routed netlist (fill, decap and antenna cells included) | All 41 scenarios pass in lockstep with the model |
+| Tiny Tapeout precheck (IHP's KLayout DRC deck, pins, boundary, layers) | Every check passed, 0 DRC violations, on the first routed GDS (before the post-routing repairs); the final GDS's run is in progress |
 
-Precheck needs a routed GDS, so it has not run, and gate level ran on the synthesized netlist
-rather than a routed one.
+The chip is rated for 60 MHz at the typical corner, where the demo board runs it, and LibreLane's
+setup check covers the typical and fast corners (`SETUP_VIOLATION_CORNERS`). At the slow corner
+it needs about 38 MHz: everything but 10BASE-T works there. The worst slow paths run through a
+few long nets that timing repair restructured after the repeaters went in (one is 2.4 mm from a
+single small gate); closing them is the next step.
 
 What the flow showed, each now a setting with a comment in `src/config.json` or a change to the
 RTL (the [area and timing decision](decisions/2026-11-13-mimic-area.md) has the measurements):
@@ -207,11 +216,13 @@ RTL (the [area and timing decision](decisions/2026-11-13-mimic-area.md) has the 
   flip-flop removed all three problems, which in turn let repair run at every corner at 60 MHz.
 - With clock wires on double spacing, the global router dropped the spacing ten nets at a time
   and reran, for hours; the clock tree no longer uses it.
-
-Detailed routing is the open problem. Global routing's overflow is small, but the detailed
-router finds far more conflicts than it implies, mostly shorts on Metal2, the layer every cell
-pin is reached from, and on Metal3. With three thin layers, half the core in cells is more than
-it can wire. The options are in the [write-up](writeup.md#limits-and-next-steps).
+- With four state machines, global routing converged but detailed routing did not (about 100,000
+  conflicts after two passes, falling 12% a pass). Three state machines route.
+- Placement and global routing both underestimate long wires: the first routed chip lost 9 ns
+  at the slow corner, with 292 slew violations, against its pre-route estimate. Repair after
+  global routing and repeaters on wires over 400 µm cleared most of the slew violations.
+- LibreLane's magic DRC ran for over 90 minutes without finishing on this design, so it is off;
+  Tiny Tapeout's precheck runs IHP's own KLayout deck, about two hours here.
 
 ## Running it
 
