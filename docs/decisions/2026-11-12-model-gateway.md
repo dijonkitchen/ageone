@@ -4,6 +4,8 @@
 
 2026-11-12: Proposed by Claude, at JC's request
 
+2026-11-15: Amended by Claude, at JC's request, after the first live runs on Vercel: the roles move to the models on the cost-per-task frontier (`default` GPT-6.1 Terra, `cheap` GPT-6 Luna, `judge` GPT-6.1 Sol), Kimi K3.1 Pro replaces Kimi K3 on the open-weight list, and pi's billed cost is confirmed; see Key Results.
+
 2026-11-12: Amended by Claude, while implementing [SPEC-2026-11-12-model-gateway](../../specs/SPEC-2026-11-12-model-gateway.md): pi sends Vercel no gateway options at all, so a pi extension in the repo sends zero data retention and the host allowlist on each request; Claude Code sends them as an extra request body.
 
 ## Objective Context
@@ -107,8 +109,9 @@ A `<route>:<model>` ID overrides the route for one call, where the route is a ga
 
 - Results record the route and the cost the gateway billed; pi's own figure is a fallback, since pi prices each model at one list price and its pinned version undercounts long prompts on models with prompt-length pricing tiers (fixed in pi 1.1.0).
   The billed cost comes from each gateway's generation lookup (`GET /v1/generation?id=`), by the response's ID.
-  Vercel documents chat completion IDs as generation IDs, but not Anthropic Messages IDs, which is what pi's Vercel provider gets back; until a live run shows they work, a run whose IDs aren't generation IDs records pi's figure, marked as such.
-  Claude Code reports no request IDs, so its cost is its own estimate.
+  Vercel documents chat completion IDs as generation IDs, but not Anthropic Messages IDs, which is what pi's Vercel provider gets back; live runs on 2026-11-15 showed pi's Vercel responses carry generation IDs, and the billed cost matched the change in the credit balance exactly.
+  A run whose IDs aren't generation IDs still records pi's figure, marked as such.
+  Claude Code reports no request IDs, so its cost is its own estimate: within 0.4% of the balance change for Sonnet 5, but 25 to 50 times too high for models it doesn't know, which it prices at Claude rates.
 - `experiments/run --estimate` counts cache reads and writes.
 - Effort is set per role and recorded, because it moves cost per task more than the gateway: on FrontierCode 2.0, Opus 5.5 costs $1.70 a run at medium effort and $12.82 at max.
 - Newer models at the same list price are cheaper per task when cache reads cost less: Sonnet 5.5 and GPT-6.1 Sol list at $2 and $10 per million input and output tokens, like Sonnet 5 and GPT-6 Sol, with cache reads at $0.10 instead of $0.20.
@@ -159,13 +162,13 @@ A Vercel team with purchased AI Gateway credits (or a Pro plan), and `AI_GATEWAY
 {
   "gateway": "vercel",
   "roles": {
-    "default": "anthropic/claude-sonnet-5",
-    "cheap": "google/gemini-3.8-flash",
+    "default": "openai/gpt-6.1-terra",
+    "cheap": "openai/gpt-6-luna",
     "frontier": "anthropic/claude-opus-5.5",
-    "judge": "openai/gpt-6-sol"
+    "judge": "openai/gpt-6.1-sol"
   },
   "effort": { "default": "medium" },
-  "openWeightModels": ["deepseek/deepseek-v4.1-flash", "zai/glm-5.3", "moonshotai/kimi-k3", "alibaba/qwen3.8-27b"],
+  "openWeightModels": ["deepseek/deepseek-v4.1-flash", "zai/glm-5.3", "moonshotai/kimi-k3.1-pro", "alibaba/qwen3.8-27b"],
   "gateways": {
     "vercel": {
       "piProvider": "vercel-ai-gateway",
@@ -195,4 +198,77 @@ Results lines gain `route`, `effort`, `cost_source` (`gateway`, or the harness o
 
 ## Key Results and retrospective feedback
 
-To be filled after the first eval sweep on Vercel: cost per passed task and pass rate per role, and the measured gap to OpenRouter if both are run.
+First eval sweep on Vercel, 2026-11-15: the 13 cases in `evals/cases/` through pi 1.5.2, with zero data retention on every request, results in `evals/results/2026-11-15-*.jsonl`.
+Every pi run used medium effort (the `default` role sets it, and it is pi's default for the rest).
+The recorded cost of the sweep and the checks was $13.38; OpenRouter wasn't run, so there is no measured gap to it yet.
+
+### Live checks ([spec](../../specs/SPEC-2026-11-12-model-gateway.md) items 3 to 5)
+
+| Run | Case | Served by | Recorded cost | Vercel's figure | `experiments/run --estimate` |
+|---|---|---|---|---|---|
+| pi, `default` (then Sonnet 5) | fix-broken-link | anthropic | $0.0221 | $0.0221 | $0.1309 |
+| Claude Code, Sonnet 5 | fix-broken-link | anthropic | $0.1596 (its own estimate) | $0.1603 | $0.1309 |
+| direct, DeepSeek V4.1 Flash | read-csv-total | modal (allowlisted) | $0.0002 | $0.0002 | $0.0005 |
+| pi, DeepSeek V4.1 Flash | fix-broken-link | modal (allowlisted) | $0.0040 | $0.0040 | $0.0142 |
+
+Vercel's figure is the change in the credit balance (`GET /v1/credits`) across each run, which matched pi's and direct mode's billed cost exactly.
+The response metadata reported `enabledZeroDataRetention: true`, and Kimi K3.1 Pro was served only by baseten and parasail, both on the allowlist.
+
+Over the whole sweep the estimate is about 3 times the measured cost for Opus, Sonnet, and the GPT Sol and Terra models (it assumes 8 turns; they took about 4), 1.5 to 2 times for Haiku 5.5 and GPT-6 Luna, and 2 to 3 times too low for Gemini 3.8 Flash and Gemini 4 Carbon, which took 10 to 17 turns.
+So it bounds a budget for most models but not for a model that loops.
+
+### Pass rate and cost per passed task
+
+| Model | Pass rate (range across reps) | Runs | Cost per passed task | Turns | Time (s) |
+|---|---|---|---|---|---|
+| GPT-6.1 Terra | 100% (100%) | 38, plus 1 timeout | $0.0155 | 3.9 | 30 |
+| GPT-6.1 Sol | 100% (100%) | 39 | $0.0283 | 4.7 | 32 |
+| Gemini 4 Hydrogen | 100% | 13 (1 rep) | $0.0491 | 6.1 | 36 |
+| Gemini 4 Carbon | 100% | 13 (1 rep) | $0.1835 | 9.8 | 168 |
+| DeepSeek V4.1 Flash | 95% (92% to 100%) | 39 | $0.0087 | 6.2 | 31 |
+| Muse Ember | 92% (92%) | 39 | $0.0050 | 6.0 | 27 |
+| Claude Opus 5.5 | 92% (92%) | 39 | $0.0672 | 4.1 | 33 |
+| GPT-6 Sol | 92% (92%) | 39 | $0.0334 | 4.1 | 29 |
+| Kimi K3.1 Pro | 92% | 13 (1 rep) | $0.0465 | 4.5 | 29 |
+| GPT-6 Luna | 90% (85% to 92%) | 39 | $0.0029 | 4.5 | 35 |
+| Claude Haiku 5.5 | 87% (85% to 92%) | 39 | $0.0038 | 4.7 | 33 |
+| Claude Sonnet 5.5 | 85% (85%) | 39 | $0.0288 | 3.7 | 28 |
+| Claude Sonnet 5 | 67% (62% to 69%) | 39 | $0.0434 | 3.9 | 30 |
+| Gemini 3.8 Flash | 38% | 13 (1 rep) | $0.2938 | 16.6 | 88 |
+
+On these cases the cost-per-task frontier runs GPT-6 Luna, Muse Ember, DeepSeek V4.1 Flash, GPT-6.1 Terra; every other model passes less for more.
+`claim-next-spec` separates the models most: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep.
+GPT-6.1 Terra's timeout (add-make-target, 2 turns in 300 seconds) is kept out of the pass rate as the runner does for every timeout; counted as a failure it would be 97%.
+
+The pairs in spec item 8: Sonnet 5.5 passes 85% against Sonnet 5's 67% for a third less per passed task, and GPT-6.1 Sol passes 100% against GPT-6 Sol's 92% for 15% less.
+Both newer models pass at least as often, so either could take its role.
+
+### Outside benchmarks
+
+Four models pass every case here, so the suite can't rank the most capable ones.
+Two benchmarks that price whole agent tasks were checked on 2026-11-15: Cognition's FrontierCode 2.0 ([data](https://cognition.com/data/frontier-code-2.0/data.json)) and the Artificial Analysis Intelligence Index ([leaderboard](https://artificialanalysis.ai/leaderboards/models)).
+Their cost-per-task frontiers, cheapest first, among models that Vercel serves with zero data retention and that solve at least a sixth of the tasks or score at least 30:
+
+- FrontierCode 2.0 (share of tasks solved, cost per run at the effort shown): GPT-6 Luna (18% at $0.09, medium), Claude Haiku 5.5 (32% at $0.37, max), GPT-6.1 Sol (43% at $1.03, max), Gemini 4 Carbon (47% at $5.06, high), Claude Opus 5.5 (49% at $5.18, xhigh; 52% at $12.82, max).
+- Artificial Analysis (index, cost per task): Muse Ember (36 at $0.14), GPT-6.1 Terra (51 at $0.96), GPT-6.1 Sol (55 at $1.27), Gemini 4 Carbon (60 at $5.48); Opus 5.5 scores 59 at $10.04.
+
+Claude Fable 5.2 tops both but isn't available with zero data retention.
+Xiaomi MiMo V2.6 Flash (27 at $0.13) is on Artificial Analysis's frontier just below Muse Ember, but Vercel has no zero-retention host for it, so the privacy rules leave it out.
+
+### Roles chosen
+
+- `default`: GPT-6.1 Terra, instead of Sonnet 5.
+  It passes every case at the lowest cost per passed task of the four that do, about half GPT-6.1 Sol's and a third of Sonnet 5's, and it is on Artificial Analysis's frontier.
+- `cheap`: GPT-6 Luna, instead of Gemini 3.8 Flash.
+  It is the cheapest per passed task here and on FrontierCode 2.0; Muse Ember, slightly ahead on pass rate and on Artificial Analysis, is the close alternative at 1.7 times the cost per passed task.
+- `frontier`: still Opus 5.5, the most capable zero-retention model on FrontierCode 2.0.
+  Gemini 4 Carbon matches it on Artificial Analysis at about half the cost per task, but here it cost 2.7 times as much per passed task and took 5 times as long, on one rep.
+  The suite can't decide this role until it has cases the top models fail.
+- `judge`: GPT-6.1 Sol, instead of GPT-6 Sol, as spec item 8 allows.
+  No case uses the judge yet; once one does, runs of OpenAI models should be graded by a judge from another vendor.
+- Open-weight list: Kimi K3.1 Pro replaces Kimi K3; it is newer and lists at $2 and $10 per million input and output tokens instead of $3 and $15.
+
+Three of the four roles are now OpenAI models.
+Vercel serves them from both OpenAI and Azure under zero data retention, so one host's outage doesn't stop them, but an OpenAI-wide problem would; Opus 5.5 and the open-weight models are the fallback.
+
+Next: cases that the top models fail, so the suite can rank them (no spec covers this yet), and the same sweep on OpenRouter to measure the gap.

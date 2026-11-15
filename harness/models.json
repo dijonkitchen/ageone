@@ -1,10 +1,10 @@
 {
   "gateway": "vercel",
   "roles": {
-    "default": "anthropic/claude-sonnet-5",
-    "cheap": "google/gemini-3.8-flash",
+    "default": "openai/gpt-6.1-terra",
+    "cheap": "openai/gpt-6-luna",
     "frontier": "anthropic/claude-opus-5.5",
-    "judge": "openai/gpt-6-sol"
+    "judge": "openai/gpt-6.1-sol"
   },
   "effort": {
     "default": "medium"
@@ -12,7 +12,7 @@
   "openWeightModels": [
     "deepseek/deepseek-v4.1-flash",
     "zai/glm-5.3",
-    "moonshotai/kimi-k3",
+    "moonshotai/kimi-k3.1-pro",
     "alibaba/qwen3.8-27b"
   ],
   "gateways": {

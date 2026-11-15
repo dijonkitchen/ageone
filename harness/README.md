@@ -56,8 +56,10 @@ Nothing else changes: `evals/test/run` checks both gateways' settings, requests,
 
 Vercel:
 
+- Add a card to the Vercel team: until then every request fails with `403 customer_verification_required`, even on free credits.
 - Buy AI Gateway credits (or use a Pro or Enterprise plan).
   Zero data retention needs a paid account, and free credits don't count, so requests fail with a `403` until then.
+  The free tier ($5 every 30 days, which ends when you buy credits) doesn't serve any of the role models either.
 - In the AI Gateway settings, turn on **Zero Data Retention** and **Disallow Prompt Training** for the team.
   The harness already asks for zero data retention on each request, which is free; the team-wide setting ($0.10 per 1,000 requests) is the backstop for pi outside this repo and other tools.
   Team-wide disallow prompt training is free.

@@ -1,6 +1,6 @@
 {
   "defaultProvider": "vercel-ai-gateway",
-  "defaultModel": "anthropic/claude-sonnet-5",
+  "defaultModel": "openai/gpt-6.1-terra",
   "packages": [
     "npm:pi-web-access@0.33.0"
   ],
