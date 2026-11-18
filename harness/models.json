@@ -4,7 +4,7 @@
     "default": "openai/gpt-6.1-terra",
     "cheap": "openai/gpt-6-luna",
     "frontier": "openai/gpt-6.2-astra",
-    "judge": "openai/gpt-6.1-sol"
+    "judge": "openai/gpt-6.2-sol"
   },
   "effort": {
     "default": "medium"

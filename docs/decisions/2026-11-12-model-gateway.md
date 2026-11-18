@@ -4,7 +4,7 @@
 
 2026-11-12: Proposed by Claude, at JC's request
 
-2026-11-18: Amended by Claude, at JC's request, after GPT-6.2 Sol and Astra came out on 2026-11-17: `frontier` moves to GPT-6.2 Astra; GPT-6.2 Sol passed less often than GPT-6.1 Sol here, so `judge` stays on GPT-6.1 Sol.
+2026-11-18: Amended by Claude, at JC's request, after GPT-6.2 Sol and Astra came out on 2026-11-17: `frontier` moves to GPT-6.2 Astra (JC's choice) and `judge` to GPT-6.2 Sol, and every comparison is now tested for significance, not read from the raw difference.
 
 2026-11-15: Amended by Claude, at JC's request, after the first live runs on Vercel: the roles move to the models on the cost-per-task frontier (`default` GPT-6.1 Terra, `cheap` GPT-6 Luna, `judge` GPT-6.1 Sol), Kimi K3.1 Pro replaces Kimi K3 on the open-weight list, and pi's billed cost is confirmed; see Key Results.
 
@@ -241,11 +241,41 @@ So it bounds a budget for most models but not for a model that loops.
 | Gemini 3.8 Flash | 38% | 13 (1 rep) | $0.2938 | 16.6 | 88 |
 
 On these cases the cost-per-task frontier runs GPT-6 Luna, Muse Ember, DeepSeek V4.1 Flash, GPT-6.1 Terra; every other model passes less for more.
-`claim-next-spec` separates the models most: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep, and GPT-6.2 Sol on two of three.
+`claim-next-spec` separates the models most, though not by enough for significance: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep, and GPT-6.2 Sol on two of three.
 GPT-6.1 Terra's timeout (add-make-target, 2 turns in 300 seconds) is kept out of the pass rate as the runner does for every timeout; counted as a failure it would be 97%.
 
-The pairs in spec item 8: Sonnet 5.5 passes 85% against Sonnet 5's 67% for a third less per passed task, and GPT-6.1 Sol passes 100% against GPT-6 Sol's 92% for 15% less.
-Both newer models pass at least as often, so either could take its role.
+### Significance
+
+Each comparison is paired by case, since every model ran the same 13 cases.
+A pass-rate difference is the mean over cases of the two models' per-case pass rates, tested with an exact two-sided sign-flip test over the cases; cost per passed task is compared as a ratio, with a 95% interval from resampling the cases 10,000 times.
+A difference counts only at p < 0.05, or when the ratio's interval excludes 1.
+
+| Comparison | Pass rate | p | Cost per passed task, ratio (95% interval) |
+|---|---|---|---|
+| GPT-6.1 Terra vs Claude Sonnet 5 | 100% vs 67% | 0.06 | 0.36 (0.21 to 0.55) |
+| GPT-6.1 Terra vs Claude Sonnet 5.5 | 100% vs 85% | 0.50 | 0.54 (0.38 to 0.77) |
+| GPT-6.1 Terra vs GPT-6.1 Sol | 100% vs 100% | 1 | 0.55 (0.52 to 0.59) |
+| GPT-6.1 Terra vs GPT-6.2 Sol | 100% vs 95% | 1 | 0.51 (0.43 to 0.58) |
+| GPT-6 Luna vs Gemini 3.8 Flash | 90% vs 38% | 0.008 | 0.01 (0.00 to 0.02) |
+| GPT-6 Luna vs Muse Ember | 90% vs 92% | 1 | 0.59 (0.43 to 0.78) |
+| GPT-6 Luna vs Claude Haiku 5.5 | 90% vs 87% | 1 | 0.78 (0.54 to 1.14) |
+| GPT-6 Luna vs DeepSeek V4.1 Flash | 90% vs 95% | 1 | 0.34 (0.27 to 0.44) |
+| GPT-6.2 Astra vs Claude Opus 5.5 | 100% vs 92% | 1 | 1.32 (0.95 to 1.92) |
+| GPT-6.2 Astra vs Gemini 4 Carbon | 100% vs 100% | 1 | 0.48 (0.37 to 0.69) |
+| GPT-6.2 Astra vs GPT-6.2 Sol | 100% vs 95% | 1 | 2.88 (2.47 to 3.29) |
+| GPT-6.2 Sol vs GPT-6.1 Sol | 95% vs 100% | 1 | 1.09 (0.93 to 1.30) |
+| GPT-6.1 Sol vs GPT-6 Sol | 100% vs 92% | 1 | 0.84 (0.67 to 0.97) |
+| Claude Sonnet 5.5 vs Claude Sonnet 5 | 85% vs 67% | 0.38 | 0.66 (0.43 to 0.97) |
+
+Only one pass-rate difference is significant: GPT-6 Luna over Gemini 3.8 Flash.
+With 13 cases a sign-flip test can't reach p < 0.05 unless at least 6 cases go the same way, so this suite can only show very large pass-rate gaps; Terra against Sonnet 5, with 5 such cases, stops at 0.06.
+Cost per passed task separates models far better: most of the ratios above exclude 1.
+
+The pairs in spec item 8: Sonnet 5.5 and GPT-6.1 Sol pass about as often as the models they would replace (no significant difference) and cost significantly less per passed task, a third and 16% less, so either could take its role.
+
+The outside benchmarks carry their own noise.
+FrontierCode 2.0 has 132 tasks, so a score near 50% carries about ±8.5 points of sampling error, more than any gap among its top models.
+Artificial Analysis puts its index's 95% confidence interval under ±1 point ([methodology](https://artificialanalysis.ai/methodology/intelligence-benchmarking)), so gaps of 2 or more points there are real.
 
 ### Outside benchmarks
 
@@ -262,22 +292,30 @@ Xiaomi MiMo V2.6 Flash (27 at $0.13) is on Artificial Analysis's frontier just b
 
 ### Roles chosen
 
+Our cases can't show the capability gap between tiers: even GPT-6 Luna's 90% isn't significantly below GPT-6.1 Terra's 100%.
+So the role sets the tier (small models for `cheap`, mid-tier for `default` and `judge`, top tier for `frontier`), with the outside benchmarks as the evidence that the tiers differ.
+Within a tier, `default` and `cheap` take the cheapest model per passed task on our cases whose pass rate isn't significantly worse.
+`frontier` and `judge` exist for accuracy more than cost, so where our cases can't separate the candidates, they take the strongest on the outside benchmarks.
+
 - `default`: GPT-6.1 Terra, instead of Sonnet 5.
-  It passes every case at the lowest cost per passed task of the four that do, about half GPT-6.1 Sol's and a third of Sonnet 5's, and it is on Artificial Analysis's frontier.
+  No model passes significantly more of our cases, and it costs significantly less per passed task than every other mid-tier model tested: about half GPT-6.1 and 6.2 Sol's, and a third of Sonnet 5's, Gemini 4 Hydrogen's, and Kimi K3.1 Pro's.
+  GPT-6.2 Sol is significantly stronger on Artificial Analysis (57 against 51), so it is the step up if everyday work gets harder than these cases.
 - `cheap`: GPT-6 Luna, instead of Gemini 3.8 Flash.
-  It is the cheapest per passed task here and on FrontierCode 2.0; Muse Ember, slightly ahead on pass rate and on Artificial Analysis, is the close alternative at 1.7 times the cost per passed task.
+  It passes significantly more cases than Gemini 3.8 Flash for 1% of the cost per passed task.
+  Against Muse Ember it passes as often for significantly less (0.59 times); Muse Ember is significantly stronger on Artificial Analysis (36 against 28) at the same cost there.
+  Against Haiku 5.5 neither difference is significant, so either would do.
 - `frontier`: GPT-6.2 Astra, instead of Opus 5.5.
   It is the most capable zero-retention model on Artificial Analysis, at 40% of Opus 5.5's cost per task, and matches Opus 5.5 at xhigh effort on FrontierCode 2.0 for 17% less; among zero-retention models only Opus 5.5 at max effort solves more there, at three times the cost.
   GPT-6.2 Sol at max effort is the cheaper alternative: within a point of both on FrontierCode 2.0, but 5 points behind Astra on Artificial Analysis.
-  Here it passed every case, `claim-next-spec` included, which Opus 5.5 failed on every rep, though it cost 1.3 times as much per passed task, on one rep.
-  Gemini 4 Carbon, the other candidate, cost 2.7 times Opus 5.5 per passed task here and took 5 times as long.
-  The suite can't rank this role well until it has cases the top models fail.
-- `judge`: GPT-6.1 Sol, instead of GPT-6 Sol, as spec item 8 allows.
-  GPT-6.2 Sol, out on 2026-11-17 at the same price, passed less often here (95% against 100%), so the rule keeps GPT-6.1 Sol.
+  Here neither its pass rate nor its cost per passed task differs significantly from Opus 5.5's (one rep against three), and FrontierCode 2.0's gaps are within its noise, so the choice rests on Artificial Analysis, where Astra leads Opus 5.5 by 3 points, outside that index's ±1.
+  Gemini 4 Carbon passed as often here at about twice Astra's cost per passed task, significantly more.
+  The suite can't rank this role until it has cases the top models fail.
+- `judge`: GPT-6.2 Sol, instead of GPT-6 Sol.
+  It is the strongest mid-tier model on Artificial Analysis (57, against GPT-6.1 Sol's 55 when last listed on 2026-11-15 and GPT-6.1 Terra's 51), and against GPT-6.1 Sol, at the same price, neither its pass rate (95% against 100%) nor its cost per passed task differs significantly here.
   No case uses the judge yet; once one does, runs of OpenAI models should be graded by a judge from another vendor.
 - Open-weight list: Kimi K3.1 Pro replaces Kimi K3; it is newer and lists at $2 and $10 per million input and output tokens instead of $3 and $15.
 
 All four roles are now OpenAI models.
 Vercel serves them from both OpenAI and Azure under zero data retention, so one host's outage doesn't stop them, but an OpenAI-wide problem would; Opus 5.5 and the open-weight models are the fallback.
 
-Next: cases that the top models fail, so the suite can rank them (no spec covers this yet), and the same sweep on OpenRouter to measure the gap.
+Next: more cases, including ones the top models fail, so the suite can show smaller pass-rate gaps and rank the top tier (no spec covers this yet); significance in `evals/report` itself, so these comparisons don't need a one-off script; and the same sweep on OpenRouter to measure the gap.
