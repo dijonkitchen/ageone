@@ -4,6 +4,8 @@
 
 2026-11-12: Proposed by Claude, at JC's request
 
+2026-11-18: Amended by Claude, at JC's request, after GPT-6.2 Sol and Astra came out on 2026-11-17: `frontier` moves to GPT-6.2 Astra; GPT-6.2 Sol passed less often than GPT-6.1 Sol here, so `judge` stays on GPT-6.1 Sol.
+
 2026-11-15: Amended by Claude, at JC's request, after the first live runs on Vercel: the roles move to the models on the cost-per-task frontier (`default` GPT-6.1 Terra, `cheap` GPT-6 Luna, `judge` GPT-6.1 Sol), Kimi K3.1 Pro replaces Kimi K3 on the open-weight list, and pi's billed cost is confirmed; see Key Results.
 
 2026-11-12: Amended by Claude, while implementing [SPEC-2026-11-12-model-gateway](../../specs/SPEC-2026-11-12-model-gateway.md): pi sends Vercel no gateway options at all, so a pi extension in the repo sends zero data retention and the host allowlist on each request; Claude Code sends them as an extra request body.
@@ -198,9 +200,9 @@ Results lines gain `route`, `effort`, `cost_source` (`gateway`, or the harness o
 
 ## Key Results and retrospective feedback
 
-First eval sweep on Vercel, 2026-11-15: the 13 cases in `evals/cases/` through pi 1.5.2, with zero data retention on every request, results in `evals/results/2026-11-15-*.jsonl`.
+First eval sweep on Vercel, 2026-11-15, with GPT-6.2 Sol and Astra added on 2026-11-18: the 13 cases in `evals/cases/` through pi 1.5.2, with zero data retention on every request, results in `evals/results/2026-11-15-*.jsonl` and `2026-11-18-*.jsonl`.
 Every pi run used medium effort (the `default` role sets it, and it is pi's default for the rest).
-The recorded cost of the sweep and the checks was $13.38; OpenRouter wasn't run, so there is no measured gap to it yet.
+The recorded cost of the sweep and the checks was $13.38, plus $2.29 for the GPT-6.2 runs; OpenRouter wasn't run, so there is no measured gap to it yet.
 
 ### Live checks ([spec](../../specs/SPEC-2026-11-12-model-gateway.md) items 3 to 5)
 
@@ -223,9 +225,11 @@ So it bounds a budget for most models but not for a model that loops.
 |---|---|---|---|---|---|
 | GPT-6.1 Terra | 100% (100%) | 38, plus 1 timeout | $0.0155 | 3.9 | 30 |
 | GPT-6.1 Sol | 100% (100%) | 39 | $0.0283 | 4.7 | 32 |
+| GPT-6.2 Astra | 100% | 13 (1 rep) | $0.0886 | 3.5 | 28 |
 | Gemini 4 Hydrogen | 100% | 13 (1 rep) | $0.0491 | 6.1 | 36 |
 | Gemini 4 Carbon | 100% | 13 (1 rep) | $0.1835 | 9.8 | 168 |
 | DeepSeek V4.1 Flash | 95% (92% to 100%) | 39 | $0.0087 | 6.2 | 31 |
+| GPT-6.2 Sol | 95% (92% to 100%) | 39 | $0.0308 | 4.9 | 29 |
 | Muse Ember | 92% (92%) | 39 | $0.0050 | 6.0 | 27 |
 | Claude Opus 5.5 | 92% (92%) | 39 | $0.0672 | 4.1 | 33 |
 | GPT-6 Sol | 92% (92%) | 39 | $0.0334 | 4.1 | 29 |
@@ -237,7 +241,7 @@ So it bounds a budget for most models but not for a model that loops.
 | Gemini 3.8 Flash | 38% | 13 (1 rep) | $0.2938 | 16.6 | 88 |
 
 On these cases the cost-per-task frontier runs GPT-6 Luna, Muse Ember, DeepSeek V4.1 Flash, GPT-6.1 Terra; every other model passes less for more.
-`claim-next-spec` separates the models most: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep.
+`claim-next-spec` separates the models most: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep, and GPT-6.2 Sol on two of three.
 GPT-6.1 Terra's timeout (add-make-target, 2 turns in 300 seconds) is kept out of the pass rate as the runner does for every timeout; counted as a failure it would be 97%.
 
 The pairs in spec item 8: Sonnet 5.5 passes 85% against Sonnet 5's 67% for a third less per passed task, and GPT-6.1 Sol passes 100% against GPT-6 Sol's 92% for 15% less.
@@ -249,8 +253,9 @@ Four models pass every case here, so the suite can't rank the most capable ones.
 Two benchmarks that price whole agent tasks were checked on 2026-11-15: Cognition's FrontierCode 2.0 ([data](https://cognition.com/data/frontier-code-2.0/data.json)) and the Artificial Analysis Intelligence Index ([leaderboard](https://artificialanalysis.ai/leaderboards/models)).
 Their cost-per-task frontiers, cheapest first, among models that Vercel serves with zero data retention and that solve at least a sixth of the tasks or score at least 30:
 
-- FrontierCode 2.0 (share of tasks solved, cost per run at the effort shown): GPT-6 Luna (18% at $0.09, medium), Claude Haiku 5.5 (32% at $0.37, max), GPT-6.1 Sol (43% at $1.03, max), Gemini 4 Carbon (47% at $5.06, high), Claude Opus 5.5 (49% at $5.18, xhigh; 52% at $12.82, max).
-- Artificial Analysis (index, cost per task): Muse Ember (36 at $0.14), GPT-6.1 Terra (51 at $0.96), GPT-6.1 Sol (55 at $1.27), Gemini 4 Carbon (60 at $5.48); Opus 5.5 scores 59 at $10.04.
+- FrontierCode 2.0 (share of tasks solved, cost per run at the effort shown): GPT-6 Luna (18% at $0.09, medium), Claude Haiku 5.5 (32% at $0.37, max), GPT-6.2 Sol (42% at $0.69, medium; 48% at $1.29, max), GPT-6.2 Astra (49% at $4.29, xhigh), Claude Opus 5.5 (49% at $5.18, xhigh; 52% at $12.82, max).
+  GPT-6.2 Sol at max effort comes within a point of GPT-6.2 Astra and Opus 5.5 at xhigh for a quarter to a third of their cost, and the GPT-6.2 models push Gemini 4 Carbon off the frontier.
+- Artificial Analysis (index, cost per task): Muse Ember (36 at $0.14), GPT-6.1 Terra (51 at $0.96), GPT-6.2 Sol (57 at $1.01), GPT-6.2 Astra (62 at $4.00); Gemini 4 Carbon scores 60 at $5.48 and Opus 5.5 59 at $10.04.
 
 Claude Fable 5.2 tops both but isn't available with zero data retention.
 Xiaomi MiMo V2.6 Flash (27 at $0.13) is on Artificial Analysis's frontier just below Muse Ember, but Vercel has no zero-retention host for it, so the privacy rules leave it out.
@@ -261,14 +266,18 @@ Xiaomi MiMo V2.6 Flash (27 at $0.13) is on Artificial Analysis's frontier just b
   It passes every case at the lowest cost per passed task of the four that do, about half GPT-6.1 Sol's and a third of Sonnet 5's, and it is on Artificial Analysis's frontier.
 - `cheap`: GPT-6 Luna, instead of Gemini 3.8 Flash.
   It is the cheapest per passed task here and on FrontierCode 2.0; Muse Ember, slightly ahead on pass rate and on Artificial Analysis, is the close alternative at 1.7 times the cost per passed task.
-- `frontier`: still Opus 5.5, the most capable zero-retention model on FrontierCode 2.0.
-  Gemini 4 Carbon matches it on Artificial Analysis at about half the cost per task, but here it cost 2.7 times as much per passed task and took 5 times as long, on one rep.
-  The suite can't decide this role until it has cases the top models fail.
+- `frontier`: GPT-6.2 Astra, instead of Opus 5.5.
+  It is the most capable zero-retention model on Artificial Analysis, at 40% of Opus 5.5's cost per task, and matches Opus 5.5 at xhigh effort on FrontierCode 2.0 for 17% less; among zero-retention models only Opus 5.5 at max effort solves more there, at three times the cost.
+  GPT-6.2 Sol at max effort is the cheaper alternative: within a point of both on FrontierCode 2.0, but 5 points behind Astra on Artificial Analysis.
+  Here it passed every case, `claim-next-spec` included, which Opus 5.5 failed on every rep, though it cost 1.3 times as much per passed task, on one rep.
+  Gemini 4 Carbon, the other candidate, cost 2.7 times Opus 5.5 per passed task here and took 5 times as long.
+  The suite can't rank this role well until it has cases the top models fail.
 - `judge`: GPT-6.1 Sol, instead of GPT-6 Sol, as spec item 8 allows.
+  GPT-6.2 Sol, out on 2026-11-17 at the same price, passed less often here (95% against 100%), so the rule keeps GPT-6.1 Sol.
   No case uses the judge yet; once one does, runs of OpenAI models should be graded by a judge from another vendor.
 - Open-weight list: Kimi K3.1 Pro replaces Kimi K3; it is newer and lists at $2 and $10 per million input and output tokens instead of $3 and $15.
 
-Three of the four roles are now OpenAI models.
+All four roles are now OpenAI models.
 Vercel serves them from both OpenAI and Azure under zero data retention, so one host's outage doesn't stop them, but an OpenAI-wide problem would; Opus 5.5 and the open-weight models are the fallback.
 
 Next: cases that the top models fail, so the suite can rank them (no spec covers this yet), and the same sweep on OpenRouter to measure the gap.

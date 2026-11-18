@@ -3,7 +3,7 @@
   "roles": {
     "default": "openai/gpt-6.1-terra",
     "cheap": "openai/gpt-6-luna",
-    "frontier": "anthropic/claude-opus-5.5",
+    "frontier": "openai/gpt-6.2-astra",
     "judge": "openai/gpt-6.1-sol"
   },
   "effort": {
