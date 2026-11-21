@@ -58,10 +58,12 @@ export function makeSandbox(runDir, caseDef, rep) {
 }
 
 // Setup, reference, and grader scripts get the case folder, the grader helpers (source "$EVALS_LIB/check.sh"),
-// the repo root, and today's date.
+// the repo root, and today's date. They need no network, so not the runner's NODE_USE_ENV_PROXY either, whose
+// warning would push a Node grader's own message out of the recorded grader note.
 export function scriptEnv(caseDef, extra = {}) {
+  const { NODE_USE_ENV_PROXY, ...env } = process.env;
   return {
-    ...process.env,
+    ...env,
     CASE_DIR: caseDef.dir,
     EVALS_LIB: join(ROOT, "evals", "lib"),
     REPO_ROOT: ROOT,

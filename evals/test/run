@@ -5,7 +5,8 @@
 // 2. The pi and direct adapters against a local mock model, on a vendor route and on each gateway's route
 //    (the mock stands in for the gateway), checking each run is graded, records its metrics and billed cost,
 //    and that the gateway's privacy and host fields reach the request; and that a gateway refusing a request
-//    is an infra error, never a model failure, while pi retries a passing outage within the turn limit.
+//    is an infra error, never a model failure, while pi retries a passing outage within the turn limit; and that
+//    a second run on the same day continues the repetition numbers.
 import { spawn } from "node:child_process";
 import { isDeepStrictEqual } from "node:util";
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -154,6 +155,13 @@ try {
       ...sent.map((b, i) => (routing ? !fields(b).includes(JSON.stringify(routing)) : fields(b) !== "[null,null]") && `request ${i + 1}: ${fields(b)}`),
     ]);
   }
+  // A second run on the same day appends to the same file and continues each case's repetition numbers.
+  const again = spawn(join(here, "..", "run"), ["--harness", "direct", "--model", "mock:scripted", "--cases", join(here, "cases"), "--case", "mock-direct", "--results", results, "--reps", "2"], { env, stdio: "inherit" });
+  const againCode = await new Promise((resolve) => again.on("close", resolve));
+  const scripted = resolveModel(base, "mock:scripted").full;
+  const reps = readRecords(readdirSync(results).filter((f) => !f.endsWith(".infra.jsonl")).map((f) => join(results, f)))
+    .filter((r) => r.harness === "direct" && r.case === "mock-direct" && r.model === scripted).map((r) => r.rep);
+  report("a second run continues the repetition numbers", [againCode !== 0 && `evals/run exited ${againCode}`, same(reps, [1, 2, 3], "reps")]);
 } finally {
   server.close();
   rmSync(tmp, { recursive: true, force: true });

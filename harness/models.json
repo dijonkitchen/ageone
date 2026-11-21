@@ -1,19 +1,23 @@
 {
   "gateway": "vercel",
   "roles": {
-    "default": "anthropic/claude-sonnet-5",
-    "cheap": "google/gemini-3.8-flash",
-    "frontier": "anthropic/claude-opus-5.5",
-    "judge": "openai/gpt-6-sol"
+    "default": "openai/gpt-6.1-terra",
+    "cheap": "openai/gpt-6-luna",
+    "frontier": "openai/gpt-6.2-astra",
+    "judge": "openai/gpt-6.2-sol"
   },
   "effort": {
     "default": "medium"
   },
   "openWeightModels": [
     "deepseek/deepseek-v4.1-flash",
+    "deepseek/deepseek-v4.1-flash-fast",
+    "deepseek/deepseek-v4.1-flash-1017",
+    "deepseek/deepseek-v4.1-flash-1017-fast",
     "zai/glm-5.3",
-    "moonshotai/kimi-k3",
-    "alibaba/qwen3.8-27b"
+    "moonshotai/kimi-k3.1-pro",
+    "alibaba/qwen3.8-27b",
+    "minimax/minimax-m3.1-flash"
   ],
   "gateways": {
     "vercel": {

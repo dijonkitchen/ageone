@@ -47,6 +47,7 @@ Add a case for every task a model fails, and turn completed tasks into regressio
 `results/<date>-<harness>-<model>.jsonl` holds one JSON line per case, model, and repetition:
 `pass`, `score`, `tokens_in` (cache reads and writes included), `tokens_out`, `cache_read`, `cost_usd`, `turns`, `wall_ms`, the `served_model` reported by the provider, `harness` and `harness_version`, `date`, `commit`, and `dirty`, plus `experiment` and `variant` for [SPEC-2026-09-27-eval-benchmark-pages](../specs/SPEC-2026-09-27-eval-benchmark-pages.md) pages.
 `model` includes its route (`vercel:anthropic/claude-sonnet-5`), and `route`, `role`, and `effort` are recorded too.
+A later run on the same day appends to the same file and numbers its repetitions after the ones already there, so `--reps 2` after a one-repetition run adds repetitions 2 and 3.
 
 `cost_source` says where `cost_usd` came from.
 `gateway` is what the gateway billed, looked up by each response's generation ID, including surcharges such as Vercel's team-wide zero data retention; `served_hosts` then lists the hosts that served the run.

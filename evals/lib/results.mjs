@@ -1,7 +1,7 @@
 // Results are NDJSON, one line per case, variant, model, and repetition.
 // Graded runs go to <name>.jsonl; infra failures, timeouts, truncation, refusals, and
 // model mismatches go to <name>.infra.jsonl and never count as model failures.
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export function resultsFile(dir, date, harness, model, variant) {
@@ -13,6 +13,15 @@ export function append(file, record) {
   mkdirSync(join(file, ".."), { recursive: true });
   const target = record.status === "ok" ? file : file.replace(/\.jsonl$/, ".infra.jsonl");
   appendFileSync(target, JSON.stringify(record) + "\n");
+}
+
+// The highest repetition each case already has in a results file (graded or infra), so a later run on the same
+// day continues the numbering instead of reusing rep 1, which would merge two runs in the pass-rate range.
+export function lastReps(file) {
+  const last = new Map();
+  const files = [file, file.replace(/\.jsonl$/, ".infra.jsonl")].filter((f) => existsSync(f));
+  for (const r of readRecords(files)) last.set(r.case, Math.max(last.get(r.case) ?? 0, r.rep ?? 0));
+  return last;
 }
 
 export function readRecords(files) {
