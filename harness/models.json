@@ -11,9 +11,13 @@
   },
   "openWeightModels": [
     "deepseek/deepseek-v4.1-flash",
+    "deepseek/deepseek-v4.1-flash-fast",
+    "deepseek/deepseek-v4.1-flash-1017",
+    "deepseek/deepseek-v4.1-flash-1017-fast",
     "zai/glm-5.3",
     "moonshotai/kimi-k3.1-pro",
-    "alibaba/qwen3.8-27b"
+    "alibaba/qwen3.8-27b",
+    "minimax/minimax-m3.1-flash"
   ],
   "gateways": {
     "vercel": {

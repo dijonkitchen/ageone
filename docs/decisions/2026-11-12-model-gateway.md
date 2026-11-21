@@ -4,6 +4,8 @@
 
 2026-11-12: Proposed by Claude, at JC's request
 
+2026-11-21: Amended by Claude, at JC's request: the strongest open-weight models that the privacy rules allow, and the fast endpoints, ran through the suite, with latency measured from pi's session logs; no role changes, and four more open-weight models join the list (DeepSeek V4.1 Flash Fast, its 2026-10-17 release and that release's fast endpoint, and MiniMax M3.1 Flash).
+
 2026-11-18: Amended by Claude, at JC's request, after GPT-6.2 Sol and Astra came out on 2026-11-17: `frontier` moves to GPT-6.2 Astra (JC's choice) and `judge` to GPT-6.2 Sol, and every comparison is now tested for significance, not read from the raw difference.
 
 2026-11-15: Amended by Claude, at JC's request, after the first live runs on Vercel: the roles move to the models on the cost-per-task frontier (`default` GPT-6.1 Terra, `cheap` GPT-6 Luna, `judge` GPT-6.1 Sol), Kimi K3.1 Pro replaces Kimi K3 on the open-weight list, and pi's billed cost is confirmed; see Key Results.
@@ -200,9 +202,9 @@ Results lines gain `route`, `effort`, `cost_source` (`gateway`, or the harness o
 
 ## Key Results and retrospective feedback
 
-First eval sweep on Vercel, 2026-11-15, with GPT-6.2 Sol and Astra added on 2026-11-18: the 13 cases in `evals/cases/` through pi 1.5.2, with zero data retention on every request, results in `evals/results/2026-11-15-*.jsonl` and `2026-11-18-*.jsonl`.
+First eval sweep on Vercel, 2026-11-15, with GPT-6.2 Sol and Astra added on 2026-11-18 and open-weight and fast models on 2026-11-21: the 13 cases in `evals/cases/` through pi 1.5.2, with zero data retention on every request, results in `evals/results/2026-11-15-*.jsonl`, `2026-11-18-*.jsonl`, and `2026-11-21-*.jsonl`.
 Every pi run used medium effort (the `default` role sets it, and it is pi's default for the rest).
-The recorded cost of the sweep and the checks was $13.38, plus $2.29 for the GPT-6.2 runs; OpenRouter wasn't run, so there is no measured gap to it yet.
+The recorded cost of the sweep and the checks was $13.38, plus $2.29 for the GPT-6.2 runs and $3.78 for the 2026-11-21 runs, each matching the change in Vercel's balance; OpenRouter wasn't run, so there is no measured gap to it yet.
 
 ### Live checks ([spec](../../specs/SPEC-2026-11-12-model-gateway.md) items 3 to 5)
 
@@ -228,21 +230,28 @@ So it bounds a budget for most models but not for a model that loops.
 | GPT-6.2 Astra | 100% | 13 (1 rep) | $0.0886 | 3.5 | 28 |
 | Gemini 4 Hydrogen | 100% | 13 (1 rep) | $0.0491 | 6.1 | 36 |
 | Gemini 4 Carbon | 100% | 13 (1 rep) | $0.1835 | 9.8 | 168 |
-| DeepSeek V4.1 Flash | 95% (92% to 100%) | 39 | $0.0087 | 6.2 | 31 |
-| GPT-6.2 Sol | 95% (92% to 100%) | 39 | $0.0308 | 4.9 | 29 |
+| DeepSeek V4.1 Flash | 96% (92% to 100%) | 52 | $0.0096 | 6.7 | 32 |
+| GPT-6.2 Sol | 96% (92% to 100%) | 52 | $0.0307 | 4.8 | 28 |
+| Kimi K3.1 Pro | 95% (92% to 100%) | 39 | $0.0408 | 4.6 | 28 |
 | Muse Ember | 92% (92%) | 39 | $0.0050 | 6.0 | 27 |
+| DeepSeek V4.1 Flash 1017 | 92% (92%) | 39 | $0.0069 | 6.5 | 32 |
 | Claude Opus 5.5 | 92% (92%) | 39 | $0.0672 | 4.1 | 33 |
 | GPT-6 Sol | 92% (92%) | 39 | $0.0334 | 4.1 | 29 |
-| Kimi K3.1 Pro | 92% | 13 (1 rep) | $0.0465 | 4.5 | 29 |
+| GPT-6.2 Sol Fast | 92% | 13 (1 rep) | $0.0616 | 4.5 | 26 |
 | GPT-6 Luna | 90% (85% to 92%) | 39 | $0.0029 | 4.5 | 35 |
+| MiniMax M3.1 Flash | 90% (85% to 92%) | 39 | $0.0042 | 5.1 | 26 |
+| DeepSeek V4.1 Flash Fast | 90% (85% to 92%) | 39 | $0.0148 | 6.8 | 22 |
+| DeepSeek V4.1 Flash 1017 Fast | 90% (85% to 92%) | 39 | $0.0177 | 7.5 | 24 |
 | Claude Haiku 5.5 | 87% (85% to 92%) | 39 | $0.0038 | 4.7 | 33 |
 | Claude Sonnet 5.5 | 85% (85%) | 39 | $0.0288 | 3.7 | 28 |
 | Claude Sonnet 5 | 67% (62% to 69%) | 39 | $0.0434 | 3.9 | 30 |
 | Gemini 3.8 Flash | 38% | 13 (1 rep) | $0.2938 | 16.6 | 88 |
 
 On these cases the cost-per-task frontier runs GPT-6 Luna, Muse Ember, DeepSeek V4.1 Flash, GPT-6.1 Terra; every other model passes less for more.
-`claim-next-spec` separates the models most, though not by enough for significance: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, Haiku 5.5, and Muse Ember failed it on every rep, and GPT-6.2 Sol on two of three.
+DeepSeek V4.1 Flash is the 2026-09-08 release and DeepSeek V4.1 Flash 1017 the 2026-10-17 one; a Fast model is the same weights on a faster endpoint at twice the token price.
+`claim-next-spec` separates the models most, though not by enough for significance: Opus 5.5, Sonnet 5 and 5.5, GPT-6 Sol, GPT-6.2 Sol Fast, Haiku 5.5, Muse Ember, and DeepSeek V4.1 Flash 1017 Fast failed it on every rep; GPT-6.2 Sol, Kimi K3.1 Pro, both DeepSeek V4.1 Flash releases, and DeepSeek V4.1 Flash Fast on two; and MiniMax M3.1 Flash on one.
 GPT-6.1 Terra's timeout (add-make-target, 2 turns in 300 seconds) is kept out of the pass rate as the runner does for every timeout; counted as a failure it would be 97%.
+Time is the harness's wall time per case, of which about 15 seconds is the same for every model (see Latency below), and some 2026-11-15 runs shared the machine with another sweep, so times aren't comparable across dates.
 
 ### Significance
 
@@ -255,17 +264,25 @@ A difference counts only at p < 0.05, or when the ratio's interval excludes 1.
 | GPT-6.1 Terra vs Claude Sonnet 5 | 100% vs 67% | 0.06 | 0.36 (0.21 to 0.55) |
 | GPT-6.1 Terra vs Claude Sonnet 5.5 | 100% vs 85% | 0.50 | 0.54 (0.38 to 0.77) |
 | GPT-6.1 Terra vs GPT-6.1 Sol | 100% vs 100% | 1 | 0.55 (0.52 to 0.59) |
-| GPT-6.1 Terra vs GPT-6.2 Sol | 100% vs 95% | 1 | 0.51 (0.43 to 0.58) |
+| GPT-6.1 Terra vs GPT-6.2 Sol | 100% vs 96% | 1 | 0.51 (0.44 to 0.58) |
 | GPT-6 Luna vs Gemini 3.8 Flash | 90% vs 38% | 0.008 | 0.01 (0.00 to 0.02) |
 | GPT-6 Luna vs Muse Ember | 90% vs 92% | 1 | 0.59 (0.43 to 0.78) |
 | GPT-6 Luna vs Claude Haiku 5.5 | 90% vs 87% | 1 | 0.78 (0.54 to 1.14) |
-| GPT-6 Luna vs DeepSeek V4.1 Flash | 90% vs 95% | 1 | 0.34 (0.27 to 0.44) |
+| GPT-6 Luna vs DeepSeek V4.1 Flash | 90% vs 96% | 0.50 | 0.31 (0.22 to 0.42) |
 | GPT-6.2 Astra vs Claude Opus 5.5 | 100% vs 92% | 1 | 1.32 (0.95 to 1.92) |
 | GPT-6.2 Astra vs Gemini 4 Carbon | 100% vs 100% | 1 | 0.48 (0.37 to 0.69) |
-| GPT-6.2 Astra vs GPT-6.2 Sol | 100% vs 95% | 1 | 2.88 (2.47 to 3.29) |
-| GPT-6.2 Sol vs GPT-6.1 Sol | 95% vs 100% | 1 | 1.09 (0.93 to 1.30) |
+| GPT-6.2 Astra vs GPT-6.2 Sol | 100% vs 96% | 1 | 2.89 (2.53 to 3.28) |
+| GPT-6.2 Sol vs GPT-6.1 Sol | 96% vs 100% | 1 | 1.08 (0.94 to 1.26) |
 | GPT-6.1 Sol vs GPT-6 Sol | 100% vs 92% | 1 | 0.84 (0.67 to 0.97) |
 | Claude Sonnet 5.5 vs Claude Sonnet 5 | 85% vs 67% | 0.38 | 0.66 (0.43 to 0.97) |
+| DeepSeek V4.1 Flash vs GPT-6.1 Terra | 96% vs 100% | 1 | 0.61 (0.45 to 0.88) |
+| DeepSeek V4.1 Flash 1017 vs DeepSeek V4.1 Flash | 92% vs 96% | 0.50 | 0.72 (0.52 to 0.94) |
+| Kimi K3.1 Pro vs GPT-6.2 Sol | 95% vs 96% | 1 | 1.33 (1.04 to 1.64) |
+| Kimi K3.1 Pro vs Claude Opus 5.5 | 95% vs 92% | 1 | 0.61 (0.48 to 0.77) |
+| MiniMax M3.1 Flash vs GPT-6 Luna | 90% vs 90% | 1 | 1.44 (1.03 to 1.91) |
+| DeepSeek V4.1 Flash Fast vs DeepSeek V4.1 Flash | 90% vs 96% | 0.25 | 1.55 (1.09 to 2.07) |
+| DeepSeek V4.1 Flash 1017 Fast vs DeepSeek V4.1 Flash 1017 | 90% vs 92% | 1 | 2.56 (1.92 to 3.31) |
+| GPT-6.2 Sol Fast vs GPT-6.2 Sol | 92% vs 96% | 1 | 2.01 (1.72 to 2.35) |
 
 Only one pass-rate difference is significant: GPT-6 Luna over Gemini 3.8 Flash.
 With 13 cases a sign-flip test can't reach p < 0.05 unless at least 6 cases go the same way, so this suite can only show very large pass-rate gaps; Terra against Sonnet 5, with 5 such cases, stops at 0.06.
@@ -286,9 +303,53 @@ Their cost-per-task frontiers, cheapest first, among models that Vercel serves w
 - FrontierCode 2.0 (share of tasks solved, cost per run at the effort shown): GPT-6 Luna (18% at $0.09, medium), Claude Haiku 5.5 (32% at $0.37, max), GPT-6.2 Sol (42% at $0.69, medium; 48% at $1.29, max), GPT-6.2 Astra (49% at $4.29, xhigh), Claude Opus 5.5 (49% at $5.18, xhigh; 52% at $12.82, max).
   GPT-6.2 Sol at max effort comes within a point of GPT-6.2 Astra and Opus 5.5 at xhigh for a quarter to a third of their cost, and the GPT-6.2 models push Gemini 4 Carbon off the frontier.
 - Artificial Analysis (index, cost per task): Muse Ember (36 at $0.14), GPT-6.1 Terra (51 at $0.96), GPT-6.2 Sol (57 at $1.01), GPT-6.2 Astra (62 at $4.00); Gemini 4 Carbon scores 60 at $5.48 and Opus 5.5 59 at $10.04.
+  Gemini 4 Neon, out on 2026-11-18, scored 61 at $6.44 when checked on 2026-11-21, so GPT-6.2 Astra still beats it on both, and it wasn't run.
 
 Claude Fable 5.2 tops both but isn't available with zero data retention.
 Xiaomi MiMo V2.6 Flash (27 at $0.13) is on Artificial Analysis's frontier just below Muse Ember, but Vercel has no zero-retention host for it, so the privacy rules leave it out.
+
+### Open-weight models
+
+On 2026-11-21 JC asked whether strong open-weight models were covered.
+The strongest open-weight models on Artificial Analysis that Vercel serves from an allowlisted host with zero retention have now run here, all on baseten, modal, parasail, or togetherai, in the US.
+GLM-5.3, also on the list, wasn't run: it scores 32 at $5.01 per task, more than Kimi K3.1 Pro for a lower score.
+
+- Kimi K3.1 Pro, the strongest open-weight model on Artificial Analysis (46 at $3.68 per task): 95% here over three reps, at 1.33 times GPT-6.2 Sol's cost per passed task and 0.61 times Opus 5.5's, both significant.
+- DeepSeek V4.1 Flash 1017, the release Artificial Analysis lists (33 at $0.60): 92% here, at 0.72 times the earlier release's cost per passed task (significant), with no significant gap in pass rate.
+  Either release costs significantly less per passed task than GPT-6.1 Terra with no significant pass-rate gap, but the 1017 release scores 18 points below Terra on Artificial Analysis, so DeepSeek stays in the small tier, where GPT-6 Luna costs a third to under half as much per passed task.
+- MiniMax M3.1 Flash (29 at $0.49): 90% here, the same as GPT-6 Luna, at 1.44 times its cost per passed task (significant).
+
+The privacy rules leave out Qwen4 Max (43, listed as open-weight by Vercel), which only Alibaba Cloud serves, from China; Tencent Hy4 (35 at $1.03) and Hy4 Flash, which only Tencent serves, without zero retention; and Kimi K3.1 Pro Highspeed, which only Alibaba Cloud, Moonshot AI, and Amazon Bedrock serve, and Bedrock isn't on the host allowlist.
+No open-weight model beats the model holding a role in its tier, so the roles stay; Kimi K3.1 Pro and DeepSeek V4.1 Flash are the fallbacks if OpenAI is unavailable.
+
+### Latency
+
+JC also asked for a strong low-latency model.
+Latency here is model time: the time a pi session spends waiting for the model, summed from the session logs (the gaps that end in an assistant message), on 2026-11-21 runs made one model at a time.
+Tool time was under 0.2 seconds per case for every model but DeepSeek V4.1 Flash, which spent 28 seconds in one command on one case.
+
+| Model | Runs | Model time per case (s) | Output tokens per case | Cost per passed task |
+|---|---|---|---|---|
+| DeepSeek V4.1 Flash Fast | 39 | 5.9 | 2,201 | $0.0148 |
+| DeepSeek V4.1 Flash 1017 Fast | 38 | 7.1 | 2,766 | $0.0177 |
+| GPT-6.2 Sol Fast | 13 | 9.0 | 508 | $0.0616 |
+| MiniMax M3.1 Flash | 39 | 9.5 | 1,123 | $0.0042 |
+| Kimi K3.1 Pro | 26 | 10.8 | 1,338 | $0.0408 |
+| GPT-6.2 Sol | 13 | 11.3 | 555 | $0.0307 |
+| DeepSeek V4.1 Flash | 12 | 13.8 | 2,726 | $0.0096 |
+| DeepSeek V4.1 Flash 1017 | 38 | 15.3 | 2,220 | $0.0069 |
+
+Paired by case, DeepSeek V4.1 Flash Fast takes 0.42 times the standard endpoint's model time (95% interval 0.33 to 0.52), and the 1017 release's fast endpoint 0.46 (0.40 to 0.57), for 1.55 and 2.56 times the cost per passed task, all significant.
+GPT-6.2 Sol Fast saves less: 0.79 times the model time (0.75 to 0.85) for twice the cost per passed task.
+DeepSeek V4.1 Flash Fast also takes 0.52 times GPT-6.2 Sol's model time (0.46 to 0.60) at 0.48 times its cost per passed task (0.34 to 0.63); Kimi K3.1 Pro's model time doesn't differ significantly from GPT-6.2 Sol's.
+
+Model time is the smaller part of a case here.
+About 15 seconds of every case is the same whatever the model: pi takes about 5.5 seconds from creating its session to sending the prompt, and launching pi and looking up the billed cost after it exits take about 10 more.
+So the fastest endpoint takes a case from about 27 seconds to about 22.
+
+For a strong low-latency model, GPT-6.2 Sol, already the `judge`, is the pick: at 9.7 minutes per task it is the fastest of the models scoring 50 or more on Artificial Analysis, at the effort each is listed at, max for the GPT models (GPT-6.2 Astra takes 14.2, GPT-6.1 Terra and Gemini 4 Hydrogen 15.9, Opus 5.5 25.6), and Kimi K3.1 Pro takes 39.1.
+The fastest model there is Muse Ember, at 3.1 minutes per task and 36 points.
+No role changes, since latency matters less than cost when many agents work at once; if a fast role is wanted, DeepSeek V4.1 Flash Fast is the fastest measured here.
 
 ### Roles chosen
 
@@ -298,7 +359,7 @@ Within a tier, `default` and `cheap` take the cheapest model per passed task on 
 `frontier` and `judge` exist for accuracy more than cost, so where our cases can't separate the candidates, they take the strongest on the outside benchmarks.
 
 - `default`: GPT-6.1 Terra, instead of Sonnet 5.
-  No model passes significantly more of our cases, and it costs significantly less per passed task than every other mid-tier model tested: about half GPT-6.1 and 6.2 Sol's, and a third of Sonnet 5's, Gemini 4 Hydrogen's, and Kimi K3.1 Pro's.
+  No model passes significantly more of our cases, and it costs significantly less per passed task than every other mid-tier model tested: about half GPT-6.1 and 6.2 Sol's, and a third to two-fifths of Sonnet 5's, Gemini 4 Hydrogen's, and Kimi K3.1 Pro's.
   GPT-6.2 Sol is significantly stronger on Artificial Analysis (57 against 51), so it is the step up if everyday work gets harder than these cases.
 - `cheap`: GPT-6 Luna, instead of Gemini 3.8 Flash.
   It passes significantly more cases than Gemini 3.8 Flash for 1% of the cost per passed task.
@@ -314,8 +375,9 @@ Within a tier, `default` and `cheap` take the cheapest model per passed task on 
   It is the strongest mid-tier model on Artificial Analysis (57, against GPT-6.1 Sol's 55 when last listed on 2026-11-15 and GPT-6.1 Terra's 51), and against GPT-6.1 Sol, at the same price, neither its pass rate (95% against 100%) nor its cost per passed task differs significantly here.
   No case uses the judge yet; once one does, runs of OpenAI models should be graded by a judge from another vendor.
 - Open-weight list: Kimi K3.1 Pro replaces Kimi K3; it is newer and lists at $2 and $10 per million input and output tokens instead of $3 and $15.
+  On 2026-11-21 DeepSeek V4.1 Flash Fast, DeepSeek V4.1 Flash 1017 and its fast endpoint, and MiniMax M3.1 Flash joined the list, so the host allowlist applies to them; see Open-weight models.
 
 All four roles are now OpenAI models.
 Vercel serves them from both OpenAI and Azure under zero data retention, so one host's outage doesn't stop them, but an OpenAI-wide problem would; Opus 5.5 and the open-weight models are the fallback.
 
-Next: more cases, including ones the top models fail, so the suite can show smaller pass-rate gaps and rank the top tier (no spec covers this yet); significance in `evals/report` itself, so these comparisons don't need a one-off script; and the same sweep on OpenRouter to measure the gap.
+Next: more cases, including ones the top models fail, so the suite can show smaller pass-rate gaps and rank the top tier (no spec covers this yet); significance and model time in `evals/report` itself, so these comparisons don't need one-off scripts, with wall time measured before the billed-cost lookup; and the same sweep on OpenRouter to measure the gap.
