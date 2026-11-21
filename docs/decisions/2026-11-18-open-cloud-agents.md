@@ -4,6 +4,10 @@
 
 2026-11-18: Proposed by Claude, at JC's request
 
+2026-11-21: Amended by Claude, while writing [SPEC-2026-11-21-first-mate](../../specs/SPEC-2026-11-21-first-mate.md): T3 Code's own orchestration tools, which its pi threads get too, already delegate threads, watch pull requests, and schedule tasks, so the first mate is a role prompt and memory files rather than new scripts.
+T3 Code's built-in Forgejo and Gitea support replaces the planned pull request adapter.
+GitHub access starts with a fine-grained token per box; GitHub App tokens wait until per-thread scoping is needed.
+
 ## Objective Context
 
 JC asked for open options to recreate cloud agents driven from a native phone app: sandboxed agents, the most cost-effective harness and models, agnostic to both, on GitHub or personal git repositories, without lock-in.
@@ -52,16 +56,16 @@ Plugin and skill marketplaces as a source of code that runs with agent credentia
 ## Decision
 
 Six layers, each replaceable on its own, assembled from open source parts.
-Only the first mate needs new glue, and that waits for a spec ([spec first](#next-step)).
+Only the first mate is new, and it is a role prompt plus memory files, set out in the spec ([spec first](#next-step)).
 
 | Layer | Pick now | Warm alternative | Swap cost |
 |-------|----------|------------------|-----------|
 | Phone app and threads | [T3 Code](https://github.com/pingdotgg/t3code) (MIT) over Tailscale | [Happier](https://github.com/happier-dev/happier) (MIT), [Paseo](https://github.com/getpaseo/paseo) (Apache-2.0) | Install another client on the same box; harness sessions stay on disk |
-| First mate | A coordinator thread per project on the `cheap` role, driving worker threads through T3 Code's MCP server | [Omnara](https://github.com/omnara-ai/omnara) self-hosted (Apache-2.0) | Point the coordinator at another client's MCP (`happier mcp serve`) |
+| First mate | A coordinator thread per project on the `cheap` role, using T3 Code's orchestration tools to delegate threads, watch pull requests, and schedule tasks | [Omnara](https://github.com/omnara-ai/omnara) self-hosted (Apache-2.0) | Point the coordinator at another client's MCP (`happier mcp serve`) |
 | Harness | [pi](https://github.com/earendil-works/pi), as in [Vendor-Neutral AI Harness](2026-09-26-vendor-neutral-ai-harness.md) | OpenCode, Codex CLI, Claude Code, any [ACP](https://agentclientprotocol.com) agent, picked per thread | Pick another provider in the thread |
 | Sandbox | One always-on small VM as "the box" | MicroVM per project or thread: [E2B runtime](https://github.com/e2b-dev/runtime) self-hosted (Apache-2.0) or [Sprites](https://fly.io/sprites) hosted | Re-run the bootstrap script on another host |
 | Models | Unchanged: [Model Gateway](2026-11-12-model-gateway.md) roles on Vercel AI Gateway | OpenRouter, one setting away | Already one setting |
-| Git | GitHub App installation tokens; Forgejo repository-scoped tokens; SSH deploy keys | Fine-grained personal access tokens per project | Credential helper per host |
+| Git | Fine-grained GitHub token limited to chosen repositories, with an expiry; Forgejo repository-scoped tokens; SSH deploy keys | GitHub App installation tokens (one hour, per thread) | Credential helper per host |
 
 ### 1. Phone app and threads: T3 Code
 
@@ -69,8 +73,9 @@ Only the first mate needs new glue, and that waits for a spec ([spec first](#nex
 - Runs Claude Code, Codex, Cursor, OpenCode, and pi natively (`packages/provider-pi`), plus any ACP agent.
 - Each thread can get its own git worktree; diffs, commits, pushes, and pull requests from the app.
 - Runs headless on a VPS (`t3 up`, `t3 serve --tailscale-serve`), with one-time pairing per device and per-scope access.
-- Outside agents reach it through its MCP server and can list projects, start, message, wait on, and stop threads (`t3_thread_launch`, `t3_thread_wait`, `t3_thread_read`), at an access level JC approves; a thread an outside agent starts can't exceed that level.
-  This is what makes a first mate possible without building a client.
+- Agents inside a T3 thread, pi included (through a T3-owned pi extension), get T3's orchestration tools: `delegate_task` (a child thread on any provider and model, in its own worktree or on a linked machine), `create_threads`, `t3_thread_send` and `t3_thread_wait`, `watch_pull_request`, and `schedule_task` (on an interval, at a fixed time, or on a webhook).
+  This is what makes a first mate possible without building a client or a service.
+- Outside agents reach the same tools through its MCP server, at an access level JC approves, and scripts on the host use `t3 thread start`, `send`, and `show` without signing in.
 - MIT, about 64,000 stars, active daily.
 - Connect over Tailscale (free Personal plan, non-commercial, up to 6 users), not T3 Connect, whose relay's encryption and self-hosting aren't documented.
   Tailscale's control server is closed; [Headscale](https://github.com/juanfont/headscale) (BSD-3-Clause) is the self-hosted swap.
@@ -78,15 +83,16 @@ Only the first mate needs new glue, and that waits for a spec ([spec first](#nex
 ### 2. First mate: a coordinator thread per project
 
 Each project gets one long-lived thread, on the `cheap` role at low effort, that JC talks to from the phone.
-It reads the project's instructions and memory, turns requests into worker threads through T3 Code's MCP tools, waits on them, and reports back.
+It reads the project's instructions and memory, turns requests into worker threads with T3 Code's orchestration tools, waits on them, and reports back.
 Workers run on the `default` role, or `frontier` when asked.
-Around it, small scripts on the box that the spec will define:
+T3 Code already provides the rest, so the new parts are a role prompt and a memory convention:
 
 - Memory and instructions are Markdown files in a private git repository, one folder per project, with a `MEMORY.md` index, so memory is versioned, reviewable, and readable by any harness.
-- Schedules are systemd timers that message the first mate or start a thread.
-- A pull request watcher (webhook or a timer calling `gh` or Forgejo's API) sends CI failures and review comments to the thread that opened the pull request.
-- Thread states for an overview (working, waiting on JC, ready for review, landing, resolved) come from T3 thread status plus pull request status.
-- Decisions JC must make arrive as questions in the thread; ACP stabilized structured form elicitation on 2026-07-22, which clients can render as choices.
+  A child thread gets only its task prompt, so the first mate passes the memory a task needs.
+- Schedules are T3 scheduled tasks, made by the first mate with `schedule_task`.
+- Pull requests: the first mate calls `watch_pull_request`, and T3 checks every two minutes and wakes it on a failed check, a review or comment, passing checks, or a conflict; child threads can't watch, so the delegating thread does.
+- Thread states come from T3's sidebar sections (working, inbox, settled, snoozed), with push notifications and Live Activities on mobile.
+- Decisions JC must make arrive as questions in the thread; pi's `select` and `confirm` dialogs show in T3's composer, and ACP stabilized structured form elicitation on 2026-07-22.
 
 ### 3. Harness: pi by default, any harness per thread
 
@@ -134,11 +140,11 @@ Roles, gateway, and zero data retention stay as decided in [Model Gateway](2026-
 
 ### 6. Git: short-lived, repository-scoped credentials on every host
 
-- GitHub: a GitHub App owned by JC, installed on chosen repositories, with its private key on the box outside any agent's reach; a helper mints an installation token per thread, limited to that thread's repositories and to contents and pull request permissions.
-  Installation tokens last one hour and, since 2026-10-02, are about 520 characters, so treat them as opaque strings.
+- GitHub: a fine-grained token limited to the chosen repositories, with an expiry, given to T3 Code and `gh` on the box.
+  When one box serves projects that should not reach each other's repositories, move to a GitHub App owned by JC, whose installation tokens last one hour and can be limited per thread; since 2026-10-02 they are about 520 characters, so treat them as opaque strings.
 - Forgejo or Codeberg: repository-scoped access tokens (Forgejo 15.0 and later) limited to `read:repository`, `write:repository`, and issue scopes; they can't do repository administration.
 - Plain SSH remotes: one deploy key per repository.
-- Pull request and review calls go through `gh` for GitHub and Forgejo's REST API, behind one small adapter the first mate uses.
+- Pull requests and reviews go through T3 Code's own integrations: GitHub with a token or `gh`, Forgejo and Gitea with `fj` or `tea`, and GitLab, Bitbucket, and Azure DevOps too.
 
 ### Compared with Claude Code Projects
 
@@ -147,20 +153,20 @@ From the [Projects docs](https://code.claude.com/docs/en/claude-projects) (publi
 | Capability | Claude Code Projects | This proposal |
 |------------|----------------------|---------------|
 | Phone app | Claude app (iOS, Android) | T3 Code app (iOS, Android), MIT |
-| Coordinator and threads | Built in; coordinator posts status on its own | First mate thread plus T3 threads through MCP; glue to build |
+| Coordinator and threads | Built in; coordinator posts status on its own | First mate thread using T3's `delegate_task`; a role prompt to write |
 | Models | Anthropic only; Opus at high effort by default | Any model per role, picked by cost per passed task |
 | Harness | Claude Code | pi by default; OpenCode, Codex, Claude Code, or any ACP agent per thread |
 | Repositories | GitHub, plus uploaded files | Any git remote: GitHub, Forgejo, Codeberg, SSH |
 | Workspace | Cloud sandbox paused between turns; if it can't resume, the thread restarts from a fresh clone and uncommitted changes can be lost | Persistent box; microVM snapshots later |
 | Memory | Project memory files and instructions in project settings | Markdown in a private git repository: versioned and portable |
-| Pull requests | Watches and auto-fixes CI and review comments | To build: webhook or timer messages the thread |
-| Schedules | Cloud scheduled tasks | systemd timers on the box |
-| Overview, decision cards, library | Built in | Thread list and push from T3; states and decisions to build |
+| Pull requests | Watches and auto-fixes CI and review comments | T3's `watch_pull_request` wakes the first mate every two minutes on changes |
+| Schedules | Cloud scheduled tasks | T3 scheduled tasks: interval, fixed time, once, or webhook |
+| Overview, decision cards, library | Built in | T3 sidebar sections, push, Live Activities, questions in thread; no library |
 | Connectors (Gmail, Drive, and so on) | Built in | MCP servers per harness, set up by hand |
 | Cost | Plan limits, used faster than single sessions; 500 new threads a day | About €6 a month plus models at cost; cost per thread visible |
 | Sharing | One user | One user now; T3 Code and Happier support more later |
 
-Where Claude Code Projects stays ahead: no setup or upkeep, polish, built-in pull request auto-fix, and connectors.
+Where Claude Code Projects stays ahead: no setup or upkeep, a coordinator that is already tuned, project files in one library, and connectors.
 So keep using it while the first mate is built, then compare both on the same week of real tasks by cost per merged pull request and minutes of JC's attention.
 
 ### High-level C4(context/container/component/code) diagram
@@ -172,14 +178,14 @@ flowchart LR
     t3["T3 Code server"]
     mate["First mate thread per project (pi, cheap role)"]
     workers["Worker threads (pi, OpenCode, Codex, Claude Code), one worktree each"]
-    glue["Glue: schedules, pull request watcher, token helper"]
+    memory["Memory repo: one folder per project"]
     t3 --- mate
-    mate -- "MCP: launch, message, wait" --> workers
-    glue --> mate
+    mate -- "delegate_task, schedule_task" --> workers
+    memory --- mate
   end
   workers -- "roles, zero retention" --> gateway["Model gateway: Vercel, OpenRouter one setting away"]
-  workers -- "short-lived scoped tokens" --> git["GitHub, Forgejo, SSH remotes"]
-  git -- "webhooks or polling" --> glue
+  workers -- "scoped, expiring tokens" --> git["GitHub, Forgejo, SSH remotes"]
+  git -- "watch_pull_request, every 2 minutes" --> mate
   workers -. "later" .-> microvm["MicroVM per project or thread: E2B runtime or Sprites"]
 ```
 
@@ -189,19 +195,19 @@ Phone clients considered (all run agents on a machine you connect, not in their 
 
 | Client | License | Stars | Native apps | Harnesses | Connection | Orchestration |
 |--------|---------|-------|-------------|-----------|------------|---------------|
-| T3 Code | MIT | 64k | iOS, Android, desktop, web | Claude Code, Codex, Cursor, OpenCode, pi, any ACP | LAN, Tailscale, T3 Connect | Projects and threads; MCP for outside agents |
+| T3 Code | MIT | 64k | iOS, Android, desktop, web | Claude Code, Codex, Cursor, OpenCode, pi, any ACP | LAN, Tailscale, T3 Connect | Projects and threads; delegation, pull request watching, and scheduled tasks for its agents; MCP for outside agents |
 | Happy | MIT | 25k | iOS (Swift), Android (Kotlin) | Claude, Codex, Grok; OpenCode or any ACP | End-to-end encrypted relay | Subagent delegation; multiplayer |
 | Paseo | Apache-2.0 (site) | 24k | iOS, Android, desktop, web | Claude Code, Codex, Copilot, OpenCode, pi, more through ACP | Encrypted relay, LAN, Tailscale | Agents launch agents; voice |
 | Happier | MIT | 2.2k | iOS, Android, desktop, web | 13 including pi, any ACP | Encrypted relay you can self-host | `happier mcp serve` creates sessions; push inbox; voice |
 | OpenCode Mobile | MIT | 0.3k | Android | OpenCode | Tailscale | None |
 
-T3 Code over Happier: its projects-and-threads model maps onto Claude Code Projects, its MCP has permission ceilings for outside agents, and its community is the largest.
-Happier is the fallback if T3 Code stalls: it has the self-hostable encrypted relay and push inbox T3 lacks.
+T3 Code over Happier: its projects-and-threads model maps onto Claude Code Projects, its agents already delegate, watch pull requests, and schedule work, and its community is the largest.
+Happier is the fallback if T3 Code stalls: it has the self-hostable encrypted relay T3 Code lacks.
 Closed clients (Claude app, ChatGPT's Codex remote, Maude, Cosyra, Vicoa) were ruled out for lock-in.
 
 First mate options considered:
 
-- T3 Code MCP plus a pi coordinator (chosen): least glue, same app as the threads.
+- T3 Code's orchestration tools plus a pi coordinator (chosen): no new service, same app as the threads.
 - Omnara self-hosted (Apache-2.0): a full managed agent platform (REST API, Postgres state, schedules, memory, subagents, 12 sandbox providers or your own machines, Slack and Discord, open source mobile app), but its own agent loop rather than pi or ACP harnesses, Postgres and Redis to run, and a product that pivoted in January 2026.
   Switch to it if the glue grows past a few hundred lines.
 - [Hermes Agent](https://hermes-agent.nousresearch.com/docs) (MIT, 264k stars): personal agent with 20+ messaging gateways (Telegram, Discord, Slack, Signal, email), cron, memory, subagents, and terminal backends (local, Docker, SSH, Daytona, Modal, Vercel Sandbox).
@@ -213,7 +219,7 @@ First mate options considered:
 
 Risks:
 
-- T3 Code is young and gates contributions; its pi provider with this repo's gateway extension, and an MCP-driven coordinator running as a T3 thread, are unverified and are the spec's first spike.
+- T3 Code is young and gates contributions; its docs say pi threads get the orchestration tools and load project extensions once the folder is trusted, but pi with this repository's gateway extension and a pi first mate are untested here, so they are the spec's first check.
 - One box means one blast radius: a prompt-injected thread can read other projects' worktrees.
   Short-lived tokens limit what it can push; a Linux user or microVM per project is the next step.
 - Providers close or reprice: Daytona went closed source in June 2026, and Hetzner raised CX and CAX prices about 30% to 38% and CPX and CCX up to 2.7x on 2026-06-15.
@@ -228,23 +234,23 @@ Risks:
 
 ### Interfaces
 
-- Thread control: T3 Code MCP tools (`t3_thread_launch`, `t3_thread_wait`, `t3_thread_read`); Happier's `happier mcp serve` as the fallback.
+- Thread control: T3 Code's orchestration tools inside threads (`delegate_task`, `create_threads`, `t3_thread_send`, `t3_thread_wait`, `watch_pull_request`, `schedule_task`), the same tools over MCP for outside agents, and `t3 thread` on the host; Happier's `happier mcp serve` as the fallback.
 - Harness: any provider T3 Code runs natively, or any ACP agent.
 - Models: `harness/models.json` roles.
-- Git: `git` with a credential helper that hands out short-lived tokens; one adapter for pull request calls (`gh` or Forgejo REST).
+- Git: `git` with a credential helper per host; pull requests through T3 Code's integrations (`gh`, `fj` or `tea`).
 - Box: one bootstrap script, so any Linux host with network access can become the box.
 - Memory: Markdown with a `MEMORY.md` index in a private git repository.
 
 ## Next step
 
-If accepted, write `SPEC-2026-11-18-first-mate` before any code: the box bootstrap, a spike on T3 Code with pi and an MCP-driven coordinator, the pull request watcher, schedules, the token helper for GitHub and Forgejo, and a definition of done that includes the week-long comparison with Claude Code Projects.
+[SPEC-2026-11-21-first-mate](../../specs/SPEC-2026-11-21-first-mate.md): the box bootstrap, the first mate's role prompt and memory convention, checks on GitHub and Forgejo, and the week-long comparison with Claude Code Projects.
 
 ## Key Results and retrospective feedback
 
 ## Sources
 
 - Claude Code Projects: https://code.claude.com/docs/en/claude-projects
-- T3 Code: https://github.com/pingdotgg/t3code, and its `docs/user/remote-access.md` and `docs/user/outside-agents.md`
+- T3 Code: https://github.com/pingdotgg/t3code, and its `docs/user/remote-access.md`, `docs/user/outside-agents.md`, `docs/user/providers-pi.md`, `docs/user/source-control.md`, `docs/user/project-settings.md`, and `docs/orchestration-v2/orchestrator-mcp-server.md` (read 2026-11-21)
 - Happy: https://github.com/slopus/happy; Happier: https://github.com/happier-dev/happier; Paseo: https://paseo.sh/claude-code; OpenCode Mobile: https://github.com/dzianisv/opencode-mobile
 - Phone client comparison (published by Maude, one of the apps, updated 2026-10-30): https://maude.pilotdev.fr/compare/coding-agent-phone-apps/
 - Omnara: https://github.com/omnara-ai/omnara; Hermes Agent: https://hermes-agent.nousresearch.com/docs; pi-chat: https://github.com/earendil-works/pi-chat; open-inspect: https://github.com/open-inspect/background-agents
